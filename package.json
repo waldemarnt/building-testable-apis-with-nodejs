@@ -1,0 +1,23 @@
+{
+  "name": "building-testable-apis-with-nodejs",
+  "version": "1.0.0",
+  "description": "WIP",
+  "main": "index.js",
+  "scripts": {
+    "generate-index": "markdown-toc -i ./book/configuration.md" ,
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waldemarnt/building-testable-apis-with-nodejs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/waldemarnt/building-testable-apis-with-nodejs/issues"
+  },
+  "homepage": "https://github.com/waldemarnt/building-testable-apis-with-nodejs#readme",
+  "dependencies": {
+    "markdown-toc": "^0.13.0"
+  }
+}
