@@ -1,3 +1,27 @@
+
+
+<!-- toc -->
+
+- [Configurando o ambiente](#configurando-o-ambiente)
+  * [O que é um transpiler](#o-que-%C3%A9-um-transpiler)
+  * [Gerenciamento de projeto e dependências](#gerenciamento-de-projeto-e-depend%C3%AAncias)
+- [Estrutura de diretórios e arquivos](#estrutura-de-diret%C3%B3rios-e-arquivos)
+  * [O diretório root](#o-diret%C3%B3rio-root)
+  * [O que fica no diretório root?](#o-que-fica-no-diret%C3%B3rio-root)
+  * [Separação da execução e aplicação](#separa%C3%A7%C3%A3o-da-execu%C3%A7%C3%A3o-e-aplica%C3%A7%C3%A3o)
+  * [Dentro do diretório *source*](#dentro-do-diret%C3%B3rio-source)
+  * [Responsabilidades diferentes dentro de um mesmo source](#responsabilidades-diferentes-dentro-de-um-mesmo-source)
+  * [*Server* e *client* no mesmo repositório](#server-e-client-no-mesmo-reposit%C3%B3rio)
+  * [Separação por funcionalidade](#separa%C3%A7%C3%A3o-por-funcionalidade)
+  * [Conversão de nomes](#convers%C3%A3o-de-nomes)
+- [Iniciando o projeto](#iniciando-o-projeto)
+  * [Configuração inicial](#configura%C3%A7%C3%A3o-inicial)
+  * [Configurando suporte ao *Ecmascript* 6](#configurando-suporte-ao-ecmascript-6)
+  * [Configurando o servidor web](#configurando-o-servidor-web)
+  * [Express Middlewares](#express-middlewares)
+
+<!-- tocstop -->
+
 # Configurando o ambiente
 A configuração do ambiente é a base para todo o projeto. Nela é configurado o *transpiler*, no nosso caso, o ***Babel.js***, as configurações do ***NPM***, a estrutura base de diretórios e etc.
 Durante todo o livro a versão usada do *Node.js* será a 6.9.1 *LTS* (*long term support*). Para que seja possível usar as funcionalidades mais atuais do *javascript* será usado o *Ecmascript* na versão 6 *ES6* (*ES2015* ou *javascript* 2015), aqui iremos chamar de *ES6*. 
