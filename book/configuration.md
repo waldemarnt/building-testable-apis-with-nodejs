@@ -34,40 +34,40 @@ Essa estrutura é legível e organizada, mas tende a ficar muito grande e mistur
 
 * src
     * controllers/
-        * middlewares/
-            * models/
-            * app.js
-            * tests/
-            * .gitignore
-            * server.js
-            * package.json
+    * middlewares/
+    * models/
+* app.js
+* tests/
+* .gitignore
+* server.js
+* package.json
 
-            Dessa maneira o código da aplicação é isolado em um diretório deixando o *root* mais limpo e acabando com a mistura de diretórios de código com diretórios de testes e arquivos de configuração.
+Dessa maneira o código da aplicação é isolado em um diretório deixando o *root* mais limpo e acabando com a mistura de diretórios de código com diretórios de testes e arquivos de configuração.
 
 ## O que fica no diretório root?
 No exemplo acima movemos o código da aplicação para o diretório *src* mas ainda mantivemos o *tests*, o motivo disso é porque testes são executados ou por linha de comando ou por outras ferramentas. Inclusive os *test runners* como *mocha* e *karma* esperam que o diretório *tests* esteja no diretório principal. 
 Outros diretórios comumente localizados no *root* são *scripts* de suporte ou *build*, exemplos, documentação e arquivos estáticos. No exemplo abaixo vamos incrementar nossa aplicação com mais alguns diretórios:
 * env/
     * prod.env
-        * dev.env
-        * public/
-            * assets/
-                * images/
-                    * css/
-                        * js/
-                        * src
-                            * controllers/
-                                * middlewares/
-                                    * models/
-                                        * app.js
-                                        * tests/
-                                        * scripts/
-                                            * deploy.sh
-                                            * .gitignore
-                                            * server.js
-                                            * package.json
+    * dev.env
+* public/
+    * assets/
+    * images/
+    * css/
+    * js/
+* src
+    * controllers/
+    * middlewares/
+    * models/
+    * app.js
+* tests/
+* scripts/
+    * deploy.sh
+* .gitignore
+* server.js
+* package.json
 
-                                            O diretório *public* é responsável por guardar tudo aquilo que vai ser entregue para o usuário, usar ele no *root* facilita a criação de rotas de acesso e também movimentação dos assets caso necessário. Os diretórios *scripts* e *env* são relacionados a execução da aplicação e serão chamados por alguma linha de comando ou ferramenta externa, colocar eles em um diretório acessível facilita a usabilidade.
+O diretório *public* é responsável por guardar tudo aquilo que vai ser entregue para o usuário, usar ele no *root* facilita a criação de rotas de acesso e também movimentação dos assets caso necessário. Os diretórios *scripts* e *env* são relacionados a execução da aplicação e serão chamados por alguma linha de comando ou ferramenta externa, colocar eles em um diretório acessível facilita a usabilidade.
 
 # Separação da execução e aplicação
 
@@ -78,86 +78,86 @@ Agora que já entendemos o que fica fora do diretório *src* vamos ver como orga
 
 * src/
     * controllers/
-        * routes/
-            * models/
-                * middlewares/
-                    * app.js
+    * routes/
+    * models/
+    * middlewares/
+    * app.js
 
-                    Essa estrutura é bastante utilizada, ela é clara e separa as responsabilidades de cada componente, além de permitir o carregamento dinâmico.
+Essa estrutura é bastante utilizada, ela é clara e separa as responsabilidades de cada componente, além de permitir o carregamento dinâmico.
 
 ## Responsabilidades diferentes dentro de um mesmo source 
 As vezes quando começamos uma aplicação já sabemos o que será desacoplado e queremos dirigir nosso *design* para que no futuro seja possível separar e tornar parte do código um novo módulo. Outra necessidade comum é ter *APIs* específicas para diferentes tipos de clientes, como no exemplo a seguir:
 
 * src/
     * mobile/
-            * controllers/
-                    * routes/
-                            * models/
-                                    * middlewares/
-                                            * index.js
-                                                * web
-                                                        * controllers/
-                                                                * routes/
-                                                                        * models/
-                                                                                * middlewares/
-                                                                                        * index.js
-                                                                                            * app.js
+        * controllers/
+        * routes/
+        * models/
+        * middlewares/
+        * index.js
+    * web
+        * controllers/
+        * routes/
+        * models/
+        * middlewares/
+        * index.js
+    * app.js
 
-                                                                                            Esse cenário funciona bem mas pode dificultar o reuso de código entre os componentes, então, antes de usar, tenha certeza que seu caso de uso permite a separação dos clientes sem que um dependa do outro.
+Esse cenário funciona bem mas pode dificultar o reuso de código entre os componentes, então, antes de usar, tenha certeza que seu caso de uso permite a separação dos clientes sem que um dependa do outro.
 
 ## *Server* e *client* no mesmo repositório
 Muitas vezes temos o *backend* e *front-end* separados mas versionados juntos, no mesmo repositório, seja ele *git*, *mercurial*, ou qualquer outro controlador de versão. A estrutura mais comum que pude observar na comunidade para esse tipo de situação é separar o *server* e o *client* como no exemplo abaixo:
 
 * client/
     * controllers/
-        * models/
-            * views/
-            * server/
-                * controllers/
-                    * models/
-                        * routes/
-                        * tests/
-                        * config/
-                        * package.json
-                        * server.js
-                        * client.js
-                        * README.md
+    * models/
+    * views/
+* server/
+    * controllers/
+    * models/
+    * routes/
+* tests/
+* config/
+* package.json
+* server.js
+* client.js
+* README.md
 
-                        Essa estrutura é totalmente adaptável a necessidades. No exemplo acima, os testes de ambas aplicações estão no diretório *tests* no *root* assim se for adicionado o projeto em uma integração contínua ele vai executar a bateria de testes de ambas as aplicações. O **server.js** e o **client.js** são responsáveis por iniciar as respectivas aplicações, podemos ter um *npm start* no *package.json* que inicie os dois juntos.
+Essa estrutura é totalmente adaptável a necessidades. No exemplo acima, os testes de ambas aplicações estão no diretório *tests* no *root* assim se for adicionado o projeto em uma integração contínua ele vai executar a bateria de testes de ambas as aplicações. O **server.js** e o **client.js** são responsáveis por iniciar as respectivas aplicações, podemos ter um *npm start* no *package.json* que inicie os dois juntos.
 
 ## Separação por funcionalidade
 Um padrão bem frequente é o que promove a separação por funcionalidade. Nele abstraimos os diretórios baseado nas funcionalidades e não nas responsabilidades, como no exemplo abaixo:
 
 * src/
     * products/
-            * products.controller.js
-                    * products.model.js
-                            * products.routes.js
-                                * orders/
-                                        * orders.controller.js
-                                                * orders.routes.js
-                                                    * app.js
+        * products.controller.js
+        * products.model.js
+        * products.routes.js
+    * orders/
+        * orders.controller.js
+        * orders.routes.js
+    * app.js
 
-                                                    Essa estrutura possui uma boa legibilidade e escalabilidade, mas por outro lado, pode crescer muito tornando o reuso de componentes limitado e dificultando o carregamento dinâmico de arquivos. 
+Essa estrutura possui uma boa legibilidade e escalabilidade, mas por outro lado, pode crescer muito tornando o reuso de componentes limitado e dificultando o carregamento dinâmico de arquivos. 
 
 ## Conversão de nomes
 Quando separamos os diretórios por suas responsabilidades pode não ser necessário deixar explícito a responsabilidade no nome do arquivo. Veja o exemplo abaixo:
 
 * src/
     * controllers/
-            * products.js
-                * routes/ 
-                        * products.js
+        * products.js
+    * routes/ 
+        * products.js
 
 
-                        Como o nosso diretório é responsável por informar qual a responsabilidade dos arquivos que estão dentro dele, podemos nomear os arquivos sem adicionar o sufixo *“_”* + nome do diretório (por exemplo “_controller”). Além disso, o *javascript* permite nomear um módulo quando o importamos, permitindo que mesmo arquivos com o mesmo nome sejam facilmente distinguidos por quem está lendo o código, veja o exemplo:
+Como o nosso diretório é responsável por informar qual a responsabilidade dos arquivos que estão dentro dele, podemos nomear os arquivos sem adicionar o sufixo *“_”* + nome do diretório (por exemplo “_controller”). Além disso, o *javascript* permite nomear um módulo quando o importamos, permitindo que mesmo arquivos com o mesmo nome sejam facilmente distinguidos por quem está lendo o código, veja o exemplo:
 
-                        ```javascript
-                        Import ProductsController from './src/controllers/products'; 
-                        Import ProductsRoute from './src/routes/products'; 
-                        ```
+```javascript
+Import ProductsController from './src/controllers/products'; 
+Import ProductsRoute from './src/routes/products'; 
+```
 
-                        Dessa maneira não adicionamos nenhuma informação desnecessária ao nomes dos arquivos e ainda mantemos a legibilidade do código.
+Dessa maneira não adicionamos nenhuma informação desnecessária ao nomes dos arquivos e ainda mantemos a legibilidade do código.
 
 # Iniciando o projeto
 
@@ -184,15 +184,15 @@ Após isso um arquivo chamado **package.json** será criado e receberemos uma sa
 
 ```json
 {
-    "name": "node-book",
-      "version": "1.0.0",
-        "description": "",
-          "main": "index.js",
-            "scripts": {
-                  "test": "echo \"Error: no test specified\" && exit 1"
-                    },
-                      "author": "",
-                        "license": "ISC"
+  "name": "node-book",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }
 ```
 
@@ -217,7 +217,7 @@ O último passo é informar para o *Babel* qual *preset* iremos usar, para isso 
 
 ```json
 {
-    "presets": ["es2015"]
+  "presets": ["es2015"]
 }
 ```
 
@@ -246,7 +246,7 @@ app.use(bodyParser.json());
 app.get('/', (req, res) => res.send('Hello World!'));
 
 app.listen(3000, () => {
-      console.log('Example app listening on port 3000!');
+    console.log('Example app listening on port 3000!');
 });
 ```
 A primeira coisa feita no arquivo é a importação dos módulos *express* e *body-parser*, após isso uma nova instância do express é criada e associada a constante *app*. Para utilizar o *body-parser* é necessário configurar o *express* para usar o *middleware*, o *express* possui um método chamado *use* onde é possível passar *middlewares* como parâmetro, no código acima foi passado o **bodyParser.json()** responsavel por transformar o corpo das requisições em *JSON*.
@@ -258,18 +258,18 @@ O último passo é configurar o *package.json* para iniciar nossa aplicação, p
 
 ```json
   "scripts": {
-        "start": "babel-node ./server.js",
-            "test": "echo \"Error: no test specified\" && exit 1"
-              },
-              ```
+    "start": "babel-node ./server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+```
 
-              Alterado o *package.json* basta executar o comando: 
-              ```sh
-              $ npm start
-              ```
+Alterado o *package.json* basta executar o comando: 
+```sh
+$ npm start
+```
 
-              Agora a aplicação estará disponível em **http://localhost:3000/**.
-              Esse código está disponivel aqui: [STEP2]()
+Agora a aplicação estará disponível em **http://localhost:3000/**.
+Esse código está disponivel aqui: [STEP2]()
 
 ## Express Middlewares 
 *Middlewares* são funções que tem acesso aos objetos: requisição (*request*), resposta (*response*), e o próximo *middleware* que será chamado, normalmente nomeado como *next*.
@@ -281,7 +281,7 @@ const express = require('express');
 const app = express();
 
 app.get('/', function (req, res) {
-    res.send('Hello World!');
+  res.send('Hello World!');
 });
 
 app.listen(3000);
@@ -291,8 +291,8 @@ app.listen(3000);
 
 ```javascript
 const myLogger = function (req, res, next) {
-    console.log('LOGGED');
-      next();
+  console.log('LOGGED');
+  next();
 };
 ```
 
@@ -303,14 +303,14 @@ const express = require('express');
 const app = express();
 
 const myLogger = function (req, res, next) {
-    console.log('LOGGED');
-      next();
+  console.log('LOGGED');
+  next();
 };
 
 app.use(myLogger);
 
 app.get('/', function (req, res) {
-    res.send('Hello World!');
+  res.send('Hello World!');
 });
 
 app.listen(3000);
@@ -324,12 +324,12 @@ const express = require('express');
 const app = express();
 
 const myLogger = function (req, res, next) {
-    console.log('LOGGED');
-      next();
+  console.log('LOGGED');
+  next();
 };
 
 app.get('/', myLogger, function (req, res) {
-    res.send('Hello World!');
+  res.send('Hello World!');
 });
 
 app.listen(3000);
