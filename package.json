@@ -4,7 +4,9 @@
   "description": "WIP",
   "main": "index.js",
   "scripts": {
-    "generate-index": "markdown-toc -i ./book/configuration.md" ,
+    "compile": "markdown-include ./markdown.json",
+    "generate-index": "markdown-toc -i ./compiled.md",
+    "build": "npm run compile && npm run generate-index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,6 +20,7 @@
   },
   "homepage": "https://github.com/waldemarnt/building-testable-apis-with-nodejs#readme",
   "dependencies": {
+    "markdown-include": "^0.4.3",
     "markdown-toc": "^0.13.0"
   }
 }
