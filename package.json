@@ -21,6 +21,8 @@
   "homepage": "https://github.com/waldemarnt/building-testable-apis-with-nodejs#readme",
   "dependencies": {
     "markdown-include": "^0.4.3",
-    "markdown-toc": "^0.13.0"
+    "markdown-toc": "^0.13.0",
+    "markdownlint": "^0.3.0",
+    "markdownlint-cli": "^0.2.0"
   }
 }
