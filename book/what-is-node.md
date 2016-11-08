@@ -18,7 +18,18 @@ O v8 é uma *engine* criada pela *Google* para ser usada no *browser chrome*. O 
 
 O *javascript* é uma linguagem interpretada o que o deixa em desvantagem em comparação a linguagens compiladas pois cada linha de código precisa ser interpretada enquanto o código é executado. O V8 compila o código para linguagem de máquina além de otimizar drasticamente a execução usando heurísticas, permitindo que a execução seja feita em cima do código compilado e não interpretado.
 
+## *Node.js* é *single thread*
+
+A primeira vista o modelo *single thread* parece não fazer sentido, qual seria a vantagem de limitar a execução da aplicação em somente uma *thread*? Linguagens como *Java*, *PHP* e *Ruby* seguem um modelo onde cada nova requisição roda em uma *thread* separada do sistema operacional. Esse modelo é eficiente mas tem um custo de recursos muito alto, nem sempre é necessário todo o recurso computacional aplicado para executar uma nova *thread*. 
+O *Node.js* foi criado para solucionar esse problema, usar programação assíncrona e recursos compartilhados para tirar maior proveito de uma *thread*.
+
+O cenário mais comum é um servidor *web* que recebe milhões de requisições por segundo; Se o servidor iniciar uma nova *thread* para cada requisição isso vai ter um alto custo de recursos e cada vez mais será necessário adicionar novos servidores para suportar a demanda. O modelo assíncrono *single thread* consegue processar mais requisições concorrentes que o exemplo anterior com um número bem menor de recursos. 
+
+O *Node.js* também possui comportamento nativo para rodar em *cluster*, ou seja, dividir as requisições em mais *threads*. A [*Cluster API*](https://nodejs.org/api/cluster.html) foi adicionada ao *Node.js* para permitir o escalonamento horizontal e também o uso de mais núcleos dos servidores, com ela é possível escalar uma aplicação facilmente. 
+
+Ser *single thread* não significa que o *Node.js* não usa *threads* internamente, para entender mais sobre essa parte devemos primeiro entender o conceito de *I/O* assíncrono não blocante.
+
 ## *I/O* Não blocante
 
-## *Node.js* é *single thread*?
+
 
