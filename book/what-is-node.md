@@ -13,5 +13,8 @@ O crescimento do *Node.js* foi muito rápido, mas isso não significa que ele n�
 Essa separação trouxe dor de cabeça a comunidade, que não sabia qual dos projetos deveria usar. Então a *Joyent* e outras grandes empresas como *IBM, Paypal e Microsoft* decidiram trabalhar juntas para ajudar a comunidade *Node.js* criando a *Node.js Foundation* que tem como missão uma administração transparente e que encoraje a comunidade a participar. Com isso foi feito *merge* dos projetos *Node.js* e *IO.js*. Com a fusão foi lançada a primeira versão estável do *Node.js*, a versão 4.0.
 
 ## O *Google V8*
+
 ## *I/O* Não blocante
+
 ## *Node.js* é *single thread*?
+

@@ -2,6 +2,7 @@
 
 <!-- toc -->
 
+- [Introdução ao Node.js](#introdu%C3%A7%C3%A3o-ao-nodejs)
   * [O *Google V8*](#o-google-v8)
   * [*I/O* Não blocante](#io-n%C3%A3o-blocante)
   * [*Node.js* é *single thread*?](#nodejs-%C3%A9-single-thread)
@@ -25,7 +26,7 @@
 
 <!-- tocstop -->
 
-#Introdução ao Node.js
+# Introdução ao Node.js
 
 A primeira coisa que se deve entender quando se fala de *Node* é o que exatamente ele é. O *Node.js* não é nem uma linguagem e nem um *framework*, o termo mais apropriado seria um ambiente de runtime para *javascript* que roda em cima de uma *engine* conhecida como *Google v8*.
 O *Node.js* nasceu de uma ideia do *Ryan Dahl* que queria acompanhar o progresso de *upload* de arquivos sem ter que fazer *pooling* no servidor. Em 2009 na *JSConf* Europeia ele mostra pela primeira vez o *Node.js* a comunidade, e introduz o *javascript server side* com *I/O* não blocante, ganhando assim o interesse da comunidade que começou a contribuir com o projeto desde a versão 0.x.
@@ -40,8 +41,12 @@ O crescimento do *Node.js* foi muito rápido, mas isso não significa que ele n�
 Essa separação trouxe dor de cabeça a comunidade, que não sabia qual dos projetos deveria usar. Então a *Joyent* e outras grandes empresas como *IBM, Paypal e Microsoft* decidiram trabalhar juntas para ajudar a comunidade *Node.js* criando a *Node.js Foundation* que tem como missão uma administração transparente e que encoraje a comunidade a participar. Com isso foi feito *merge* dos projetos *Node.js* e *IO.js*. Com a fusão foi lançada a primeira versão estável do *Node.js*, a versão 4.0.
 
 ## O *Google V8*
+
 ## *I/O* Não blocante
+
 ## *Node.js* é *single thread*?
+
+
 # Configurando o ambiente
 A configuração do ambiente é a base para todo o projeto. Nela é configurado o *transpiler*, no nosso caso, o ***Babel.js***, as configurações do ***NPM***, a estrutura base de diretórios e etc.
 Durante todo o livro a versão usada do *Node.js* será a 6.9.1 *LTS* (*long term support*). Para que seja possível usar as funcionalidades mais atuais do *javascript* será usado o *Ecmascript* na versão 6 *ES6* (*ES2015* ou *javascript* 2015), aqui iremos chamar de *ES6*. 
