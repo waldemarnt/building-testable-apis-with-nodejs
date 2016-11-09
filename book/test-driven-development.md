@@ -121,7 +121,7 @@ Note que o método *parse* vai retornar a mesma coisa independente da maneira qu
 
 ### *Stub*
 
-Como visto, *mocks* são simples e substituem uma dependência real com facilidade, porém, quando é necessário representar mais de um cenário para a mesma dependência eles podem não dar conta. Para isso entram na jogada os *Stubs*. *Stubs* são semelhantes aos mocks só que um pouco mais inteligentes, são capazes de possuir comportamentos diferentes dependendo da maneira que são chamados, como no exemplo a seguir:
+Como visto, *mocks* são simples e substituem uma dependência real com facilidade, porém, quando é necessário representar mais de um cenário para a mesma dependência eles podem não dar conta. Para isso entram na jogada os *Stubs*. *Stubs* são semelhantes aos *mocks* só que um pouco mais inteligentes, são capazes de possuir comportamentos diferentes dependendo da maneira que são chamados, como no exemplo a seguir:
 
 ```javascript
 it('should check if the generator is generating correctly', () => {
@@ -138,7 +138,7 @@ it('should check if the generator is generating correctly', () => {
 });
 ```
 
-Para criarmos um *stub* vamos precisar de alguma biblioteca, nesse caso optei pelo [*SinonJS*](sinonjs.org) ele possui *stubs* e *spys* já por padrão. No exemplo acima digo que a função parse agora é um stub e abaixo determino os comportamentos esperados para cada tipo de chamada, assim é possível remover a dependência de usar a classe *Parser* original e conseguimos ter comportamentos que variam conforme a função é chamada e podemos testar a função generate unitariamente.
+Para criarmos um *stub* vamos precisar de alguma biblioteca, nesse caso optei pelo [*SinonJS*](sinonjs.org) ele possui *stubs* e *spys* já por padrão. No exemplo acima digo que a função parse agora é um *stub* e abaixo determino os comportamentos esperados para cada tipo de chamada, assim é possível remover a dependência de usar a classe *Parser* original e conseguimos ter comportamentos que variam conforme a função é chamada e podemos testar a função generate unitariamente.
 
 ### *Spy*
 
