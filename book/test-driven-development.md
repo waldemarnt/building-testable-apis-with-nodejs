@@ -171,7 +171,7 @@ it('should check if the generator is generating correctly', () => {
   nameGenerator.generate('test');
   expect(Parser.parse.getCall(0).args[0]).to.equal('test');
 });
-``
+```
 
 Seguimos usando o *Sinon* agora para criar o *spy*. Diferente do *stub*, o *spy* usa a classe e a função original e apenas adiciona algumas coisas ao objeto original permitindo ao *Sinon* saber como esse objeto se comportou durante o fluxo.
 Note que o *expect* do teste agora verifica se a função foi chamada com os argumentos esperados. Nesse cenário não estamos testando a classe *NameGenerator* unitariamente, pois estamos usando a classe *Parser* original e chamando a função. 
