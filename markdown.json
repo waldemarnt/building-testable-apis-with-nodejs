@@ -1,5 +1,5 @@
 {
-  "build" : "compiled.md",
+  "build" : "./book/build.md",
   "files" : ["./book/index.md"],
   "tableOfContents": {
     "heading": "# Table of Contents"

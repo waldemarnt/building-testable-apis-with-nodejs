@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "markdown-include ./markdown.json",
-    "generate-index": "markdown-toc -i ./compiled.md",
+    "generate-index": "markdown-toc -i ./book/build.md",
     "build": "npm run compile && npm run generate-index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
