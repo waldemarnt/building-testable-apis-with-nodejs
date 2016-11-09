@@ -33,7 +33,7 @@ Ser *single thread* não significa que o *Node.js* não usa *threads* internamen
 
 Essa talvez seja a característica mais poderosa do *Node.js*, trabalhar de forma não blocante facilita a execução paralela e o aproveitamento de recursos. *I/O* assíncrono é uma forma de *Input* (entrada) e *Output* (saida) que permite que outros processos continuem antes que um bloco ou função termine de executar.
 
-Para clarificar vamos pensar em um exemplo comum do dia a dia. Imagine que temos uma função que faz várias ações como por exemplo: Uma operação matemática, lê um arquivo de disco, e transforma uma *String*. Em linguagens blocantes como *PHP, Ruby* e etc, cada ação irá executar depois que a outra tiver terminado, no exemplo que dei a ação de transformar a *String* terá que esperar uma ação de ler um arquivo de disco, o que pode ser pesado, certo?
+Para clarificar vamos pensar em um exemplo comum do dia a dia. Imagine que temos uma função que faz várias ações como por exemplo: Uma operação matemática, lê um arquivo de disco, e transforma uma *String*. Em linguagens blocantes como *PHP, Ruby* e etc, cada ação irá executar depois que a outra estiver finalizado, no exemplo que dei a ação de transformar a *String* terá que esperar uma ação de ler um arquivo de disco, o que pode ser pesado.
 Vamos ver um exemplo de forma síncrona, ou seja blocante:
 
 ```javascript
