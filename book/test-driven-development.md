@@ -24,6 +24,8 @@ Refere-se a etapa em que a funcionalidade é adicionada para que o teste passe. 
 É onde se aplica a lógica necessária e como o teste já foi validado nos passos anteriores ele garantirá que a funcionalidade está sendo implementada corretamente. Nesse momento devem ser removidos os dados estáticos além de coisas adicionadas somente para que o teste passasse, e ser feita a implementação real até que o teste volte a passar.
 A imagem abaixo representa o ciclo do *TDD*:
 
+![TDD cycles](./images/image-1.png)
+
 ## A piramide de testes
 
 A pirâmide de testes é um conceito criado por *Mike Cohn*, escritor do livro [*Succeeding with Agile*](https://www.amazon.com/Succeeding-Agile-Software-Development-Using/dp/0321579364). O livro propõe que hajam mais testes de baixo nível, ou seja: testes de unidade, depois testes de integração e, no topo, testes que envolvem interface.
