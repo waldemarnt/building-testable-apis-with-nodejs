@@ -3,7 +3,7 @@
 Agora que vamos começar a desenvolver nossa aplicação, precisamos garantir que a responsabilidade, as possíveis rotas, as requisições e as respostas estão sendo atendidas; que estamos entregando o que prometemos e que está tudo funcionando. Para isso, vamos seguir um modelo conhecido como *TDD* (*Test Driven Development* ou Desenvolvimento Guiado por Testes).
 
 ## Test Driven Development - TDD
-O *TDD* é um processo de desenvolvimento de software que visa o *feedback* rápido e garantia de que o comportamento da aplicação está cumprindo o que é requerido. Para isso, o processo funciona em ciclos pequenos e os requerimentos são escritos como casos de teste.
+O *TDD* é um processo de desenvolvimento de *software* que visa o *feedback* rápido e garantia de que o comportamento da aplicação está cumprindo o que é requerido. Para isso, o processo funciona em ciclos pequenos e os requerimentos são escritos como casos de teste.
 
 A prática do *TDD* aumentou depois que *Kent Beck* publicou o livro [*TDD - Test Driven Development*](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530) e fomentou a discussão. Grandes figuras da comunidade ágil como *Martin Fowler* também influenciaram na adoção dessa prática publicando artigos, palestras e cases de sucesso.
 
@@ -89,7 +89,7 @@ Para fazer isso existem várias técnicas e ferramentas, aqui vamos nos aprofund
 
 Quando testamos é frequente a necessidade de substituir uma dependência para que ela retorne algo específico, independente de como for chamada, com quais parâmetros, quantas vezes, a resposta sempre deve ser a mesma. Nesse momento a melhor escolha são os *Mocks*. *Mocks* podem ser classes, objetos ou funções fakes que possuem uma resposta fixa independente da maneira que forem chamadas, como no exemplo abaixo:
 
-[javascript]
+```javascript
 class NameGenerator {
   constructor(parser) {
     this.parser = parser;
@@ -100,11 +100,11 @@ class NameGenerator {
     return this.parser.parse(text);
   }
 }
-[/javascript]
+```
 
 Teste para verificar se o método *generate* está cumprindo o esperado:
 
-[javascript]
+```javascript
 it('should check if the generator is generating correctly', () => {
   const parserMock = {
     parse (text) {
@@ -114,7 +114,7 @@ it('should check if the generator is generating correctly', () => {
   const nameGenerator = new NameGenerator(parserMock);
   expect(nameGenerator.generate('test')).to.equal("expected result");
 });
-[/javascript]
+```
 
 
 Note que o método *parse* vai retornar a mesma coisa independente da maneira que for chamado, isso o caracteriza um *Mock*.
@@ -123,7 +123,7 @@ Note que o método *parse* vai retornar a mesma coisa independente da maneira qu
 
 Como visto, *mocks* são simples e substituem uma dependência real com facilidade, porém, quando é necessário representar mais de um cenário para a mesma dependência eles podem não dar conta. Para isso entram na jogada os *Stubs*. *Stubs* são semelhantes aos mocks só que um pouco mais inteligentes, são capazes de possuir comportamentos diferentes dependendo da maneira que são chamados, como no exemplo a seguir:
 
-[javascript]
+```javascript
 it('should check if the generator is generating correctly', () => {
   const parserStub = {
     parse: sinon.stub()
@@ -136,7 +136,7 @@ it('should check if the generator is generating correctly', () => {
   expect(nameGenerator.generate('test')).to.equal('parsed test');
   expect(nameGenerator.generate('another test')).to.equal('parsed another test');
 });
-[/javascript]
+```
 
 Para criarmos um *stub* vamos precisar de alguma biblioteca, nesse caso optei pelo [*SinonJS*](sinonjs.org) ele possui *stubs* e *spys* já por padrão. No exemplo acima digo que a função parse agora é um stub e abaixo determino os comportamentos esperados para cada tipo de chamada, assim é possível remover a dependência de usar a classe *Parser* original e conseguimos ter comportamentos que variam conforme a função é chamada e podemos testar a função generate unitariamente.
 
@@ -144,7 +144,7 @@ Para criarmos um *stub* vamos precisar de alguma biblioteca, nesse caso optei pe
 
 Relembrando: *mocks* respondem sempre a mesma coisa quando são chamados, *stubs* conseguem responder coisas diferentes dependendo da maneira que são chamados e ambos são classes, objetos ou funções *fakes*. Porém, há casos onde queremos que somente um método de uma classe tenha um comportamento fixo e os demais devem ter seu comportamento original. Para isso vamos usar os *Spys*. *Spys* são a dependência original com algum comportamento *fake*, isso permite usar os comportamentos originais da classe e simular outros. O exemplo abaixo mostra um *Spy*:
 
-[javascript]
+```javascript
 it('should check if the generator is generating correctly', () => {
   sinon.spy(Parser, 'parse');
 
@@ -153,7 +153,7 @@ it('should check if the generator is generating correctly', () => {
   nameGenerator.generate('test');
   expect(Parser.parse.getCall(0).args[0]).to.equal('test');
 });
-[/javascript]
+``
 
 Seguimos usando o *Sinon* agora para criar o *spy*. Diferente do *stub*, o *spy* usa a classe e a função original e apenas adiciona algumas coisas ao objeto original permitindo ao *Sinon* saber como esse objeto se comportou durante o fluxo.
 Note que o *expect* do teste agora verifica se a função foi chamada com os argumentos esperados. Nesse cenário não estamos testando a classe *NameGenerator* unitariamente, pois estamos usando a classe *Parser* original e chamando a função. 
