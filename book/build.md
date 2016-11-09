@@ -5,7 +5,7 @@
 - [Introdução ao Node.js](#introdu%C3%A7%C3%A3o-ao-nodejs)
   * [O *Google V8*](#o-google-v8)
   * [*Node.js* é *single thread*](#nodejs-%C3%A9-single-thread)
-  * [*I/O* Não blocante](#io-n%C3%A3o-blocante)
+  * [*I/O* assíncrono não blocante](#io-ass%C3%ADncrono-n%C3%A3o-blocante)
 - [Configurando o ambiente](#configurando-o-ambiente)
   * [O que é um transpiler](#o-que-%C3%A9-um-transpiler)
   * [Gerenciamento de projeto e dependências](#gerenciamento-de-projeto-e-depend%C3%AAncias)
@@ -26,9 +26,9 @@
 - [Desenvolvimento guiado por testes](#desenvolvimento-guiado-por-testes)
   * [Test Driven Development - TDD](#test-driven-development---tdd)
   * [Os ciclos do *TDD*](#os-ciclos-do-tdd)
-    + [***Red***](#red)
-    + [***Green***](#green)
-    + [***Refactor***](#refactor)
+    + [*Red*](#red)
+    + [*Green*](#green)
+    + [*Refactor*](#refactor)
   * [A piramide de testes](#a-piramide-de-testes)
   * [Os tipos de testes](#os-tipos-de-testes)
     + [Testes de unidade (*Unit tests*)](#testes-de-unidade-unit-tests)
@@ -77,8 +77,56 @@ O *Node.js* também possui comportamento nativo para rodar em *cluster*, ou seja
 
 Ser *single thread* não significa que o *Node.js* não usa *threads* internamente, para entender mais sobre essa parte devemos primeiro entender o conceito de *I/O* assíncrono não blocante.
 
-## *I/O* Não blocante
+## *I/O* assíncrono não blocante
 
+Essa talvez seja a característica mais poderosa do *Node.js*, trabalhar de forma não blocante facilita a execução paralela e o aproveitamento de recursos. *I/O* assíncrono é uma forma de *Input* (entrada) e *Output* (saida) que permite que outros processos continuem antes que um bloco ou função termine de executar.
+
+Para clarificar vamos pensar em um exemplo comum do dia a dia. Imagine que temos uma função que faz várias ações como por exemplo: Uma operação matemática, lê um arquivo de disco, e transforma uma *String*. Em linguagens blocantes como *PHP, Ruby* e etc, cada ação irá executar depois que a outra estiver finalizado, no exemplo que dei a ação de transformar a *String* terá que esperar uma ação de ler um arquivo de disco, o que pode ser pesado.
+Vamos ver um exemplo de forma síncrona, ou seja blocante:
+
+```javascript
+const fs = require('fs');
+
+let fileContent;
+const someMath = 1+1;
+
+try {
+  fileContent = fs.readFileSync('big-file.txt', 'utf-8');
+  console.log('file has been read');
+} catch (err) {
+  console.log(err);
+}
+
+const text = `The sum is ${ someMath }`;
+
+console.log(text);
+```
+
+Nesse exemplo a última linha de código com o ***console.log*** terá que esperar a função *readFileSync* do module de *file system* executar, mesmo não possuindo ligação alguma com o resultado da leitura do arquivo. 
+
+Esse é o problema que o *Node.js* se propos a resolver, possibilitar que outras ações não sejam bloqueadas. Para solucionar isso o *Node.js* depende de uma funcionalidade chamada ***high order functions*** que basicamente é a possibilidade de passar uma função por parâmetro para outra função assim como uma variável, isso possibilita passar funções para serem executadas posteriormente como no exemplo a seguir:
+
+```javascript
+const fs = require('fs');
+
+const someMatch = 1+1;
+
+fs.readFile('big-file.txt', 'utf-8', function (err, content) {
+    if (err) {
+    return console.log(err)
+    }
+    console.log(content)
+})
+
+const text = `The response is ${ someMatch }`;
+
+console.log(text);
+```
+
+Agora usamos a função *readFile* do módulo *file system* ela é assíncrona por padrão. Para que seja possível executar alguma ação quando a função terminar de ler o arquivo é necessário passar uma função por parâmetro, a qual será chamada automaticamente quando a função *readFile* finalizar a leitura.
+Funções passadas por parâmetro para serem chamadas quando a ação é finalizada são chamadas de *callbacks*, no exemplo acima o *callback* recebe dois parâmetros injetados automaticamente pelo *readFile* que são *err* que em caso de erro na execução será possível tratar dentro do *callback*, e *content* que é resposta da leitura do arquivo no caso do *readFile*.
+
+Para entender como o *Node.js* faz para ter sucesso com o modelo assíncrono é necessário entender também o *Event Loop*, o qual será introduzido a seguir.
 
 
 
@@ -435,15 +483,15 @@ A prática do *TDD* aumentou depois que *Kent Beck* publicou o livro [*TDD - Tes
 
 Quando desenvolvemos guiados por testes, o teste acaba se tornando uma consequência do processo, ja que vai ser ele que vai determinar o comportamento esperado da implementação. Para que seja possível validar todas as etapas, o *TDD* se divide em ciclos que seguem um padrão conhecido como: ***Red***, ***Green***, ***Refactor***. 
 
-### ***Red***
+### *Red*
 
 Significa escrever o teste antes da funcionalidade e executá-lo, nesse momento como a funcionalidade ainda não foi implementada o teste deve quebrar, pois se não, há algo errado nele, essa fase também serve para verificar se não há erros na sintaxe e na semântica. 
 
-### ***Green***
+### *Green*
 
 Refere-se a etapa em que a funcionalidade é adicionada para que o teste passe. Nesse momento não é necessário ter a lógica definida, mas é importante atender os requerimentos do teste. Aqui podem ser deixados *to-dos*, dados estáticos, *fixmes*, ou seja, o suficiente para o teste passar.
 
-### ***Refactor***
+### *Refactor*
 
 É onde se aplica a lógica necessária e como o teste já foi validado nos passos anteriores ele garantirá que a funcionalidade está sendo implementada corretamente. Nesse momento devem ser removidos os dados estáticos além de coisas adicionadas somente para que o teste passasse, e ser feita a implementação real até que o teste volte a passar.
 A imagem abaixo representa o ciclo do *TDD*:
