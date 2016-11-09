@@ -29,7 +29,55 @@ O *Node.js* também possui comportamento nativo para rodar em *cluster*, ou seja
 
 Ser *single thread* não significa que o *Node.js* não usa *threads* internamente, para entender mais sobre essa parte devemos primeiro entender o conceito de *I/O* assíncrono não blocante.
 
-## *I/O* Não blocante
+## *I/O* assíncrono não blocante
 
+Essa talvez seja a característica mais poderosa do *Node.js*, trabalhar de forma não blocante facilita a execução paralela e o aproveitamento de recursos. *I/O* assíncrono é uma forma de *Input* (entrada) e *Output* (saida) que permite que outros processos continuem antes que um bloco ou função termine de executar.
+
+Para clarificar vamos pensar em um exemplo comum do dia a dia. Imagine que temos uma função que faz várias ações como por exemplo: Uma operação matemática, lê um arquivo de disco, e transforma uma *String*. Em linguagens blocantes como *PHP, Ruby* e etc, cada ação irá executar depois que a outra tiver terminado, no exemplo que dei a ação de transformar a *String* terá que esperar uma ação de ler um arquivo de disco, o que pode ser pesado, certo?
+Vamos ver um exemplo de forma síncrona, ou seja blocante:
+
+```javascript
+const fs = require('fs');
+
+let fileContent;
+const someMath = 1+1;
+
+try {
+  fileContent = fs.readFileSync('big-file.txt', 'utf-8');
+  console.log('file has been read');
+} catch (err) {
+  console.log(err);
+}
+
+const text = `The sum is ${ someMath }`;
+
+console.log(text);
+```
+
+Nesse exemplo a última linha de código com o ***console.log*** terá que esperar a função *readFileSync* do module de *file system* executar, mesmo não possuindo ligação alguma com o resultado da leitura do arquivo. 
+
+Esse é o problema que o *Node.js* se propos a resolver, possibilitar que outras ações não sejam bloqueadas. Para solucionar isso o *Node.js* depende de uma funcionalidade chamada ***high order functions*** que basicamente é a possibilidade de passar uma função por parâmetro para outra função assim como uma variável, isso possibilita passar funções para serem executadas posteriormente como no exemplo a seguir:
+
+```javascript
+const fs = require('fs');
+
+const someMatch = 1+1;
+
+fs.readFile('big-file.txt', 'utf-8', function (err, content) {
+    if (err) {
+    return console.log(err)
+    }
+    console.log(content)
+})
+
+const text = `The response is ${ someMatch }`;
+
+console.log(text);
+```
+
+Agora usamos a função *readFile* do módulo *file system* ela é assíncrona por padrão. Para que seja possível executar alguma ação quando a função terminar de ler o arquivo é necessário passar uma função por parâmetro, a qual será chamada automaticamente quando a função *readFile* finalizar a leitura.
+Funções passadas por parâmetro para serem chamadas quando a ação é finalizada são chamadas de *callbacks*, no exemplo acima o *callback* recebe dois parâmetros injetados automaticamente pelo *readFile* que são *err* que em caso de erro na execução será possível tratar dentro do *callback*, e *content* que é resposta da leitura do arquivo no caso do *readFile*.
+
+Para entender como o *Node.js* faz para ter sucesso com o modelo assíncrono é necessário entender também o *Event Loop*, o qual será introduzido a seguir.
 
 
