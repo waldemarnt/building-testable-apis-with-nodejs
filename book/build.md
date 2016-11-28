@@ -263,6 +263,7 @@ $ npm init
 ```
 
 Semelhante ao *git* o *npm* inicializará um novo projeto nesse diretório, depois de executar o comando o *npm* realizará algumas perguntas (nem uma delas precisa ser respondida agora, podem ficar em branco, basta apertar enter) como:
+
 1. **name**, referente ao nome do projeto.
 2. **version**, referente a versão.
 3. **description**, referente a descrição do projeto que está sendo criado.
@@ -288,7 +289,7 @@ Após isso um arquivo chamado **package.json** será criado e receberemos uma sa
 }
 ```
 
-O **package.json** é responsavel por guardar as configurações npm do nosso projeto, nele ficarão nossos *scripts* para executar a aplicação e os testes.
+O **package.json** é responsavel por guardar as configurações *npm* do nosso projeto, nele ficarão nossos *scripts* para executar a aplicação e os testes.
 
 ## Configurando suporte ao *Ecmascript* 6 
 Como vimos anteriormente o *Babel* sera responsavel por nos permitir usar as funcionalidades do *ES6*, para isso precisamos instalar os pacotes e configurar o nosso ambiente para suportar o *ES6* por padrão em nossa aplicação.
