@@ -4,7 +4,7 @@
 
 - [Prefácio](#pref%C3%A1cio)
 - [Para quem é esse livro](#para-quem-%C3%A9-esse-livro)
-- [Prefácio](#pref%C3%A1cio-1)
+- [Introdução](#introdu%C3%A7%C3%A3o)
 - [Introdução ao *Node.js*](#introdu%C3%A7%C3%A3o-ao-nodejs)
   * [O *Google V8*](#o-google-v8)
   * [Entendendo o *Node.js* *single thread*](#entendendo-o-nodejs-single-thread)
@@ -62,7 +62,7 @@ em breve.
 # Para quem é esse livro
 
 em breve.
-# Prefácio
+# Introdução
 
 em breve.
 # Introdução ao *Node.js*
