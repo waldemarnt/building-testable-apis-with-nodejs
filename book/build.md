@@ -2,6 +2,9 @@
 
 <!-- toc -->
 
+- [Prefácio](#pref%C3%A1cio)
+- [Para quem é esse livro](#para-quem-%C3%A9-esse-livro)
+- [Prefácio](#pref%C3%A1cio-1)
 - [Introdução ao *Node.js*](#introdu%C3%A7%C3%A3o-ao-nodejs)
   * [O *Google V8*](#o-google-v8)
   * [*Node.js* é *single thread*](#nodejs-%C3%A9-single-thread)
@@ -53,6 +56,15 @@
 
 <!-- tocstop -->
 
+# Prefácio
+
+em breve.
+# Para quem é esse livro
+
+em breve.
+# Prefácio
+
+em breve.
 # Introdução ao *Node.js*
 
 A primeira coisa que se deve entender quando se fala de *Node.js* é o que exatamente ele é. *Node.js* não é uma linguagem de programação nem tampouco um *framework*. A definição mais apropriada seria um ambiente de *runtime* para *javascript* que roda em cima de uma *engine* conhecida como *Google v8*.

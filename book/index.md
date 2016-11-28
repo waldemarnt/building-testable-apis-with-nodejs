@@ -1,4 +1,7 @@
 #include "./book/table-of-contents.md"
+#include "./book/preface.md"
+#include "./book/who-should-read.md"
+#include "./book/introduction.md"
 #include "./book/what-is-node.md"
 #include "./book/configuration.md"
 #include "./book/project-setup.md"
