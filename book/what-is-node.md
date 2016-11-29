@@ -110,16 +110,16 @@ Para quem já é familiarizado com *javascript* não ha nada especial acontecend
 
 No momento que a função *generateUserInformation* é invocada ela vai depender da função *generateBornDateFromAge* para descobrir o ano em que o usuário nasceu com base no parâmetro age (idade). Quando a função *generateBornDateFromAge* for invocada pela função *generateUserInformation* ela será adicionada a *stack* como no exemplo a seguir:
 
-![Stack 2](./images/stack-2-1.svg)
+![Stack 2](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/stack-2-1.svg)
 
 Conforme a função *generateUserInformation* vai sendo interpretada, os valores vão sendo atribuídos às respectivas variáveis dentro de seu escopo, como no exemplo do *fullName*. Para atribuir o valor a variável *bornDate* foi necessário invocar a função *generateBornDateFromAge* que quando invocada ela é imediatamente adicionada a *stack* até que a execução termine e a resposta seja retornada.
 Após o retorno a *stack* ficará assim:
 
-![Stack 3](./images/stack-3-1.svg)
+![Stack 3](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/stack-3-1.svg)
 
 O último passo da função será concatenar as variáveis e criar uma frase, isso não irá adicionar mais nada a *stack*. Quando a função *generateUserInformation* terminar as demais linhas serão interpretadas, no nosso exemplo será o ***console.log*** imprimindo a variável *userInformation*.
 
-![Stack 4](./images/stack-4-1.svg)
+![Stack 4](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/stack-4-1.svg)
 
 Como a *stack* só executa uma tarefa por vez foi necessário esperar que a função anterior executasse e finalizasse, para que o *console.log* pudesse ser adicionado a *stack*.
 Entendendo o funcionamento da *stack* podemos concluir que funções que precisam de muito tempo para execução irão ocupar mais tempo na *stack* e assim impedir a chamada das próximas linhas.
@@ -133,11 +133,11 @@ A [*libuv*](https://github.com/libuv/libuv) é uma biblioteca *open source* mult
 
 O exemplo a seguir mostra uma função assíncrona sendo executada:
 
-![Async 1](./images/async-1-1.svg)
+![Async 1](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-1-1.svg)
 
 Nesse exemplo a função ***readFile*** do módulo de *file system* do *Node.js* é executada na *stack* e jogada para uma *thread*, a *stack* segue executando as próximas funções enquanto a função *readFile* está sendo administrada pela *libuv* em outra *thread*. Quando ela terminar o *callback* sera adicionado a uma fila chamada ***Task Queue*** para ser executado pela *stack* assim que ela estiver livre.
 
-![Async 2](./images/async-2-1.svg)
+![Async 2](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-2-1.svg)
 
 ## *Task Queue*
 
@@ -146,7 +146,7 @@ Esses *callbacks* podem ter responsabilidades diversas, como por exemplo, chamar
 Como o *V8* é *single thread* e só existe uma *stack*, os *callbacks* precisam esperar a sua vez de serem chamados. Enquanto esperam, os *callbacks* ficam em um lugar chamado *task queue* ou fila de tarefas. Sempre que a *thread* principal finalizar uma tarefa, o que significa que a *stack* estará vazia, uma nova tarefa é movida da *task queue* para a *stack* onde será executada.
 Para entender melhor vamos ver a imagem abaixo:
 
-![Async 4](./images/async-4.svg)
+![Async 4](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-4.svg)
 
 Esse *loop*, conhecido como ***Event Loop***, é infinito e será responsável por chamar as próximas tarefas da *task queue* enquanto o *Node.js* estiver rodando.
 
@@ -165,4 +165,4 @@ A especificação do *WHATWG* diz que após o *Event Loop* processar a *macro ta
 
 O exemplo abaixo demonstra como funciona esse fluxo:
 
-![Async 5](./images/async-5.svg)
+![Async 5](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-5.svg)
