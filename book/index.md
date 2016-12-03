@@ -6,4 +6,5 @@
 #include "./book/configuration.md"
 #include "./book/project-setup.md"
 #include "./book/test-driven-development.md"
+#include "./book/integration-tests-setup.md"
 #include "./book/directory-structure.md"
