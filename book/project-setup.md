@@ -116,22 +116,24 @@ Agora a aplicação estará disponível em **http://localhost:3000/**.
 O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step2).
 
 ## Express Middlewares 
+
 *Middlewares* são funções que tem acesso aos objetos: requisição (*request*), resposta (*response*), e o próximo *middleware* que será chamado, normalmente nomeado como *next*.
 Essas funções são executadas antes da lógica da rota, dessa maneira é possível transformar os objetos de requisição e resposta, realizar validações, autenticações e até mesmo terminar a requisição antes que ela execute e lógica escrita na rota. 
-O exemplo a seguir mostra uma aplicação express simples com uma rota que devolve um *"Hello world"* quando chamada, nela sera adicionado um *middleware*.
+O exemplo a seguir mostra uma aplicação *express* simples com uma rota que devolve um *"Hello world"* quando chamada, nela sera adicionado um *middleware*.
 
 ```javascript
 const express = require('express');
 const app = express();
 
 app.get('/', function (req, res) {
-    res.send('Hello World!');
-    });
+  res.send('Hello World!');
+});
 
 app.listen(3000);
 ```
 
-*Middlewares* são apenas funções que recebem os parâmetros requisição (*req*), resposta (*res*) e próximo (*next*) executam alguma lógica e chamam o próximo *middleware*, caso não tenha, chamam a função da rota. No exemplo abaixo é criado um *middleware* que vai escrever *"LOGGED"* no terminal.
+*Middlewares* são apenas funções que recebem os parâmetros requisição (*req*), resposta (*res*) e próximo (*next*) executam alguma lógica e chamam o próximo *middleware*, caso não tenha, chamam a função da rota.
+No exemplo abaixo é criado um *middleware* que vai escrever *"LOGGED"* no terminal.
 
 ```javascript
 const myLogger = function (req, res, next) {
@@ -140,7 +142,7 @@ const myLogger = function (req, res, next) {
 };
 ```
 
-Para que o express use essa função é necessário passar por parâmetro para a função use:
+Para que o *express* use essa função é necessário passar por parâmetro para a função use:
 
 ```javascript
 const express = require('express');
@@ -154,8 +156,8 @@ const myLogger = function (req, res, next) {
 app.use(myLogger);
 
 app.get('/', function (req, res) {
-    res.send('Hello World!');
-    });
+  res.send('Hello World!');
+});
 
 app.listen(3000);
 ```
@@ -173,8 +175,8 @@ const myLogger = function (req, res, next) {
 };
 
 app.get('/', myLogger, function (req, res) {
-    res.send('Hello World!');
-    });
+  res.send('Hello World!');
+});
 
 app.listen(3000);
 ```
