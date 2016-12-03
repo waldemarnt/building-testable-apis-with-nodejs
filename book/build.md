@@ -301,7 +301,7 @@ $ npm install --save-dev babel-cli
 
 Após instalar o *Babel* é necessário instalar o *preset* que será usado, no nosso caso é o *ES6*:
 ```sh
-$ npm install babel-preset-node6 --save-dev
+$ npm install --save-dev babel-preset-node6
 ```
 
 Note que sempre usamos *--save-dev* para instalar dependências referentes ao *Babel* pois ele não deve ser usado diretamente em produção, para produção iremos compilar o código, veremos isso mais adiante.
@@ -315,6 +315,7 @@ O último passo é informar para o *Babel* qual *preset* iremos usar, para isso 
 ```
 
 Feito isso a aplicação já esta suportando 100% o *ES6* e sera possivel usar todas as funcionalidades da versão.
+O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step1).
 
 ## Configurando o servidor web
 Como iremos desenvolver uma aplicação *web* precisaremos de um servidor que nos ajude a trabalhar com requisições *HTTP*, transporte de dados, rotas e etc. Dentre muitas opções no universo *Node.js* como o [*Sails.js*](), [*Hapi.js*]() e [*Koa.js*]() iremos optar pelo [*Express.js*]() por possuir um bom tempo de atividade, muito conteúdo na comunidade e ser mantido pela [*Node Foundation*]().
@@ -359,12 +360,13 @@ O último passo é configurar o *package.json* para iniciar nossa aplicação, p
 ```
 
 Alterado o *package.json* basta executar o comando: 
+
 ```sh
 $ npm start
 ```
 
 Agora a aplicação estará disponível em **http://localhost:3000/**.
-Esse código está disponivel aqui: [STEP2]()
+O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step2).
 
 ## Express Middlewares 
 *Middlewares* são funções que tem acesso aos objetos: requisição (*request*), resposta (*response*), e o próximo *middleware* que será chamado, normalmente nomeado como *next*.
