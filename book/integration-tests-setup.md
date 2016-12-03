@@ -57,7 +57,7 @@ Agora que aplicação está pronta para ser testada, vamos configurar os testes.
     └── integration
 ```
 
-Dentro de integration iremos criar os arquivos de configuração para os testes de integração. O primeiro será referente as configurações do *Mocha*, vamos criar um arquivo chamado ***mocha.opts*** dentro do diretório *integration* com o seguinte código:
+Dentro de *integration* iremos criar os arquivos de configuração para os testes de integração. O primeiro será referente as configurações do *Mocha*, vamos criar um arquivo chamado ***mocha.opts*** dentro do diretório *integration* com o seguinte código:
 
 ```
 --require test/integration/helpers.js
@@ -67,7 +67,7 @@ Dentro de integration iremos criar os arquivos de configuração para os testes 
 ```
 
 O primeiro *require* será o arquivo referente as configurações de suporte para os testes, o qual criaremos a seguir. Na linha seguinte definimos qual será o *reporter*, nesse caso, o [*spec*](https://mochajs.org/#spec). *Reporters* definem o estilo da saida no teste no terminal.
-Na terceira linha definimos os *compilers*, como iremos usar *Ecmascript6* também nos testes usaremos o *compiler* do *babel* no *Mocha*. E na última linha o *slow* referente a demora máxima que um caso de teste durar, como testes de integração tendem a depender de agentes externos como banco de dados e etc, é necessário ter um tempo maior de *slow* para eles.
+Na terceira linha definimos os *compilers*, como iremos usar *Ecmascript6* também nos testes usaremos o *compiler* do *babel* no *Mocha*. E na última linha o *slow* referente a demora máxima que um caso de teste pode durar, como testes de integração tendem a depender de agentes externos como banco de dados e etc, é necessário ter um tempo maior de *slow* para eles.
 
 O próximo arquivo que iremos criar nesse mesmo diretório é o ***helpers.js***. Ele tera o seguinte código:
 
@@ -75,7 +75,6 @@ O próximo arquivo que iremos criar nesse mesmo diretório é o ***helpers.js***
 import supertest from 'supertest';
 import chai from 'chai';
 import app from '../../src/app.js';
-
 
 global.app = app;
 global.request = supertest(app);
@@ -138,7 +137,6 @@ describe('Routes: Products', () => {
     price: 100
   };
 
-
   describe('GET /products', () => {
     it('should return a list of products', done => {
 
@@ -149,6 +147,7 @@ describe('Routes: Products', () => {
 ```
 
 Adicionamos mais um *describe* para deixar claro que todas as suites de teste dentro dele fazem parte do método *http GET* na rota */products*. Isso facilita a legibilidade do teste e deixa a saída do terminal mais clara.
+
 A função ***it*** também é uma global do *Mocha* e tem a responsabilidade de descrever um caso de teste.
 Descrições de casos de teste seguem um padrão declarativo, como no exemplo acima: *"Isso deve retornar uma lista de produtos"*. Note que também é passado um parâmetro chamado *done* para o caso de teste, isso porque testes que executam funções assíncronas como requisições *http* precisam informar ao *Mocha* quando o teste finalizou, e fazem isso chamando a função *done*.
 Veremos isso na implementação a seguir:
@@ -180,6 +179,7 @@ describe('Routes: Products', () => {
 Na implementação do teste usamos o *supertest* que exportamos globalmente como ***request*** no *helpers.js* ele nos permite fazer uma requisição *http* para uma determinada rota e verificar a sua resposta.
 Quando a requisição terminar a função *end* será chamada pelo *supertest*  recebendo erro , caso ocorra, e a resposta. Assim podemos fazer as asserções do nosso teste, no exemplo acima é verificado se o primeiro elemento da lista de produtos retornada é igual ao nosso *defaultProduct*.
 O *expect* usado para fazer a asserção faz parte do *Chai* e foi exposto globalmente no *helpers.js*.
+Para finalizar notificamos o *Mocha* que o teste finalizou chamando o *done* que recebe *err* como parâmetro, caso erro não seja nulo ele irá mostrar a mensagem de erro no terminal.
 
 ## Executando os testes
 
