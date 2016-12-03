@@ -45,6 +45,11 @@
     + [Bibliotecas de *Assert*](#bibliotecas-de-assert)
     + [Bibliotecas de suporte](#bibliotecas-de-suporte)
 - [Configurando testes de integração](#configurando-testes-de-integra%C3%A7%C3%A3o)
+  * [Instalando Mocha Chai e Supertest](#instalando-mocha-chai-e-supertest)
+  * [Separando execução de configuração](#separando-execu%C3%A7%C3%A3o-de-configura%C3%A7%C3%A3o)
+  * [Configurando os testes](#configurando-os-testes)
+  * [Criando o primeiro caso de teste](#criando-o-primeiro-caso-de-teste)
+  * [Executando os testes](#executando-os-testes)
 - [Estrutura de diretórios e arquivos](#estrutura-de-diret%C3%B3rios-e-arquivos)
   * [O diretório root](#o-diret%C3%B3rio-root)
   * [O que fica no diretório root?](#o-que-fica-no-diret%C3%B3rio-root)
@@ -637,6 +642,8 @@ Somente rodar os arquivos de teste e fazer o assert nem sempre basta, é necess�
 Iremos testar de fora para dentro, ou seja, começaremos pelos testes de integração e depois testes de unidade.
 Para começar vamos instalar as ferramentas de testes com o comando abaixo:
 
+## Instalando Mocha Chai e Supertest
+
 ```sh
 $ npm install --save-dev mocha chai supertest
 ```
@@ -645,6 +652,8 @@ Iremos instalar três módulos, que são:
 *Mocha*: módulo que ira executar as suites de teste. 
 *Chai*: módulo usado para fazer asserções.
 *Supertest*: módulo usado para emular e abstrair requisições *http*.
+
+## Separando execução de configuração
 
 Após isso será necessário alterar a estrutura de diretórios da nossa aplicação atual, criando um diretório chamado ***src***, lugar onde ficará o código fonte. Dentro dele iremos criar um arquivo chamado ***app.js*** que terá a responsabilidade de iniciar o *express* e carregar os *middlewares*, ele ficará assim:
 
@@ -673,6 +682,8 @@ app.listen(port, () => {
 ```
 
 Note que agora separamos a responsabilidade de inicializar o *express*, carregar os *middlewares* da parte de iniciar a aplicação em si. Como nos testes a aplicação será inicializada pelo *supertest* e não pelo *express* como é feito no *server.js*, esse separação torna isso fácil.
+
+## Configurando os testes
 
 Agora que aplicação está pronta para ser testada, vamos configurar os testes. A primeira coisa a fazer é criar o diretório ***test*** no *root* e dentro dele o diretório onde ficarão os testes de integração, vamos chamar esse diretório de ***integration***. A estrutura de diretórios ficará assim:
 
@@ -714,6 +725,8 @@ O arquivo *helpers* é responsável por inicializar as configurações de testes
 
 Primeiro importamos os módulos necessários para executar os testes de integração que são o *supertest* e o *chai* e também a nossa aplicação *express* que chamamos de *app*. Depois definimos as globais usando **global**. Globais fazem parte do *Mocha*, tudo que for definido como global poderá ser acessado sem a necessidade de ser importado. No nosso arquivo *helpers* configuramos o *app* para ser global, ou seja, caso seja necessário usar ele em um caso de teste basta chama-lo diretamente.
 Também definimos um global chamado ***request*** que é o *supertest* que recebe o nosso *express* por parâmetro. Lembram que falei da vantagem de separar a execução da aplicação da configuração do *express*? Agora o *express* pode ser executado por um emulador como o *supertest*.
+
+## Criando o primeiro caso de teste
 
 Com as configurações terminadas só nos resta criar nosso primeiro caso de teste. Vamos criar um diretório chamado ***routes*** dentro de *integration* e dentro dele criar o arquivo ***products_spec.js*** onde ficará o nosso teste referente as rotas do recurso *products* da nossa *API*.
 
@@ -806,6 +819,8 @@ describe('Routes: Products', () => {
 Na implementação do teste usamos o *supertest* que exportamos globalmente como ***request*** no *helpers.js* ele nos permite fazer uma requisição *http* para uma determinada rota e verificar a sua resposta.
 Quando a requisição terminar a função *end* será chamada pelo *supertest*  recebendo erro , caso ocorra, e a resposta. Assim podemos fazer as asserções do nosso teste, no exemplo acima é verificado se o primeiro elemento da lista de produtos retornada é igual ao nosso *defaultProduct*.
 O *expect* usado para fazer a asserção faz parte do *Chai* e foi exposto globalmente no *helpers.js*.
+
+## Executando os testes
 
 Escrito nosso teste, iremos executá-lo. Para automatizar a execução vamos adicionar a seguinte linha no ***package.json*** dentro de *scripts*:
 
