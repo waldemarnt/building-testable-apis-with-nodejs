@@ -48,7 +48,7 @@ $ npm install --save-dev babel-cli
 
 Após instalar o *Babel* é necessário instalar o *preset* que será usado, no nosso caso é o *ES6*:
 ```sh
-$ npm install babel-preset-es2015 --save-dev
+$ npm install babel-preset-node6 --save-dev
 ```
 
 Note que sempre usamos *--save-dev* para instalar dependências referentes ao *Babel* pois ele não deve ser usado diretamente em produção, para produção iremos compilar o código, veremos isso mais adiante.
@@ -57,7 +57,7 @@ O último passo é informar para o *Babel* qual *preset* iremos usar, para isso 
 
 ```json
 {
-  "presets": ["es2015"]
+  "presets": ["node6"]
 }
 ```
 
@@ -76,6 +76,7 @@ $ npm install --save express body-parser
 Quando uma requisição do tipo *POST* ou *PUT* é realizada seu corpo é transportado como texto, para que seja possível transportar dados como *JSON* (*JavaScript Object Notation*) por exemplo existe o modulo [*body-parser*]() que é um conjunto de *middlewares* para o *express* que analisa o corpo de uma requisição e transforma em algo definido, no nosso caso, em *JSON*.
 
 Agora iremos criar um arquivo chamado **server.js** no diretório *root* e nele iremos fazer a configuração básica do *express*:
+
 ```javascript
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -87,8 +88,9 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 app.listen(3000, () => {
     console.log('Example app listening on port 3000!');
-    });
+});
 ```
+
 A primeira coisa feita no arquivo é a importação dos módulos *express* e *body-parser*, após isso uma nova instância do express é criada e associada a constante *app*. Para utilizar o *body-parser* é necessário configurar o *express* para usar o *middleware*, o *express* possui um método chamado *use* onde é possível passar *middlewares* como parâmetro, no código acima foi passado o **bodyParser.json()** responsavel por transformar o corpo das requisições em *JSON*.
 
 A seguir é criado uma rota, os verbos *HTTP* como *GET*, *POST*, *PUT*, *DELETE* são funções no *express* que recebem como parâmetro um padrão de rota, no caso acima **"/"**, e uma função que será chamada quando a rota receber uma requisição. Os parametros **req** e **res** representam *request* (requisição) e *response* (resposta ) e serão injetados automaticamente pelo express quando a requisição for recebida.
@@ -99,30 +101,30 @@ O último passo é configurar o *package.json* para iniciar nossa aplicação, p
 ```json
 "scripts": {
   "start": "babel-node ./server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "test": "echo \"Error: no test specified\" && exit 1"
 },
-  ```
+```
 
-  Alterado o *package.json* basta executar o comando: 
-  ```sh
-  $ npm start
-  ```
+Alterado o *package.json* basta executar o comando: 
+```sh
+$ npm start
+```
 
-  Agora a aplicação estará disponível em **http://localhost:3000/**.
-  Esse código está disponivel aqui: [STEP2]()
+Agora a aplicação estará disponível em **http://localhost:3000/**.
+Esse código está disponivel aqui: [STEP2]()
 
 ## Express Middlewares 
-  *Middlewares* são funções que tem acesso aos objetos: requisição (*request*), resposta (*response*), e o próximo *middleware* que será chamado, normalmente nomeado como *next*.
-  Essas funções são executadas antes da lógica da rota, dessa maneira é possível transformar os objetos de requisição e resposta, realizar validações, autenticações e até mesmo terminar a requisição antes que ela execute e lógica escrita na rota. 
-  O exemplo a seguir mostra uma aplicação express simples com uma rota que devolve um *"Hello world"* quando chamada, nela sera adicionado um *middleware*.
+*Middlewares* são funções que tem acesso aos objetos: requisição (*request*), resposta (*response*), e o próximo *middleware* que será chamado, normalmente nomeado como *next*.
+Essas funções são executadas antes da lógica da rota, dessa maneira é possível transformar os objetos de requisição e resposta, realizar validações, autenticações e até mesmo terminar a requisição antes que ela execute e lógica escrita na rota. 
+O exemplo a seguir mostra uma aplicação express simples com uma rota que devolve um *"Hello world"* quando chamada, nela sera adicionado um *middleware*.
 
-  ```javascript
-  const express = require('express');
-  const app = express();
+```javascript
+const express = require('express');
+const app = express();
 
-  app.get('/', function (req, res) {
-      res.send('Hello World!');
-      });
+app.get('/', function (req, res) {
+    res.send('Hello World!');
+    });
 
 app.listen(3000);
 ```
