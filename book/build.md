@@ -50,6 +50,7 @@
   * [Configurando os testes](#configurando-os-testes)
   * [Criando o primeiro caso de teste](#criando-o-primeiro-caso-de-teste)
   * [Executando os testes](#executando-os-testes)
+  * [Fazendo os testes passarem](#fazendo-os-testes-passarem)
 - [Estrutura de diretórios e arquivos](#estrutura-de-diret%C3%B3rios-e-arquivos)
   * [O diretório root](#o-diret%C3%B3rio-root)
   * [O que fica no diretório root?](#o-que-fica-no-diret%C3%B3rio-root)
@@ -856,6 +857,58 @@ Routes: Products
 ```
 
 Ou seja, o teste está implementado corretamente, sem erros de sintaxe por exemplo, mas está falhando pois ainda não temos esse comportamento na aplicação, esse é o passo ***RED*** do *TDD* que vimos anteriormente.
+
+## Fazendo os testes passarem
+
+Escrevemos nossos testes e eles estão no estado ***RED*** ou seja, implementados mas não estão passando. O próximo passo segundo o *TDD* é o ***GREEN***, ou seja, implementar o mínimo para fazer o teste passar.
+Para fazer isso, precisamos implementar uma rota na nossa aplicação que suporte o método *http GET* e retorne uma lista com no mínimo um produto igual ao nosso *defaultProduct* do teste. Vamos alterar o arquivo *app.js* e adicionar a seguinte rota:
+
+```javascript
+app.get('/products', (req, res) => res.send([{
+  name: 'Default product',
+  description: 'product description',
+  price: 100
+}]));
+```
+
+Como vimos no capitulo sobre os *middlewares* do *express*, os objetos de requisição (***req***) e resposta (***res***) são injetados automaticamente pelo *express* nas rotas. No caso acima usamos o método *send* do objeto de resposta para enviar uma lista com um produto como resposta da requisição, o que deve ser suficiente para que nosso teste passe.
+Com as alterações o app.js deve estar assim:
+
+```javascript
+import express from 'express';
+import bodyParser from 'body-parser';
+
+const app = express();
+app.use(bodyParser.json());
+
+app.get('/', (req, res) => res.send('Hello World!'));
+app.get('/products', (req, res) => res.send([{
+  name: 'Default product',
+  description: 'product description',
+  price: 100
+}]));
+
+export default app;
+```
+
+Agora que já temos a implementação, vamos executar nosso teste novamente:
+
+```sh
+$ npm run test:integration
+```
+
+A saída deve ser de sucesso, como essa:
+
+```sh
+  Routes: Products
+    GET /products
+      ✓ should return a list of products
+
+
+  1 passing (164ms)
+```
+
+Nosso teste está passando, e estamos no estado ***GREEN*** do *TDD*, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o ***REFACTOR*** onde iremos aplicar o cenário real que será a integração com o banco de dados.
 
 O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step3).
 
