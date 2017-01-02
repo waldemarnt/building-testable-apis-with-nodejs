@@ -60,10 +60,10 @@
   * [*Server* e *client* no mesmo repositório](#server-e-client-no-mesmo-reposit%C3%B3rio)
   * [Separação por funcionalidade](#separa%C3%A7%C3%A3o-por-funcionalidade)
   * [Conversão de nomes](#convers%C3%A3o-de-nomes)
-- [Rotas com o express](#rotas-com-o-express)
+- [Rotas com o *express router*](#rotas-com-o-express-router)
   * [Separando as rotas](#separando-as-rotas)
   * [Rotas por recurso](#rotas-por-recurso)
-  * [Router paths](#router-paths)
+  * [*Router paths*](#router-paths)
   * [Executando os testes](#executando-os-testes-1)
 
 <!-- tocstop -->
@@ -1068,7 +1068,7 @@ Import ProductsRoute from './src/routes/products';
 ```
 
 Dessa maneira não adicionamos nenhuma informação desnecessária ao nomes dos arquivos e ainda mantemos a legibilidade do código.
-# Rotas com o express
+# Rotas com o *express router*
 
 O *express* possui um *middleware* nativo para lidar com rotas, o ***Router***.  O *Router* é responsável por administrar as rotas da aplicação e pode ser passado como parâmetro para o *app.use()*. Utilizando o *Router* é possível desacoplar as rotas, e também remover a necessidade de usar o *app* (instância do *express*) em outros lugares da aplicação.
 
@@ -1107,7 +1107,7 @@ export default router;
 
 ## Rotas por recurso
 
-No código anterior não movemos a rota products, isso porque ela não ficará no *index.js*. Cada recurso da *api* terá seu próprio arquivo de rotas e o *index.js* ficará responsável por carregar todos eles.
+No código anterior não movemos a rota *products*, isso porque ela não ficará no *index.js*. Cada recurso da *api* terá seu próprio arquivo de rotas e o *index.js* ficará responsável por carregar todos eles.
 Agora criaremos um arquivo para as rotas do recurso *products* da nossa *api*.
 
 Para isso será necessário criar um arquivo chamado ***products.js*** dentro do diretório *routes*, ele terá o seguinte código:
@@ -1168,7 +1168,7 @@ export default app;
 
 As rotas que estavam no *app.js* foram movidas para seus respectivos arquivos, agora importamos apenas o *routes*. Como foi criado um *index.js* dentro de *routes* não é necessário especificar o arquivo, apenas importar o diretório */routes* e automaticamente o módulo do *Node.js* procurará primeiro por um arquivo *index.js* e o importara. Depois o *routes* é passado como parâmetro para a função *use* junto com o *"/"*, o que significa que toda requisição vai ser administrada pelo *routes*.
 
-## Router paths 
+## *Router paths* 
 
 Nos passos anteriores foram criadas algumas rotas que simbolizam caminhos na aplicação, combinando um padrão e um método *HTTP*, por exemplo uma requisição do tipo *get* na rota *"/"* irá retornar *"Hello World"*, ja em *"/products"* irá devolver um produto *fake*. Essa é a maneira de definir *endpoints* em *APIs* com o *express router*.
 
