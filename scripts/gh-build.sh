@@ -9,6 +9,8 @@ git config --global user.name "Travis CI"
 npm run build
 
 # deploy
+git status
 git add .
+git status
 git commit -m "Build revision"
 git push --force "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" master:master
