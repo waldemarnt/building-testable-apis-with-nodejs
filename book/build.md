@@ -919,7 +919,7 @@ A saída deve ser de sucesso, como essa:
   1 passing (164ms)
 ```
 
-Nosso teste está passando, e estamos no estado ***GREEN*** do *TDD*, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o ***REFACTOR*** onde iremos aplicar o cenário real que será a integração com o banco de dados.
+Nosso teste está passando, e estamos no estado ***GREEN*** do *TDD*, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o ***REFACTOR*** onde iremos configurar as rotas.
 
 O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step3).
 
@@ -1076,11 +1076,13 @@ O *express* possui um *middleware* nativo para lidar com rotas, o ***Router***. 
 
 Vamos alterar nossa aplicação para separar as rodas do *app*. Para isso devemos criar um diretório chamado ***routes*** dentro de *src*. Os diretórios deverão ficar assim:
 
+```shell
 ├── package.json
 ├── server.js
 ├── src
 │   ├── app.js
 │   └── routes
+```
 
 Dentro de *routes* criaremos um arquivo chamado *index.js*, ele será responsável por carregar todas as rotas da aplicação:
 
@@ -1177,3 +1179,5 @@ O caminho passado por parâmetro para o método *HTTP*, como por exemplo *router
 ## Executando os testes
 
 Nesse momento nossos testes devem estar passando novamente, o que irá nos garantir que nossa refatoração foi concluída com sucesso.
+
+O código dessa etapa está disponivel [aqui](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step4)
