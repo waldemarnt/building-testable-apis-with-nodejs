@@ -304,7 +304,7 @@ Após isso um arquivo chamado **package.json** será criado e receberemos uma sa
 O **package.json** é responsavel por guardar as configurações *npm* do nosso projeto, nele ficarão nossos *scripts* para executar a aplicação e os testes.
 
 ## Configurando suporte ao *Ecmascript* 6 
-Como vimos anteriormente o *Babel* sera responsavel por nos permitir usar as funcionalidades do *ES6*, para isso precisamos instalar os pacotes e configurar o nosso ambiente para suportar o *ES6* por padrão em nossa aplicação.
+Como vimos anteriormente o *Babel* sera responsável por nos permitir usar as funcionalidades do *ES6*, para isso precisamos instalar os pacotes e configurar o nosso ambiente para suportar o *ES6* por padrão em nossa aplicação.
 O primeiro passo é instalar os pacotes do *Babel*:
 
 ```sh
