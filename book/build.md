@@ -921,7 +921,7 @@ A saída deve ser de sucesso, como essa:
 
 Nosso teste está passando, e estamos no estado ***GREEN*** do *TDD*, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o ***REFACTOR*** onde iremos configurar as rotas.
 
-O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step3).
+O código dessa parte está disponível [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step3).
 
 
 # Estrutura de diretórios e arquivos
