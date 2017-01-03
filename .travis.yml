@@ -1,0 +1,10 @@
+language: node_js
+env:
+  global:
+  - GITHUB_REPO: waldemarnt/building-testable-apis-with-nodejs
+  - secure: V0Fea0CYKI1XAQ5ynZsiMfFr5/ViG8bYAtuzk6AE9YCop2HvivQjeL9s0jNKkHrgAhrHaavZC9CnAnf9EpGmGtXyXoMt9kHuZ4PQC1paeXRABujn0a3sTbKWkk/9/Yw4wIB9pph+HIDSIpMRGkMfQzOgcsk/oB39VQU6mRJIfapDh2mxROhd54RMxq8Jt7xY/Z62uqZbDq5jyXB8niKuKblzEEyCOmSsxT++yARyh+cLUloLKhpMU85B6eL4e3BgXTLjFRcOtIG9yIIu9Dr78gZK8RZkG8Lj1Zxkox51E21OC0/mSAKsg2rm6MwoQ1K3ZXi0rmcNryccWn/Ca5WniQDMgg5OBuadxHsj/BTkKw9UnKbIWShxweBWq9OsGzmTzIyJR77R0RJtTl5VF1k1/P4fPtIhv9X3yA5MUGgjTTe/LTl0YMAaiootPIJTmAw7gZo3dxlbbh64xnkLDTct9beblGoYAXLMKXd+1adU+wrlMlR4L5Px6MMq8QScUINovk0JY3G6Mbg2QLhlbHqiOrp2vW+Ge+3bTcK7LWsq5U+YJ97UnNdzb7K+F5iZIQaqq39pvRomTL6ECstruwAwXEzeAQKq1tpWvtHVkjNnosO4667kgcRWAp1TxpqapZiY4t5bnqlOQay+dMVP+o/bULn1SUlcZGUGvO2f8dv4f7c=
+install:
+- npm install
+script:
+- npm run build
+- if [ "${TRAVIS_BRANCH}" = "master" ] && [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then bash ./scripts/gh-build.sh; fi
