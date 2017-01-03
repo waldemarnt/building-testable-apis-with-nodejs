@@ -13,4 +13,4 @@ git status
 git add .
 git status
 git commit -m "Build revision"
-git push --force "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" master:master
+git push --force "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" HEAD:master
