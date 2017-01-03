@@ -11,4 +11,4 @@ npm run build
 # deploy
 git add .
 git commit -m "Build revision"
-git push --force "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" master > /dev/null 2>&1
+git push --force "https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git" master
