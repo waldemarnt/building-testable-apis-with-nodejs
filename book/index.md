@@ -1,3 +1,4 @@
+#include "./book/cover.md"
 #include "./book/table-of-contents.md"
 #include "./book/preface.md"
 #include "./book/who-should-read.md"
