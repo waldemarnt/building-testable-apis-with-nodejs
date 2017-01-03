@@ -274,6 +274,6 @@ A saída deve ser de sucesso, como essa:
   1 passing (164ms)
 ```
 
-Nosso teste está passando, e estamos no estado ***GREEN*** do *TDD*, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o ***REFACTOR*** onde iremos aplicar o cenário real que será a integração com o banco de dados.
+Nosso teste está passando, e estamos no estado ***GREEN*** do *TDD*, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o ***REFACTOR*** onde iremos configurar as rotas.
 
 O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step3).
