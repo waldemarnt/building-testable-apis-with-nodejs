@@ -1,11 +1,11 @@
-# *Controller*
+# *Controllers*
 
 Os *controllers* serão responsáveis por receber as requisições das rotas, interagir com o *Model* quando necessário e retornar a resposta para o usuário.
 No nosso código atual, as rotas estão com muita responsabilidade e dificeis de testar isoladamente pois dependemos do *express*, para arrumar isso precisamos adicionar os *controllers*. Iremos criar os *controllers* guiados por testes de unidade dessa maneira conseguiremos validar o comportamento separado do nosso sistema em si.
 
 ## Configurando os testes de unidade
 
-Como vimos no capítulo de [testes de unidade](#), testes de unidade servem para testar pequenas partes do *software* isoladamente.
+Como vimos no capítulo de [testes de unidade](https://github.com/waldemarnt/building-testable-apis-with-nodejs/blob/master/book/build.md#testes-de-unidade-unit-tests), testes de unidade servem para testar pequenas partes do *software* isoladamente.
 
 Para começar, crie um diretório chamado ***unit*** dentro do diretório *test* na raiz do projeto. Assim como fizemos nos testes de integração criaremos os arquivos de configuração para os testes.
 Crie um arquivo chamado ***helpers.js*** dentro de *unit* com o seguinte código:
@@ -54,7 +54,7 @@ Crie um diretório chamado *controllers* dentro de *unit* e dentro dele um cená
 
 Ok, nenhum teste está passando pois ainda não criamos nenhum. 
 
-Testando o *controller* unitariamente
+## Testando o *controller* unitariamente
 
 Vamos começar a escrever o teste. A primeira coisa será adicionar a descrição desse cenário de testes, como no código a seguir:
 
@@ -113,7 +113,7 @@ Error: Cannot find module '../../../src/controllers/products'
     at Function.Module._load (module.js:403:25)
 …
 ```
-O erro diz que o módulo *products* não foi encontrado, como esperado. Vamos criar o nosso *controller* para que o teste passe.
+O a mensagem de erro fala que o módulo *products* não foi encontrado, como esperado. Vamos criar o nosso *controller* para que o teste passe.
 Crie um diretório chamado ***controllers*** em *src* e dentro dele um *controller* para o recurso de *products* da *API* chamado ***products.js***. O código dele deve ser o seguinte:
 
 ```javascript
@@ -187,7 +187,7 @@ Muita coisa aconteceu nesse bloco de código, mas não se preocupe pois vamos pa
 A primeira adição foi o *import* do *Sinon*, módulo que instalamos anteriormente.
 Logo após a descrição do nosso cenário de teste principal foi adicionado uma constant chamada ***"defaultProduct"*** a qual armazena um *array* com um objeto com um produto com informações estáticas. Ele será útil para reaproveitarmos código nos casos de teste.
 Já dentro do caso de teste foram adicionadas duas *constants* que são *request*, que é um objeto *fake* da requisição enviada pela rota do *express* a qual chamamos de *"req"* na aplicação, e *response* que é objeto um *fake* da resposta enviada pela rota do *express* que chamamos de *"res"* na aplicação.
-Note que a propriedade *"send"** do objeto *response* recebe um *spy* do *Sinon*, como vimos antes no capítulo de *test doubles* os *spies* permitem gravar informações como: quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. O que será perfeito em nosso caso de uso pois precisamos validar que a função send do objeto response está sendo chamada com os devidos parâmetros.
+Note que a propriedade *"send"* do objeto *response* recebe um *spy* do *Sinon*, como vimos antes no capítulo de *test doubles* os *spies* permitem gravar informações como: quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. O que será perfeito em nosso caso de uso pois precisamos validar que a função send do objeto response está sendo chamada com os devidos parâmetros.
 
 Até aqui já temos a configuração necessária para reproduzir o comportamento que esperamos. O próximo passo é chamar o método *get* do *controller* passando os objetos *request* e *response* que criamos. E o último passo é verificar se o método *get* está chamando a função *send* com o *defaultProduct* como parâmetro.
 Para isso foram feitas duas asserções, a primeira verifica se a função *send* foi chamada, e a segunda se ela foi chamada com o *defaultProduct* como parâmetro.
