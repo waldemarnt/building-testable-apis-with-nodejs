@@ -10,3 +10,4 @@
 #include "./book/integration-tests-setup.md"
 #include "./book/directory-structure.md"
 #include "./book/express-routes.md"
+#include "./book/controllers.md"
