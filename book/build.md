@@ -627,7 +627,7 @@ Quando usar *fakes*:
 ### *Spy*
 
 Como vimos anteriormente os *fakes* permitem substituir uma dependência por algo customizado mas não possibilitam saber, por exemplo, quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. Para isso existem os *spies*, como o próprio nome já diz, eles gravam informações sobre o comportamento do que está sendo “espionado”.
-No exemplo abaixo é adicionado um *spy* no método *"findAll"** do *Database* para verificar se ele está sendo chamado com os parâmetros corretos:
+No exemplo abaixo é adicionado um *spy* no método *"findAll"* do *Database* para verificar se ele está sendo chamado com os parâmetros corretos:
 
 ```javascript
 describe('UsersController getAll()', () => {
@@ -643,7 +643,7 @@ describe('UsersController getAll()', () => {
 });
 ```
 
-Note que é adicionado um *spy* na função ***"findAll"*** do *Database*, dessa maneira o *Sinon* devolve uma referência a essa função e também adiciona alguns comportamentos a ela que possibilitam realizar checagens como *"sinon.assert.calledWith(findAll, 'users')"** onde é verificado se a função foi chamada com o parâmetro esperado.
+Note que é adicionado um *spy* na função ***"findAll"*** do *Database*, dessa maneira o *Sinon* devolve uma referência a essa função e também adiciona alguns comportamentos a ela que possibilitam realizar checagens como *"sinon.assert.calledWith(findAll, 'users')"* onde é verificado se a função foi chamada com o parâmetro esperado.
 
 Vantagens:
 
@@ -691,11 +691,11 @@ Quando usamos *stubs* podemos descrever o comportamento esperado, como nessa par
 ```javascript
 findAll.withArgs('users').returns(expectedDatabaseResponse);
 ```
-Quando a função *"findAll"** for chamada com o parâmetro *"users"*, retorna a resposta padrão. 
+Quando a função *"findAll"* for chamada com o parâmetro *"users"*, retorna a resposta padrão. 
 
 Com *stubs* é possível ter vários comportamentos para a mesma função com base nos parâmetros que são passados, essa é uma das maiores diferenças entre *stubs* e *spies*.
 
-Como dito anteriormente, *stubs* são *spies* que conseguem alterar o comportamento. É possível notar isso na asserção *"sinon.assert.calledWith(findAll, 'users')"** ela é a mesma asserção do *spy* anterior. Nesse teste são feitas duas asserções, apenas para mostrar a semelhança com *spies*, pois múltiplas asserções em um mesmo caso de teste é considerado uma má prática.
+Como dito anteriormente, *stubs* são *spies* que conseguem alterar o comportamento. É possível notar isso na asserção *"sinon.assert.calledWith(findAll, 'users')"* ela é a mesma asserção do *spy* anterior. Nesse teste são feitas duas asserções, apenas para mostrar a semelhança com *spies*, pois múltiplas asserções em um mesmo caso de teste é considerado uma má prática.
 
 Vantagens:
 
