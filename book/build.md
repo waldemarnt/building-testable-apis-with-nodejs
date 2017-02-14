@@ -36,10 +36,8 @@
     + [Testes de integração (*Integration tests*)](#testes-de-integra%C3%A7%C3%A3o-integration-tests)
     + [Teste de integração de contrato (*Integration contract tests*)](#teste-de-integra%C3%A7%C3%A3o-de-contrato-integration-contract-tests)
     + [A definição de um contrato](#a-defini%C3%A7%C3%A3o-de-um-contrato)
-  * [O que são *Stubs*, *Mocks*, *Spys*](#o-que-s%C3%A3o-stubs-mocks-spys)
-    + [*Mock*](#mock)
-    + [*Stub*](#stub)
-    + [*Spy*](#spy)
+  * [*Test Doubles*](#test-doubles)
+    + [*Fake*](#fake)
   * [O ambiente de testes em *javascript*](#o-ambiente-de-testes-em-javascript)
     + [*Test runners*](#test-runners)
     + [Bibliotecas de *Assert*](#bibliotecas-de-assert)
@@ -553,83 +551,76 @@ Em testes de contrato o importante é o tipo e não o valor. No exemplo verifica
 
 Testes de contrato possuem diversas extensões, o caso acima é chamado de *consumer contract* onde o consumidor verifica o contrato e, caso o teste falhe, notifica o *provider* (provedor) ou altera sua aplicação para o novo contrato. Também existe o *provider contracts* onde o próprio provedor testa se as alterações feitas irão quebrar os consumidores.
 
-## O que são *Stubs*, *Mocks*, *Spys*
+## *Test Doubles*
 
-Nos exemplos de testes anteriores vimos que em algum momento será necessário substituir uma dependência real por algo que reproduza um comportamento esperado, seja substituir uma classe para poder testar unitariamente, seja substituir o banco de dados por algo que retorne sempre a mesma resposta.
-Para fazer isso existem várias técnicas e ferramentas, aqui vamos nos aprofundar nas três mais conhecidas (e também mais confundidas) e que se encaixam nas mais diversas necessidades.
+Testar código com *ajax*, *network*, *timeouts*, banco de dados e outras dependências que produzem efeitos colaterais é sempre complicado. Por exemplo, quando se usa *ajax*, ou qualquer outro tipo de *networking*, é necessário comunicar com um servidor que irá responder para a requisição; já com o banco de dados será necessário inicializar um serviço para tornar possível o teste da aplicação: limpar e criar tabelas para executar os testes e etc.
 
-### *Mock*
+Quando as unidades que estão sendo testadas possuem dependências que produzem efeitos colaterais, como os exemplos acima, não temos garantia de que a unidade está sendo testada isoladamente. Isso abre espaço para que o teste quebre por motivos não vinculados a unidade em sí, como por exemplo o serviço de banco não estar disponível ou uma *API* externa retornar uma resposta diferente da esperada no teste.
 
-Quando testamos é frequente a necessidade de substituir uma dependência para que ela retorne algo específico, independente de como for chamada, com quais parâmetros, quantas vezes, a resposta sempre deve ser a mesma. Nesse momento a melhor escolha são os *Mocks*. *Mocks* podem ser classes, objetos ou funções fakes que possuem uma resposta fixa independente da maneira que forem chamadas, como no exemplo abaixo:
+Há alguns anos atrás Gerard Meszaros publicou  o livro *XUnit Test Patterns: Refactoring Test Code* e introduziu o termo *Test Double* (traduzido como “dublê de testes”) que nomeia as diferentes maneiras de substituir dependências. A seguir vamos conhecer os mais comuns test doubles e quais são suas características, prós e contras.
+
+Para facilitar a explicação será utilizado o mesmo exemplo para os diferentes tipos de *test doubles*, também será usada uma biblioteca de suporte chamada [*Sinon.js*](http://sinonjs.org/) que possibilita a utilização de *stubs*, *mocks* e *spies*. 
+
+A *controller* abaixo é uma classe que recebe um banco de dados como dependência no construtor. O método que iremos testar unitariamente dessa classe é o método ***"getAll"***, ele retorna uma consulta do banco de dados com uma lista de usuários.
 
 ```javascript
-class NameGenerator {
-  constructor(parser) {
-    this.parser = parser;
+const Database = {
+  findAll() {}
+}
+
+class UsersController {
+  constructor(Database) {
+    this.Database = Database;
   }
 
-
-  generate(text) {
-    return this.parser.parse(text);
+  getAll() {
+    return this.Database.findAll('users');
   }
 }
 ```
 
-Teste para verificar se o método *generate* está cumprindo o esperado:
+### *Fake*
+
+Durante o teste, é frequente a necessidade de substituir uma dependência para que ela retorne algo específico, independente de como for chamada, com quais parâmetros, quantas vezes, a resposta sempre deve ser a mesma. Nesse momento a melhor escolha são os *Fakes*. *Fakes* podem ser classes, objetos ou funções que possuem uma resposta fixa independente da maneira que forem chamadas. O exemplo abaixo mostra como testar a classe *UsersController* usando um *fake*:
 
 ```javascript
-it('should check if the generator is generating correctly', () => {
-  const parserMock = {
-    parse (text) {
-      return "expected result";
+describe('UsersController getAll()', () => {
+  it('should return a list of users', () => {
+    const expectedDatabaseResponse = [{
+      id: 1,
+      name: 'John Doe',
+      email: 'john@mail.com'
+    }];
+
+    const fakeDatabase = {
+      findAll() {
+        return expectedDatabaseResponse;
+      }
     }
-  };
-  const nameGenerator = new NameGenerator(parserMock);
-  expect(nameGenerator.generate('test')).to.equal("expected result");
+    const usersController = new UsersController(fakeDatabase);
+    const response = usersController.getAll();
+
+    expect(response).to.be.eql(expectedDatabaseResponse);
+  });
 });
 ```
+Nesse caso de teste não é necessária nenhuma biblioteca de suporte, tudo é feito apenas criando um objeto fake para substituir a dependência do banco de dados. O método ***"findAll"*** passa a ter uma resposta fixa, que é uma lista com um usuário.
+Para validar o teste é necessário verificar se a resposta do método *"getAll"* do *controller* responde com uma lista igual a declarada no *"expectedDatabaseResponse"*.
 
+Vantagens:
 
-Note que o método *parse* vai retornar a mesma coisa independente da maneira que for chamado, isso o caracteriza um *Mock*.
+- Simples de escrever
+- Não necessita de bibliotecas de suporte
+- Desacoplado da dependencia original
 
-### *Stub*
+Desvantagens:
 
-Como visto, *mocks* são simples e substituem uma dependência real com facilidade, porém, quando é necessário representar mais de um cenário para a mesma dependência eles podem não dar conta. Para isso entram na jogada os *Stubs*. *Stubs* são semelhantes aos *mocks* só que um pouco mais inteligentes, são capazes de possuir comportamentos diferentes dependendo da maneira que são chamados, como no exemplo a seguir:
+- Não possibilita testar múltiplos casos
+- Só é possível testar se a saída está como esperado, não é possível validar o comportamento interno da unidade
 
-```javascript
-it('should check if the generator is generating correctly', () => {
-  const parserStub = {
-    parse: sinon.stub()
-  };
-  parserStub.withArgs('test').returns('parsed test');
-  parserStub.withArgs('another test').returns('parsed another test');
+Quando usar *fakes*:
 
-
-  const nameGenerator = new NameGenerator(parserStub);
-  expect(nameGenerator.generate('test')).to.equal('parsed test');
-  expect(nameGenerator.generate('another test')).to.equal('parsed another test');
-});
-```
-
-Para criarmos um *stub* vamos precisar de alguma biblioteca, nesse caso optei pelo [*SinonJS*](sinonjs.org) ele possui *stubs* e *spys* já por padrão. No exemplo acima digo que a função parse agora é um *stub* e abaixo determino os comportamentos esperados para cada tipo de chamada, assim é possível remover a dependência de usar a classe *Parser* original e conseguimos ter comportamentos que variam conforme a função é chamada e podemos testar a função generate unitariamente.
-
-### *Spy*
-
-Relembrando: *mocks* respondem sempre a mesma coisa quando são chamados, *stubs* conseguem responder coisas diferentes dependendo da maneira que são chamados e ambos são classes, objetos ou funções *fakes*. Porém, há casos onde queremos que somente um método de uma classe tenha um comportamento fixo e os demais devem ter seu comportamento original. Para isso vamos usar os *Spys*. *Spys* são a dependência original com algum comportamento *fake*, isso permite usar os comportamentos originais da classe e simular outros. O exemplo abaixo mostra um *Spy*:
-
-```javascript
-it('should check if the generator is generating correctly', () => {
-  sinon.spy(Parser, 'parse');
-
-
-  const nameGenerator = new NameGenerator(Parser);
-  nameGenerator.generate('test');
-  expect(Parser.parse.getCall(0).args[0]).to.equal('test');
-});
-```
-
-Seguimos usando o *Sinon* agora para criar o *spy*. Diferente do *stub*, o *spy* usa a classe e a função original e apenas adiciona algumas coisas ao objeto original permitindo ao *Sinon* saber como esse objeto se comportou durante o fluxo.
-Note que o *expect* do teste agora verifica se a função foi chamada com os argumentos esperados. Nesse cenário não estamos testando a classe *NameGenerator* unitariamente, pois estamos usando a classe *Parser* original e chamando a função. 
+*Fakes* devem ser usados para testar dependências que não possuem muitos comportamentos.
 
 ## O ambiente de testes em *javascript*
 
