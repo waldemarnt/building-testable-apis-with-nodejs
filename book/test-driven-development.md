@@ -169,6 +169,94 @@ Quando usar *fakes*:
 
 *Fakes* devem ser usados para testar dependências que não possuem muitos comportamentos.
 
+### *Spy*
+
+Como vimos anteriormente os *fakes* permitem substituir uma dependência por algo customizado mas não possibilitam saber, por exemplo, quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. Para isso existem os *spies*, como o próprio nome já diz, eles gravam informações sobre o comportamento do que está sendo “espionado”.
+No exemplo abaixo é adicionado um *spy* no método *"findAll"** do *Database* para verificar se ele está sendo chamado com os parâmetros corretos:
+
+```javascript
+describe('UsersController getAll()', () => {
+  it('should database findAll with correct parameters', () => {
+    const findAll = sinon.spy(Database, 'findAll');
+
+    const usersController = new UsersController(Database);
+    usersController.getAll();
+
+    sinon.assert.calledWith(findAll, 'users');
+    findAll.restore();
+  });
+});
+```
+
+Note que é adicionado um *spy* na função ***"findAll"*** do *Database*, dessa maneira o *Sinon* devolve uma referência a essa função e também adiciona alguns comportamentos a ela que possibilitam realizar checagens como *"sinon.assert.calledWith(findAll, 'users')"** onde é verificado se a função foi chamada com o parâmetro esperado.
+
+Vantagens:
+
+- Permite melhor assertividade no teste
+- Permite verificar comportamentos internos
+- Permite integração com dependências reais
+
+Desvantagens:
+
+- Não permitem alterar o comportamento de uma dependência
+- Não é possível verificar múltiplos comportamentos ao mesmo tempo
+
+Quando usar *spies*:
+
+*Spies* podem ser usados sempre que for necessário ter assertividade de uma dependência real ou, como em nosso caso, em um *fake*. Para casos onde é necessário ter muitos comportamos é provável que *stubs* e *mocks* venham melhor a calhar.
+
+### *Stub*
+
+*Fakes* e *spies* são simples e substituem uma dependência real com facilidade, como visto anteriormente, porém, quando é necessário representar mais de um cenário para a mesma dependência eles podem não dar conta. Para esse cenário entram na jogada os *Stubs*. *Stubs* são *spies* que conseguem mudar o comportamento dependendo da maneira em que forem chamados, veja o exemplo abaixo:
+
+```javascript
+describe('UsersController getAll()', () => {
+  it('should return a list of users', () => {
+    const expectedDatabaseResponse = [{
+      id: 1,
+      name: 'John Doe',
+      email: 'john@mail.com'
+    }];
+
+    const findAll = sinon.stub(Database, 'findAll');
+    findAll.withArgs('users').returns(expectedDatabaseResponse);
+
+    const usersController = new UsersController(Database);
+    const response = usersController.getAll();
+
+    sinon.assert.calledWith(findAll, 'users');
+    expect(response).to.be.eql(expectedDatabaseResponse);
+    findAll.restore();
+  });
+});
+```
+
+Quando usamos *stubs* podemos descrever o comportamento esperado, como nessa parte do código: 
+
+```javascript
+findAll.withArgs('users').returns(expectedDatabaseResponse);
+```
+Quando a função *"findAll"** for chamada com o parâmetro *"users"*, retorna a resposta padrão. 
+
+Com *stubs* é possível ter vários comportamentos para a mesma função com base nos parâmetros que são passados, essa é uma das maiores diferenças entre *stubs* e *spies*.
+
+Como dito anteriormente, *stubs* são *spies* que conseguem alterar o comportamento. É possível notar isso na asserção *"sinon.assert.calledWith(findAll, 'users')"** ela é a mesma asserção do *spy* anterior. Nesse teste são feitas duas asserções, apenas para mostrar a semelhança com *spies*, pois múltiplas asserções em um mesmo caso de teste é considerado uma má prática.
+
+Vantagens:
+
+- Comportamento isolado
+- Diversos comportamentos para uma mesma função
+- Bom para testar código assíncrono
+
+Desvantagens:
+
+- Assim como spies não é possível fazer múltiplas verificações de comportamento
+
+Quando usar *stubs*:
+
+*Stubs* são perfeitos para utilizar quando a unidade tem uma dependência complexa, que possui múltiplos comportamentos. Além de serem totalmente isolados os stubs também tem o comportamento de *spies* o que permite verificar os mais diferentes tipos de comportamento.
+
+
 ## O ambiente de testes em *javascript*
 
 Diferente de muitas linguagens que contam com ferramentas de teste de forma nativa ou possuem algum *xUnit (JUnit, PHPUnit, etc)* no *javascript* temos todos os componentes das suites de testes separados, o que nos permite escolher a melhor combinação para a nossa necessidade (mas também pode criar confusão).
