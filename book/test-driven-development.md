@@ -256,6 +256,46 @@ Quando usar *stubs*:
 
 *Stubs* são perfeitos para utilizar quando a unidade tem uma dependência complexa, que possui múltiplos comportamentos. Além de serem totalmente isolados os stubs também tem o comportamento de *spies* o que permite verificar os mais diferentes tipos de comportamento.
 
+### *Mock*
+
+*Mocks* e *stubs* são comumente confundidos pois ambos conseguem alterar comportamento e também armazenar informações. *Mocks* também podem ofuscar a necessidade de usar *stubs* pois eles podem fazer tudo que *stubs* fazem. O ponto de grande diferença entre *mocks* e *stubs* é sua responsabilidade: *stubs* tem a responsabilidade de se comportar de uma maneira que possibilite testar diversos caminhos do código, como por exemplo uma resposta de uma requisição *http* ou uma exceção; Já os *mocks* substituem uma dependência permitindo a verificação de múltiplos comportamentos ao mesmo tempo.
+O exemplo a seguir mostra a classe *UsersController* sendo testada utilizando *Mock*:
+
+```javascript
+describe('UsersController getAll()', () => {
+  it('should call database with correct arguments', () => {
+    const databaseMock = sinon.mock(Database);
+    databaseMock.expects('findAll').once().withArgs('users');
+
+    const usersController = new UsersController(Database);
+    usersController.getAll();
+
+    databaseMock.verify();
+    databaseMock.restore();
+  });
+});
+```
+A primeira coisa a se notar no código é a maneira de fazer asserções com *Mocks*, elas são descritas nessa parte: 
+
+```javascript
+databaseMock.expects('findAll').once().withArgs('users');
+```
+
+Nela são feitas duas asserções, a primeira para verificar se o método *"findAll"* foi chamado uma vez e na segunda se ele foi chamado com o argumento *"users"*, após isso o código é executado e é chamada a função *"verify()"* do *Mock* que irá verificar se as expectativas foram atingidas.
+
+Vantagens:
+
+- Verficicação interna de comportamento
+- Diversos asserções ao mesmo tempo
+
+Desvantagens:
+
+- Diversas asserções ao mesmo tempo podem tornar o teste difícil de entender.
+
+Quando usar *mocks*:
+
+*Mocks* são úteis quando é necessário verificar múltiplos comportamentos de uma dependência. Isso também pode ser sinal de um *design* de código mal pensado, onde a unidade tem muita responsabilidade. É necessário ter muito cuidado ao usar *Mocks* já que eles podem tornar os testes pouco legíveis.
+
 
 ## O ambiente de testes em *javascript*
 
