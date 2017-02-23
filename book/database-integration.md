@@ -103,10 +103,12 @@ export default app;
 A primeira coisa a fazer é importar o módulo responsável pelo banco de dados, o *"database.js"** que fica dentro do diretório *config*. Os *imports* devem ficar assim:
 
 ```diff
+```javascript
  import express from 'express';
  import bodyParser from 'body-parser';
  import routes from './routes';
 + import database from './config/database';
+```
 ```
 
 
