@@ -111,10 +111,6 @@ A primeira coisa a fazer é importar o módulo responsável pelo banco de dados,
 
 A seguir muramores um pouco o código anterior que utiliza o *express* e as rotas movendo a seguinte parte:
 
-```javascript
- const app = express();
-```
-
 ```diff
 - app.use(bodyParser.json());
 - app.use('/', routes);
@@ -168,9 +164,124 @@ export default () => database.connect().then(configureExpress);
 Como alteramos o *app* para retornar uma função que retorna uma *promise*, será necessário alterar o *"server.js"* para fazer a inicialização de maneira correta.
 
 
+## Alterando a inicilização e *error handling*
+
+O *"server.js"* é o arquivo responsável por inicializar a aplicação, chamando o *app*. Como alteramos algumas coisas na etapa anterior precisamos atualizar ele.
+Vamos começar alterando o nome do módulo na importação:
+
+```diff
+- import app from './src/app';
++ import setupApp from './src/app';
+```
+
+O módulo foi alterado de *app* para *setupApp*, por que? Porque agora ele é uma função e esse nome reflete mais a sua responsabilidade.
+O próximo passo é alterar a maneira de como o *app* é chamado:
+
+```diff
+-app.listen(port, () => {
+-  console.log(`app running on port ${port}`);
+-});
++setupApp()
++ .then(app => app.listen(port, () => console.log(`app running on port ${port}`)))
++ .catch(error => {
++   console.error(error);
++   process.exit(1);
++ });
+```
+
+Como o código anterior devolvia uma instância da aplicação diretamente era apenas necessário chamar o método *"listen"* do *express* para inicializar a aplicação. Como agora temos uma função que retorna uma *promise* devemos chama-la, ela vai inicializar o *app*, inicializando o banco e configurando o *express* retornando uma nova instância da aplicação, ai então será possível inicializar a aplicação chamando o *"listen"*.
+
+Até esse momento espero que vocês já tenham lido a especificação de *promises* mais de 10 vezes e sejam mestres na implementação. Quando um problema ocorre a *promise* é rejeitada, e esse erro pode ser tratado usando um *catch* como no código acima.
+Acima recebemos o erro e mostramos ele em um *"console.log"*, e logo encerramos o processo do *Node.js* com o código 1 (falso).
+Dessa maneira o processo é finalizado informando que houve um erro em sua inicialização. Informar o código de saída é uma boa prática, esse padrão de finalizar o processo com código de erro é conhecido como *"graceful shutdown"* e faz parte da lista do [*12 factor app*](https://12factor.net/) de boas práticas para desenvolvimento de *software* moderno.
+
+As alterações necessários para integrar com o banco de dados estão finalizadas, basta executar os testes de integração para garantir:
+
+```shell
+$ npm run test:integration
+```
+
+A saida será:
+
+```shell
+ Routes: Products
+    GET /products
+      1) should return a list of products
 
 
+  0 passing (152ms)
+  1 failing
+
+  1) Routes: Products GET /products should return a list of products:
+     TypeError: Cannot read property 'get' of undefined
+      at Context.done (test/integration/routes/products_spec.js:21:7)
+```
+
+O teste quebrou! Calma, isso era esperado.
+Assim como o *"server.js"* o teste de integração inicia a aplicação usando o módulo *app*, então ele também deve ser alterado para lidar com a *promise*.
+
+Vamos começar alterando o ***"helpers.js"*** dos testes de integração, como no código abaixo:
+
+```diff
+-import app from '../../src/app.js';
++import setupApp from '../../src/app.js';
+  
+-global.app = app;
+-global.request = supertest(app);
++global.setupApp = setupApp;
++global.supertest = supertest;
+```
+
+Aqui, como no *"server.js"*, alteramos o nome do módulo de *app* para *setupApp* e o exportamos globalmente. Também removemos o *request* do conceito global que era uma instância do *supertest* com o *app* configurado, deixaremos para fazer isso no próximo passo.
+
+Agora é necessário alterar o ***"products_spec.js"*** para inicializar a aplicação antes de começar a executar os casos de teste usando o *callback* *"before"* do *Mocha*:
+
+```diff
+describe('Routes: Products', () => {
++  let request;
++
++  before(()=> {
++    return setupApp()
++      .then(app => {
++        request = supertest(app)
++      })
++  });
++
+```
+
+Aqui é criado um *let* para o *"request"* do *supertest* e no *"before"*  a aplicação é inicializada, assim que o *"setupApp"* retorna uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let "request"* que definimos anteriormente.
+
+Executando os testes novamente, a saída deve ser a seguinte:
+
+```shell
+  Routes: Products
+    GET /products
+      ✓ should return a list of products
 
 
+  1 passing (336ms)
+```
+
+Caso receba um erro como esse *"MongoError: failed to connect to server [localhost:27017] on first connect"*:
+
+```shell
+  Routes: Products
+    1) "before all" hook
 
 
+  0 passing (168ms)
+  1 failing
+
+  1) Routes: Products "before all" hook:
+     MongoError: failed to connect to server [localhost:27017] on first connect
+      at Pool.<anonymous> (node_modules/mongodb-core/lib/topologies/server.js:326:35)
+      at Connection.<anonymous> (node_modules/mongodb-core/lib/connection/pool.js:270:12)
+      at Socket.<anonymous> (node_modules/mongodb-core/lib/connection/connection.js:175:49)
+      at emitErrorNT (net.js:1272:8)
+      at _combinedTickCallback (internal/process/next_tick.js:74:11)
+      at process._tickCallback (internal/process/next_tick.js:98:9)
+```
+
+Significa que o *MongoDB* não está executando em *localhost* na porta 7000, verifique ele e tente novamente.
+
+O código desta etapa esta disponivel [aqui](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step6).
