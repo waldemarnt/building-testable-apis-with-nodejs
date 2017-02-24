@@ -126,11 +126,11 @@ As partes em vermelho serão movidas para dentro de uma nova função, como no c
 
 ```diff
 + const configureExpress = () => {
- +  app.use(bodyParser.json());
- +  app.use('/', routes);
- +
- +  return app;
- +};
++  app.use(bodyParser.json());
++  app.use('/', routes);
++
++  return app;
++};
 ```
 
 Aqui foi criada uma função nomeada como ***configureExpress*** que tera a responsabilidade de configurar o *express* e retornar uma nova instância de aplicação configurada.
