@@ -11,3 +11,4 @@
 #include "./book/directory-structure.md"
 #include "./book/express-routes.md"
 #include "./book/controllers.md"
+#include "./book/database-integration.md"
