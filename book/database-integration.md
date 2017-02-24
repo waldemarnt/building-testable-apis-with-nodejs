@@ -103,13 +103,70 @@ export default app;
 A primeira coisa a fazer é importar o módulo responsável pelo banco de dados, o *"database.js"** que fica dentro do diretório *config*. Os *imports* devem ficar assim:
 
 ```diff
-```javascript
  import express from 'express';
  import bodyParser from 'body-parser';
  import routes from './routes';
 + import database from './config/database';
 ```
+
+A seguir muramores um pouco o código anterior que utiliza o *express* e as rotas movendo a seguinte parte:
+
+```diff
+ const app = express();
+ -app.use(bodyParser.json());
+ -app.use('/', routes);
+  
+ -export default app;
 ```
+
+As partes em vermelho serão movidas para dentro de uma nova função, como no código abaixo:
+
+```diff
++const configureExpress = () => {
+ +  app.use(bodyParser.json());
+ +  app.use('/', routes);
+ +
+ +  return app;
+ +};
+```
+
+Aqui foi criada uma função nomeada como ***configureExpress*** que tera a responsabilidade de configurar o *express* e retornar uma nova instância de aplicação configurada.
+
+A última etapa da nossa alteração é inicializar o banco antes da aplicação. Como o *moongose* retorna uma *promise*, iremos esperar ela ser resolvida para então chamar a função que configura o *express* que criamos anteriormente.
+
+```diff
++export default () => database.connect().then(configureExpress);
+```
+
+Nesse bloco exportamos uma função que retorna uma *promise*. A primeira coisa chamada é a função *"connect"* do *database* que criamos na etapa anterior, assim que essa *promise* for resolvida, o que significa o banco de dados estar disponível, então é chamada a função *configureExpress* que irá configurar o *express* e retornar uma nova instância da aplicação. Esse *pattern* é conhecido como *promises* encadeadas, ou em ingles, *chained promises*.
+
+Note que a função *"configureExpress"* não precisaria existir, poderíamos ter uma função diretamente dentro do *"then"*  do *"connect"* e nela configurar o *express*, mas criado uma função que descreva o que está sendo feito torna o código mais intuitivo e desacoplado, pode se ler mais sobre o assunto (nesta issue do *airbnb*)[https://github.com/airbnb/javascript/issues/216].
+
+O *"app.js"* depois de alterado deve estar assim:
+
+```javascript
+import express from 'express';
+import bodyParser from 'body-parser';
+import routes from './routes';
+import database from './config/database'
+
+const app = express();
+
+const configureExpress = () => {
+  app.use(bodyParser.json());
+  app.use('/', routes);
+
+  return app;
+};
+
+export default () => database.connect().then(configureExpress);
+```
+
+Como alteramos o *app* para retornar uma função que retorna uma *promise*, será necessário alterar o *"server.js"* para fazer a inicialização de maneira correta.
+
+
+
+
 
 
 
