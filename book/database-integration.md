@@ -111,12 +111,15 @@ A primeira coisa a fazer é importar o módulo responsável pelo banco de dados,
 
 A seguir muramores um pouco o código anterior que utiliza o *express* e as rotas movendo a seguinte parte:
 
-```diff
+```javascript
  const app = express();
- - app.use(bodyParser.json());
- - app.use('/', routes);
+```
+
+```diff
+- app.use(bodyParser.json());
+- app.use('/', routes);
  
- - export default app;
+- export default app;
 ```
 
 As partes em vermelho serão movidas para dentro de uma nova função, como no código abaixo:
