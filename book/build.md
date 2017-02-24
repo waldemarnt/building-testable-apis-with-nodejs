@@ -1620,7 +1620,7 @@ A estrutura de diretórios deve estar assim:
 │   └── routes
 │       ├── index.js
 │       └── products.js
-``
+```
 
 A primeira coisa que deve ser feita no *database.js* é importar o módulo do *Mongoose* como no código abaixo:
 
