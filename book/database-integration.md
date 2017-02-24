@@ -19,6 +19,7 @@ $ npm install mongoose --save
 Após isso o *Mongoose* estará disponível para ser utilizado. O próximo passo será configurar a aplicação para conectar com o banco de dados, para isso crie um diretório chamado *config* dentro de *src* e dentro dele um arquivo chamado ***database.js*** que será responsável por toda configuração do banco de dados.
 A estrutura de diretórios deve estar assim:
 
+```
 ├── src
 │   ├── app.js
 │   ├── config
@@ -28,6 +29,7 @@ A estrutura de diretórios deve estar assim:
 │   └── routes
 │       ├── index.js
 │       └── products.js
+``
 
 A primeira coisa que deve ser feita no *database.js* é importar o módulo do *Mongoose* como no código abaixo:
 
@@ -47,15 +49,15 @@ Aqui é dito para o *Mongoose* utilizar a *promise* oficial do *Node.js*. Seguin
 const mongodbUrl = process.env.MONGODB_URL || 'mongodb://localhost/test';
 ```
 
-Note que primeiro é verificado se não existe uma variável de ambiente, caso não exista é usado o valor padrão que ira se referir ao *"localhost"** e ao banco de dados *"test"*. Dessa maneira poderemos utilizar o *MongoDB* tanto para testes quanto para rodar o banco da aplicação de verdade sem precisar alterar o código.
+Note que primeiro é verificado se não existe uma variável de ambiente, caso não exista é usado o valor padrão que ira se referir ao *"localhost"* e ao banco de dados *"test"*. Dessa maneira poderemos utilizar o *MongoDB* tanto para testes quanto para rodar o banco da aplicação de verdade sem precisar alterar o código.
 
-No passo seguinte iremos criar uma função para conectar no banco de dados, ela será responsável por inicializar a conexão com o banco de dados.
+No passo seguinte iremos criar uma função para conectar no banco de dados.
 
 ```javascript
 const connect = () => mongoose.connect(mongodbUrl);
 ```
 
-Aqui é criado uma função que retorna uma conexão com o *MongoDB*, esse retorno é uma *promise*, ou seja, somente quando a conexão for estabelecida a *promise* será resolvida, isso é importante pois precisamos garantir que nossa aplicação só vai estar disponível depois que o banco de dados estiver conectado e disponível para acesso.
+Aqui é criado uma função que retorna uma conexão com o *MongoDB*, esse retorno é uma *promise*, ou seja, somente quando a conexão for estabelecida a *promise* será resolvida, isso é importante pois precisamos garantir que nossa aplicação só vai estar disponível depois que o banco de dados estiver conectado e acessivel.
 
 O último passo é exportar o módulo de configuração do banco de dados:
 
@@ -164,7 +166,7 @@ export default () => database.connect().then(configureExpress);
 Como alteramos o *app* para retornar uma função que retorna uma *promise*, será necessário alterar o *"server.js"* para fazer a inicialização de maneira correta.
 
 
-## Alterando a inicilização e *error handling*
+## Alterando a inicilização
 
 O *"server.js"* é o arquivo responsável por inicializar a aplicação, chamando o *app*. Como alteramos algumas coisas na etapa anterior precisamos atualizar ele.
 Vamos começar alterando o nome do módulo na importação:
@@ -189,9 +191,9 @@ O próximo passo é alterar a maneira de como o *app* é chamado:
 + });
 ```
 
-Como o código anterior devolvia uma instância da aplicação diretamente era apenas necessário chamar o método *"listen"* do *express* para inicializar a aplicação. Como agora temos uma função que retorna uma *promise* devemos chama-la, ela vai inicializar o *app*, inicializando o banco e configurando o *express* retornando uma nova instância da aplicação, ai então será possível inicializar a aplicação chamando o *"listen"*.
+Como o código anterior devolvia uma instância da aplicação diretamente, era apenas necessário chamar o método *"listen"* do *express* para inicializar a aplicação. Como agora temos uma função que retorna uma *promise* devemos chama-la, ela vai inicializar o *app*, inicializando o banco e configurando o *express* e retornando uma nova instância da aplicação, ai então será possível inicializar a aplicação chamando o *"listen"*.
 
-Até esse momento espero que vocês já tenham lido a especificação de *promises* mais de 10 vezes e sejam mestres na implementação. Quando um problema ocorre a *promise* é rejeitada, e esse erro pode ser tratado usando um *catch* como no código acima.
+Até esse momento espero que já tenham lido a especificação de *promises* mais de 10 vezes e sejam mestres na implementação. Quando um problema ocorre a *promise* é rejeitada, e esse erro pode ser tratado usando um *catch* como no código acima.
 Acima recebemos o erro e mostramos ele em um *"console.log"*, e logo encerramos o processo do *Node.js* com o código 1 (falso).
 Dessa maneira o processo é finalizado informando que houve um erro em sua inicialização. Informar o código de saída é uma boa prática, esse padrão de finalizar o processo com código de erro é conhecido como *"graceful shutdown"* e faz parte da lista do [*12 factor app*](https://12factor.net/) de boas práticas para desenvolvimento de *software* moderno.
 
@@ -249,7 +251,7 @@ describe('Routes: Products', () => {
 +
 ```
 
-Aqui é criado um *let* para o *"request"* do *supertest* e no *"before"*  a aplicação é inicializada, assim que o *"setupApp"* retorna uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let "request"* que definimos anteriormente.
+No bloco acima é criado um *let* para o *"request"* do *supertest* e no *"before"*  a aplicação é inicializada, assim que o *"setupApp"* retornar uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let "request"* que definimos anteriormente.
 
 Executando os testes novamente, a saída deve ser a seguinte:
 
