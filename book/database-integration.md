@@ -8,7 +8,7 @@
 
 ## Configurando o banco de dados com *Mongoose*
 
-Para integrar nossa aplicação com o *MongoDB* iremos utilizar o (*Mongoose*)[] que é *ODM (Object Document Mapper)*. O *Mongoose* irá abstrair o acesso ao banco de dados e ainda irá se responsabilizar por transformar os dados do banco em *Models*, o que irá facilitar a estruturação de nossa aplicação com o padrão *MVC*.
+Para integrar nossa aplicação com o *MongoDB* iremos utilizar o [*Mongoose*]() que é *ODM (Object Document Mapper)*. O *Mongoose* irá abstrair o acesso ao banco de dados e ainda irá se responsabilizar por transformar os dados do banco em *Models*, o que irá facilitar a estruturação de nossa aplicação com o padrão *MVC*.
 
 Para instalar o *Mongoose* basta executar o seguinte comando *npm*:
 
@@ -113,16 +113,16 @@ A seguir muramores um pouco o código anterior que utiliza o *express* e as rota
 
 ```diff
  const app = express();
- -app.use(bodyParser.json());
- -app.use('/', routes);
+ - app.use(bodyParser.json());
+ - app.use('/', routes);
   
- -export default app;
+ - export default app;
 ```
 
 As partes em vermelho serão movidas para dentro de uma nova função, como no código abaixo:
 
 ```diff
-+const configureExpress = () => {
++ const configureExpress = () => {
  +  app.use(bodyParser.json());
  +  app.use('/', routes);
  +
@@ -135,12 +135,12 @@ Aqui foi criada uma função nomeada como ***configureExpress*** que tera a resp
 A última etapa da nossa alteração é inicializar o banco antes da aplicação. Como o *moongose* retorna uma *promise*, iremos esperar ela ser resolvida para então chamar a função que configura o *express* que criamos anteriormente.
 
 ```diff
-+export default () => database.connect().then(configureExpress);
++ export default () => database.connect().then(configureExpress);
 ```
 
 Nesse bloco exportamos uma função que retorna uma *promise*. A primeira coisa chamada é a função *"connect"* do *database* que criamos na etapa anterior, assim que essa *promise* for resolvida, o que significa o banco de dados estar disponível, então é chamada a função *configureExpress* que irá configurar o *express* e retornar uma nova instância da aplicação. Esse *pattern* é conhecido como *promises* encadeadas, ou em ingles, *chained promises*.
 
-Note que a função *"configureExpress"* não precisaria existir, poderíamos ter uma função diretamente dentro do *"then"*  do *"connect"* e nela configurar o *express*, mas criado uma função que descreva o que está sendo feito torna o código mais intuitivo e desacoplado, pode se ler mais sobre o assunto (nesta issue do *airbnb*)[https://github.com/airbnb/javascript/issues/216].
+Note que a função *"configureExpress"* não precisaria existir, poderíamos ter uma função diretamente dentro do *"then"*  do *"connect"* e nela configurar o *express*, mas criado uma função que descreva o que está sendo feito torna o código mais intuitivo e desacoplado, pode se ler mais sobre o assunto [nesta *issue* do *airbnb*](https://github.com/airbnb/javascript/issues/216).
 
 O *"app.js"* depois de alterado deve estar assim:
 
