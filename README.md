@@ -5,5 +5,6 @@ Esse é o repositório oficial do livro: Construindo APIs testáveis com Node.js
 
 Para ler a ultima versão compilada acesse esse link [aqui](./book/build.md)
 
-O livro será grátis e publicado no Leanpub.
-Antes de usar seu conteudo por favor consulte o **LICENSE**.
+O livro será grátis e publicado no ***Leanpub***.
+
+Antes de usar seu conteudo por favor consulte o [**LICENSE**](./LICENSE.md).
