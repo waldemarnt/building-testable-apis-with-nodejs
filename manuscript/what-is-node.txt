@@ -40,10 +40,10 @@ const someMath = 1+1;
 
 
 try {
-    fileContent = fs.readFileSync('big-file.txt', 'utf-8');
-      console.log('file has been read');
+  fileContent = fs.readFileSync('big-file.txt', 'utf-8');
+  console.log('file has been read');
 } catch (err) {
-    console.log(err);
+  console.log(err);
 }
 
 
@@ -61,10 +61,10 @@ const fs = require('fs');
 const someMatch = 1+1;
 
 fs.readFile('big-file.txt', 'utf-8', function (err, content) {
-      if (err) {
-            return console.log(err)
-                }
-                    console.log(content)
+    if (err) {
+    return console.log(err)
+    }
+    console.log(content)
 })
 
 const text = `The response is ${ someMatch }`;
@@ -91,14 +91,14 @@ Vamos ver um exemplo:
 
 ```javascript
 function generateBornDateFromAge(age) {
-    return 2016 - age;
+  return 2016 - age;
 }
 
 function generateUserDescription(name, surName, age) {
-    const fullName = name + " " + surName;
-      const bornDate = generateBornDateFromAge(age);
+  const fullName = name + " " + surName;
+  const bornDate = generateBornDateFromAge(age);
 
-        return fullName + " is " + age + " old and was born in " + bornDate;
+  return fullName + " is " + age + " old and was born in " + bornDate;
 }
 
 generateUserDescription("Waldemar", "Neto", 26);
