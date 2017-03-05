@@ -2,3 +2,11 @@ preface.txt
 who-should-read.txt
 introduction.txt
 what-is-node.txt
+configuration.txt
+project-setup.txt
+test-driven-development.txt
+integration-tests-setup.txt
+directory-structure.txt
+express-routes.txt
+controllers.txt
+database-integration.txt
