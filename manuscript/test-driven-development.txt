@@ -211,24 +211,24 @@ Quando usar *spies*:
 
 ```javascript
 describe('UsersController getAll()', () => {
-    it('should return a list of users', () => {
-        const expectedDatabaseResponse = [{
-id: 1,
-name: 'John Doe',
-email: 'john@mail.com'
-}];
+  it('should return a list of users', () => {
+    const expectedDatabaseResponse = [{
+      id: 1,
+      name: 'John Doe',
+      email: 'john@mail.com'
+    }];
 
-const findAll = sinon.stub(Database, 'findAll');
-findAll.withArgs('users').returns(expectedDatabaseResponse);
+    const findAll = sinon.stub(Database, 'findAll');
+    findAll.withArgs('users').returns(expectedDatabaseResponse);
 
-const usersController = new UsersController(Database);
-const response = usersController.getAll();
+    const usersController = new UsersController(Database);
+    const response = usersController.getAll();
 
-sinon.assert.calledWith(findAll, 'users');
-expect(response).to.be.eql(expectedDatabaseResponse);
-findAll.restore();
+    sinon.assert.calledWith(findAll, 'users');
+    expect(response).to.be.eql(expectedDatabaseResponse);
+    findAll.restore();
+  });
 });
-    });
 ```
 
 Quando usamos *stubs* podemos descrever o comportamento esperado, como nessa parte do código: 
