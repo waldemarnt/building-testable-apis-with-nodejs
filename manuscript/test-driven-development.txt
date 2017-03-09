@@ -132,24 +132,25 @@ Durante o teste, é frequente a necessidade de substituir uma dependência para 
 
 ```javascript
 describe('UsersController getAll()', () => {
-    it('should return a list of users', () => {
-        const expectedDatabaseResponse = [{
-id: 1,
-name: 'John Doe',
-email: 'john@mail.com'
-}];
+  it('should return a list of users', () => {
+    const expectedDatabaseResponse = [{
+      id: 1,
+      name: 'John Doe',
+      email: 'john@mail.com'
+    }];
 
-const fakeDatabase = {
-findAll() {
-return expectedDatabaseResponse;
-}
-}
-const usersController = new UsersController(fakeDatabase);
-const response = usersController.getAll();
+    const fakeDatabase = {
+      findAll() {
+        return expectedDatabaseResponse;
+      }
+    }
+    const usersController = new UsersController(fakeDatabase);
+    const response = usersController.getAll();
 
-expect(response).to.be.eql(expectedDatabaseResponse);
+    expect(response).to.be.eql(expectedDatabaseResponse);
+  });
 });
-    });
+
 ```
 Nesse caso de teste não é necessária nenhuma biblioteca de suporte, tudo é feito apenas criando um objeto fake para substituir a dependência do banco de dados. O método ***"findAll"*** passa a ter uma resposta fixa, que é uma lista com um usuário.
 Para validar o teste é necessário verificar se a resposta do método *"getAll"* do *controller* responde com uma lista igual a declarada no *"expectedDatabaseResponse"*.
