@@ -38,7 +38,8 @@ Após isso um arquivo chamado **package.json** será criado e receberemos uma sa
 
 O **package.json** é responsavel por guardar as configurações *npm* do nosso projeto, nele ficarão nossos *scripts* para executar a aplicação e os testes.
 
-## Configurando suporte ao *Ecmascript* 6 
+## Configurando suporte ao *Ecmascript* 6
+
 Como vimos anteriormente o *Babel* sera responsável por nos permitir usar as funcionalidades do *ES6*, para isso precisamos instalar os pacotes e configurar o nosso ambiente para suportar o *ES6* por padrão em nossa aplicação.
 O primeiro passo é instalar os pacotes do *Babel*:
 
@@ -47,6 +48,7 @@ $ npm install --save-dev babel-cli
 ```
 
 Após instalar o *Babel* é necessário instalar o *preset* que será usado, no nosso caso é o *ES6*:
+
 ```sh
 $ npm install --save-dev babel-preset-node6
 ```
@@ -88,8 +90,8 @@ app.use(bodyParser.json());
 app.get('/', (req, res) => res.send('Hello World!'));
 
 app.listen(3000, () => {
-    console.log('Example app listening on port 3000!');
-    });
+  console.log('Example app listening on port 3000!');
+});
 ```
 
 A primeira coisa feita no arquivo é a importação dos módulos *express* e *body-parser*, após isso uma nova instância do express é criada e associada a constante *app*. Para utilizar o *body-parser* é necessário configurar o *express* para usar o *middleware*, o *express* possui um método chamado *use* onde é possível passar *middlewares* como parâmetro, no código acima foi passado o **bodyParser.json()** responsavel por transformar o corpo das requisições em *JSON*.
@@ -102,18 +104,18 @@ O último passo é configurar o *package.json* para iniciar nossa aplicação, p
 ```json
 "scripts": {
   "start": "babel-node ./server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "test": "echo \"Error: no test specified\" && exit 1"
 },
-  ```
+```
 
-  Alterado o *package.json* basta executar o comando: 
+Alterado o *package.json* basta executar o comando: 
 
-  ```sh
-  $ npm start
-  ```
+```sh
+$ npm start
+```
 
-  Agora a aplicação estará disponível em **http://localhost:3000/**.
-  O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step2).
+Agora a aplicação estará disponível em **http://localhost:3000/**.
+O código dessa parte está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step2).
 
 ## Express Middlewares 
 
@@ -126,8 +128,8 @@ O último passo é configurar o *package.json* para iniciar nossa aplicação, p
   const app = express();
 
   app.get('/', function (req, res) {
-      res.send('Hello World!');
-      });
+    res.send('Hello World!');
+  });
 
 app.listen(3000);
 ```
@@ -156,8 +158,8 @@ const myLogger = function (req, res, next) {
 app.use(myLogger);
 
 app.get('/', function (req, res) {
-    res.send('Hello World!');
-    });
+  res.send('Hello World!');
+});
 
 app.listen(3000);
 ```
@@ -175,8 +177,8 @@ const myLogger = function (req, res, next) {
 };
 
 app.get('/', myLogger, function (req, res) {
-    res.send('Hello World!');
-    });
+  res.send('Hello World!');
+});
 
 app.listen(3000);
 ```
