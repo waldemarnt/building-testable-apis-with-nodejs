@@ -123,13 +123,13 @@ O código dessa parte está disponivel [neste link](https://github.com/waldemarn
   Essas funções são executadas antes da lógica da rota, dessa maneira é possível transformar os objetos de requisição e resposta, realizar validações, autenticações e até mesmo terminar a requisição antes que ela execute e lógica escrita na rota. 
   O exemplo a seguir mostra uma aplicação *express* simples com uma rota que devolve um *"Hello world"* quando chamada, nela sera adicionado um *middleware*.
 
-  ```javascript
-  const express = require('express');
-  const app = express();
+```javascript
+const express = require('express');
+const app = express();
 
-  app.get('/', function (req, res) {
-    res.send('Hello World!');
-  });
+app.get('/', function (req, res) {
+  res.send('Hello World!');
+});
 
 app.listen(3000);
 ```
