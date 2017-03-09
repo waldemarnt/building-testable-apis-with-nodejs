@@ -59,7 +59,7 @@ Ok, nenhum teste está passando pois ainda não criamos nenhum.
 Vamos começar a escrever o teste. A primeira coisa será adicionar a descrição desse cenário de testes, como no código a seguir:
 
 ```javascript
-describe(Controllers: Products', () => {
+describe('Controllers: Products', () => {
 
 });
 ```
