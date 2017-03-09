@@ -177,16 +177,16 @@ No exemplo abaixo é adicionado um *spy* no método *"findAll"* do *Database* pa
 
 ```javascript
 describe('UsersController getAll()', () => {
-    it('should database findAll with correct parameters', () => {
-        const findAll = sinon.spy(Database, 'findAll');
+  it('should database findAll with correct parameters', () => {
+    const findAll = sinon.spy(Database, 'findAll');
 
-        const usersController = new UsersController(Database);
-        usersController.getAll();
+    const usersController = new UsersController(Database);
+    usersController.getAll();
 
-        sinon.assert.calledWith(findAll, 'users');
-        findAll.restore();
-        });
-    });
+    sinon.assert.calledWith(findAll, 'users');
+    findAll.restore();
+  });
+});
 ```
 
 Note que é adicionado um *spy* na função ***"findAll"*** do *Database*, dessa maneira o *Sinon* devolve uma referência a essa função e também adiciona alguns comportamentos a ela que possibilitam realizar checagens como *"sinon.assert.calledWith(findAll, 'users')"* onde é verificado se a função foi chamada com o parâmetro esperado.
@@ -264,17 +264,17 @@ O exemplo a seguir mostra a classe *UsersController* sendo testada utilizando *M
 
 ```javascript
 describe('UsersController getAll()', () => {
-    it('should call database with correct arguments', () => {
-        const databaseMock = sinon.mock(Database);
-        databaseMock.expects('findAll').once().withArgs('users');
+  it('should call database with correct arguments', () => {
+    const databaseMock = sinon.mock(Database);
+    databaseMock.expects('findAll').once().withArgs('users');
 
-        const usersController = new UsersController(Database);
-        usersController.getAll();
+    const usersController = new UsersController(Database);
+    usersController.getAll();
 
-        databaseMock.verify();
-        databaseMock.restore();
-        });
-    });
+    databaseMock.verify();
+    databaseMock.restore();
+  });
+});
 ```
 A primeira coisa a se notar no código é a maneira de fazer asserções com *Mocks*, elas são descritas nessa parte: 
 
