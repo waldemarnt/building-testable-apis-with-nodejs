@@ -133,11 +133,11 @@ A [*libuv*](https://github.com/libuv/libuv) é uma biblioteca *open source* mult
 
 O exemplo a seguir mostra uma função assíncrona sendo executada:
 
-![Async 1](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-1-1.svg)
+![](images/async-1-1.png)
 
 Nesse exemplo a função ***readFile*** do módulo de *file system* do *Node.js* é executada na *stack* e jogada para uma *thread*, a *stack* segue executando as próximas funções enquanto a função *readFile* está sendo administrada pela *libuv* em outra *thread*. Quando ela terminar o *callback* sera adicionado a uma fila chamada ***Task Queue*** para ser executado pela *stack* assim que ela estiver livre.
 
-![Async 2](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-2-1.svg)
+![](images/async-2-1.png)
 
 ## *Task Queue*
 
@@ -146,7 +146,7 @@ Esses *callbacks* podem ter responsabilidades diversas, como por exemplo, chamar
 Como o *V8* é *single thread* e só existe uma *stack*, os *callbacks* precisam esperar a sua vez de serem chamados. Enquanto esperam, os *callbacks* ficam em um lugar chamado *task queue* ou fila de tarefas. Sempre que a *thread* principal finalizar uma tarefa, o que significa que a *stack* estará vazia, uma nova tarefa é movida da *task queue* para a *stack* onde será executada.
 Para entender melhor vamos ver a imagem abaixo:
 
-![Async 4](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-4.svg)
+![](images/async-4.png)
 
 Esse *loop*, conhecido como ***Event Loop***, é infinito e será responsável por chamar as próximas tarefas da *task queue* enquanto o *Node.js* estiver rodando.
 
@@ -165,4 +165,4 @@ A especificação do *WHATWG* diz que após o *Event Loop* processar a *macro ta
 
 O exemplo abaixo demonstra como funciona esse fluxo:
 
-![Async 5](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/async-5.svg)
+![](images/async-5.png)
