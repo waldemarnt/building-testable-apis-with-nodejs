@@ -38,7 +38,6 @@ const fs = require('fs');
 let fileContent;
 const someMath = 1+1;
 
-
 try {
   fileContent = fs.readFileSync('big-file.txt', 'utf-8');
   console.log('file has been read');
@@ -46,8 +45,8 @@ try {
   console.log(err);
 }
 
-
 const text = `The sum is ${ someMath }`;
+
 console.log(text);
 ```
 
@@ -58,7 +57,7 @@ Esse é o problema que o *Node.js* se propôs a resolver, possibilitar que açõ
 ```javascript
 const fs = require('fs');
 
-const someMatch = 1+1;
+const someMath = 1+1;
 
 fs.readFile('big-file.txt', 'utf-8', function (err, content) {
     if (err) {
@@ -67,7 +66,8 @@ fs.readFile('big-file.txt', 'utf-8', function (err, content) {
     console.log(content)
 })
 
-const text = `The response is ${ someMatch }`;
+const text = `The response is ${ someMath }`;
+
 console.log(text);
 ```
 
@@ -106,7 +106,7 @@ generateUserDescription("Waldemar", "Neto", 26);
 
 Para quem já é familiarizado com *javascript* não ha nada especial acontecendo aqui. Basicamente, a função ***generateUserDescription*** é chamada recebendo nome, sobrenome e idade de um usuário e retorna uma sentença com as informações colhidas. A função *generateUserDescription* depende da função ***generateBornDateFromAge*** para calcular o ano que o usuário nasceu, essa dependência será perfeita para entendermos como a *stack* funciona.
 
-![Stack 1](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/stack-1-1.svg)
+![Stack 1](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/stack-1-1.png)
 
 No momento que a função *generateUserInformation* é invocada ela vai depender da função *generateBornDateFromAge* para descobrir o ano em que o usuário nasceu com base no parâmetro age (idade). Quando a função *generateBornDateFromAge* for invocada pela função *generateUserInformation* ela será adicionada a *stack* como no exemplo a seguir:
 
