@@ -110,7 +110,7 @@ Para quem já é familiarizado com *javascript* não ha nada especial acontecend
 
 No momento que a função *generateUserInformation* é invocada ela vai depender da função *generateBornDateFromAge* para descobrir o ano em que o usuário nasceu com base no parâmetro age (idade). Quando a função *generateBornDateFromAge* for invocada pela função *generateUserInformation* ela será adicionada a *stack* como no exemplo a seguir:
 
-![Stack 2](https://cdn.rawgit.com/waldemarnt/building-testable-apis-with-nodejs/master/book/images/stack-2-1.svg)
+![Stack 2](images/stack-2-1.svg)
 
 Conforme a função *generateUserInformation* vai sendo interpretada, os valores vão sendo atribuídos às respectivas variáveis dentro de seu escopo, como no exemplo do *fullName*. Para atribuir o valor a variável *bornDate* foi necessário invocar a função *generateBornDateFromAge* que quando invocada ela é imediatamente adicionada a *stack* até que a execução termine e a resposta seja retornada.
 Após o retorno a *stack* ficará assim:
