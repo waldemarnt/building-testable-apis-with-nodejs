@@ -39,8 +39,8 @@ import app from './src/app';
 const port = 3000;
 
 app.listen(port, () => {
-    console.log(`app running on port ${port}`);
-    });
+  console.log(`app running on port ${port}`);
+});
 ```
 
 Note que agora separamos a responsabilidade de inicializar o *express* e carregar os *middlewares* da parte de iniciar a aplicação em si. Como nos testes a aplicação será inicializada pelo *supertest* e não pelo *express* como é feito no *server.js*, esse separação torna isso fácil.
@@ -102,11 +102,11 @@ A estrutura de diretórios deve estar assim:
 ├── src
 │   └── app.js
 └── test
-└── integration
-├── helpers.js
-├── mocha.opts
-└── routes
-└── products_spec.js
+  └── integration
+    ├── helpers.js
+    ├── mocha.opts
+    └── routes
+      └── products_spec.js
 ```
 
 Agora precisamos escrever nosso caso de teste, vamos começar com o seguinte código no arquivo ***products_spec.js***:
@@ -114,7 +114,7 @@ Agora precisamos escrever nosso caso de teste, vamos começar com o seguinte có
 ```javascript
 describe('Routes: Products', () => {
 
-    });
+});
 ```
 
 O ***describe*** é uma global do *Mocha* usada para descrever suites de testes que contém um ou mais casos de testes ou também outras suítes de testes. Como esse é o *describe* que irá englobar todos os testes desse arquivo seu texto descreve a responsabilidade geral da suite de testes, que é testar a rota *products*.  
@@ -122,11 +122,11 @@ Agora vamos adicionar um produto padrão para os nossos testes:
 
 ```javascript
 describe('Routes: Products', () => {
-    const defaultProduct = {
-name: 'Default product',
-description: 'product description',
-price: 100
-};
+  const defaultProduct = {
+    name: 'Default product',
+    description: 'product description',
+    price: 100
+  };
 });
 ```
 
@@ -135,17 +135,16 @@ O próximo passo é descrever a nossa primeira suíte de testes:
 
 ```javascript
 describe('Routes: Products', () => {
-    const defaultProduct = {
-name: 'Default product',
-description: 'product description',
-price: 100
-};
+  const defaultProduct = {
+    name: 'Default product',
+    description: 'product description',
+    price: 100
+  };
 
-describe('GET /products', () => {
-  it('should return a list of products', done => {
+  describe('GET /products', () => {
+    it('should return a list of products', done => {
 
-
-      });
+    });
   });
 });
 ```
@@ -159,24 +158,22 @@ Veremos isso na implementação a seguir:
 
 ```javascript
 describe('Routes: Products', () => {
-    const defaultProduct = {
-name: 'Default product',
-description: 'product description',
-price: 100
-};
+  const defaultProduct = {
+    name: 'Default product',
+    description: 'product description',
+    price: 100
+  };
 
-
-describe('GET /products', () => {
-  it('should return a list of products', done => {
-
+  describe('GET /products', () => {
+    it('should return a list of products', done => {
 
       request
       .get('/products')
       .end((err, res) => {
-          expect(res.body[0]).to.eql(defaultProduct);
-          done(err);
-          });
+        expect(res.body[0]).to.eql(defaultProduct);
+        done(err);
       });
+    });
   });
 });
 ```
@@ -229,11 +226,11 @@ GET /products
   Para fazer isso, precisamos implementar uma rota na nossa aplicação que suporte o método *http GET* e retorne uma lista com no mínimo um produto igual ao nosso *defaultProduct* do teste. 
   Vamos alterar o arquivo *app.js* e adicionar a seguinte rota:
 
-  ```javascript
-  app.get('/products', (req, res) => res.send([{
-name: 'Default product',
-description: 'product description',
-price: 100
+```javascript
+app.get('/products', (req, res) => res.send([{
+  name: 'Default product',
+  description: 'product description',
+  price: 100
 }]));
 ```
 
@@ -249,9 +246,9 @@ app.use(bodyParser.json());
 
 app.get('/', (req, res) => res.send('Hello World!'));
 app.get('/products', (req, res) => res.send([{
-name: 'Default product',
-description: 'product description',
-price: 100
+  name: 'Default product',
+  description: 'product description',
+  price: 100
 }]));
 
 export default app;
