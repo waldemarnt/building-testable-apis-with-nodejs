@@ -64,7 +64,7 @@ fs.readFile('big-file.txt', 'utf-8', function (err, content) {
       return console.log(err)
     }
     console.log(content)
-})
+});
 
 const text = `The response is ${ someMath }`;
 
