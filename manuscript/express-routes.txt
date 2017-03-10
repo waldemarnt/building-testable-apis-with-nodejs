@@ -82,7 +82,7 @@ router.get('/', (req, res) => res.send('Hello World!'));
 
 export default router;
 ```
-Primeiro importamos a rota que foi criada anteriormente e damos o nome de ***productsRoute***, depois para carregar a rota chamamos a função *use* do *router* passando o prefixo da rota que será *"/products"** e o *productsRoute* que importamos.
+Primeiro importamos a rota que foi criada anteriormente e damos o nome de ***productsRoute***, depois para carregar a rota chamamos a função *use* do *router* passando o prefixo da rota que será *"/products"* e o *productsRoute* que importamos.
 
 Com as rotas configuradas o último passo é alterar o *app.js* para carregar nosso arquivo de rotas, ele deve ficar assim:
 

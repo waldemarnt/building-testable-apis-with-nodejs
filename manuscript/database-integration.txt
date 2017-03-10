@@ -57,7 +57,7 @@ No passo seguinte iremos criar uma função para conectar no banco de dados.
 const connect = () => mongoose.connect(mongodbUrl);
 ```
 
-Aqui é criado uma função que retorna uma conexão com o *MongoDB*, esse retorno é uma *promise*, ou seja, somente quando a conexão for estabelecida a *promise* será resolvida, isso é importante pois precisamos garantir que nossa aplicação só vai estar disponível depois que o banco de dados estiver conectado e acessivel.
+Aqui é criado uma função que retorna uma conexão com o *MongoDB*, esse retorno é uma *promise*, ou seja, somente quando a conexão for estabelecida a *promise* será resolvida, isso é importante pois precisamos garantir que nossa aplicação só vai estar disponível depois que o banco de dados estiver conectado e acessível.
 
 O último passo é exportar o módulo de configuração do banco de dados:
 
@@ -67,7 +67,7 @@ export default {
 }
 ```
 
-O código do *"database.js"* deve estar similar a este:
+O código do *"database.js"* deve estar similar a esse:
 
 ```javascript
 import mongoose from 'mongoose';
@@ -111,7 +111,7 @@ A primeira coisa a fazer é importar o módulo responsável pelo banco de dados,
 + import database from './config/database';
 ```
 
-A seguir muramores um pouco o código anterior que utiliza o *express* e as rotas movendo a seguinte parte:
+A seguir iremos alterar um pouco o código anterior que utiliza o *express* e as rotas movendo a seguinte parte:
 
 ```diff
 - app.use(bodyParser.json());
@@ -131,7 +131,7 @@ As partes em vermelho serão movidas para dentro de uma nova função, como no c
 +};
 ```
 
-Aqui foi criada uma função nomeada como ***configureExpress*** que tera a responsabilidade de configurar o *express* e retornar uma nova instância de aplicação configurada.
+Aqui foi criada uma função nomeada como ***configureExpress*** que terá a responsabilidade de configurar o *express* e retornar uma nova instância de aplicação configurada.
 
 A última etapa da nossa alteração é inicializar o banco antes da aplicação. Como o *moongose* retorna uma *promise*, iremos esperar ela ser resolvida para então chamar a função que configura o *express* que criamos anteriormente.
 
@@ -252,6 +252,11 @@ describe('Routes: Products', () => {
 ```
 
 No bloco acima é criado um *let* para o *"request"* do *supertest* e no *"before"*  a aplicação é inicializada, assim que o *"setupApp"* retornar uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let "request"* que definimos anteriormente.
+
+T> ## *let* no lugar de *const*
+T> *let* e *const* são novos tipos de declaração de variaveis do *Ecmascript* T> 6 ambas possuem comportamento similar mas com uma grande diferença, 
+T> *constants* não podem ter seu valor alterado. Por isso foi utilizado *let* T> no código acima, pois o valor precisa ser reescrito após o *before*.
+T> Leia mais sobre *let*, *const* e *block bindings* [aqui](http://walde.co/2016/05/13/javascript-es6-let-e-const-e-block-bindings/).
 
 Executando os testes novamente, a saída deve ser a seguinte:
 

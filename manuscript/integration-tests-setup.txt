@@ -32,7 +32,7 @@ export default app;
 ```
 
 Aqui copiamos o código do *server.js* e removemos a parte do *app.listen* a qual iniciava a aplicação e adicionamos o ***export default app*** para exportar o *app* como um módulo.  
-Agora precisamos alterar o *server.js* no diretório root para utilizar o *app.js*, vamos altera-lo para que ele fica dessa forma:
+Agora precisamos alterar o *server.js* no diretório raiz para utilizar o *app.js*, vamos altera-lo para que ele fica dessa forma:
 
 ```javascript
 import app from './src/app';
@@ -47,7 +47,7 @@ Note que agora separamos a responsabilidade de inicializar o *express* e carrega
 
 ## Configurando os testes
 
-Agora que aplicação está pronta para ser testada, vamos configurar os testes. A primeira coisa a fazer é criar o diretório ***test*** no *root*, e dentro dele o diretório onde ficarão os testes de integração, vamos chamar esse diretório de ***integration***.  
+Agora que aplicação está pronta para ser testada, vamos configurar os testes. A primeira coisa a fazer é criar o diretório ***test*** na raiz do projeto, e dentro dele o diretório onde ficarão os testes de integração, vamos chamar esse diretório de ***integration***.  
 A estrutura de diretórios ficará assim:
 
 ```sh
@@ -56,7 +56,7 @@ A estrutura de diretórios ficará assim:
 ├── src
 │   └── app.js
 └── test
-└── integration
+│   └── integration
 ```
 
 Dentro de *integration* iremos criar os arquivos de configuração para os testes de integração. O primeiro será referente as configurações do *Mocha*, vamos criar um arquivo chamado ***mocha.opts*** dentro do diretório *integration* com o seguinte código:
@@ -83,17 +83,17 @@ global.request = supertest(app);
 global.expect = chai.expect;
 ```
 
-O arquivo *helpers* é responsável por inicializar as configurações de testes que serão usadas em todos os testes de integração, removendo a necessidade de ter de realizar configurações em cada caso de teste.
+O arquivo *helpers* é responsável por inicializar as configurações de testes que serão usadas em todos os testes de integração, removendo a necessidade de ter de realizar configurações em cada cenário de teste.
 
 Primeiro importamos os módulos necessários para executar os testes de integração que são o *supertest* e o *chai* e também a nossa aplicação *express* que chamamos de *app*.  
-Depois definimos as globais usando **global**. Globais fazem parte do *Mocha*, tudo que for definido como global poderá ser acessado sem a necessidade de ser importado.  
-No nosso arquivo *helpers* configuramos o *app* para ser global, ou seja, caso seja necessário usar ele em um caso de teste basta chama-lo diretamente. Também definimos um global chamado ***request*** que é o *supertest* que recebe o nosso *express* por parâmetro.  
+Depois definimos as globais usando **global**. Globais fazem parte do *Mocha*, tudo que for definido como global poderá ser acessado em qualquer teste sem a necessidade de ser importado.  
+No nosso arquivo *helpers* configuramos o *app* para ser global, ou seja, caso seja necessário usar ele em um caso de teste basta chama-lo diretamente. Também é definido um global chamado ***request***, que é o *supertest* que recebe o nosso *express* por parâmetro.  
 Lembram que falei da vantagem de separar a execução da aplicação da configuração do *express*? Agora o *express* pode ser executado por um emulador como o *supertest*.  
-E por ultimo o *expect* do *Chai* que sera usado para fazer as asserções nos casos de teste. 
+E por ultimo o *expect* do *Chai* que será utilizado para fazer as asserções nos casos de teste. 
 
 ## Criando o primeiro caso de teste
 
-Com as configurações finalizadas agora nos resta criar nosso primeiro caso de teste. Vamos criar um diretório chamado ***routes*** dentro de *integration* e nele iremos criar o arquivo ***products_spec.js*** onde ficará o nosso teste referente as rotas do recurso *products* da nossa *API*.  
+Com as configurações finalizadas agora nos resta criar nosso primeiro caso de teste. Vamos criar um diretório chamado ***routes*** dentro de *integration* e nele iremos criar o arquivo ***products_spec.js*** onde ficará o nosso teste referente as rotas do recurso *products* da *API* que está sendo desenvolvida.  
 A estrutura de diretórios deve estar assim:
 
 ```sh
@@ -102,11 +102,11 @@ A estrutura de diretórios deve estar assim:
 ├── src
 │   └── app.js
 └── test
-  └── integration
-    ├── helpers.js
-    ├── mocha.opts
-    └── routes
-      └── products_spec.js
+│  └── integration
+│    ├── helpers.js
+│    ├── mocha.opts
+│    └── routes
+│      └── products_spec.js
 ```
 
 Agora precisamos escrever nosso caso de teste, vamos começar com o seguinte código no arquivo ***products_spec.js***:
@@ -117,7 +117,7 @@ describe('Routes: Products', () => {
 });
 ```
 
-O ***describe*** é uma global do *Mocha* usada para descrever suites de testes que contém um ou mais casos de testes ou também outras suítes de testes. Como esse é o *describe* que irá englobar todos os testes desse arquivo seu texto descreve a responsabilidade geral da suite de testes, que é testar a rota *products*.  
+O ***describe*** é uma global do *Mocha* usada para descrever suítes de testes que contém um ou mais casos de testes ou também outras suítes de testes. Como esse é o *describe* que irá englobar todos os testes desse arquivo seu texto descreve a responsabilidade geral da suite de testes, que é testar a rota *products*.  
 Agora vamos adicionar um produto padrão para os nossos testes:
 
 ```javascript
@@ -149,7 +149,7 @@ describe('Routes: Products', () => {
 });
 ```
 
-Adicionamos mais um *describe* para deixar claro que todas as suites de teste dentro dele fazem parte do método *http GET* na rota */products*. Isso facilita a legibilidade do teste e deixa a saída do terminal mais clara.
+Foi adicionado mais um *describe* para deixar claro que todas as suítes de teste dentro dele fazem parte do método *http GET* na rota */products*. Isso facilita a legibilidade do teste e deixa a saída do terminal mais clara.
 
 A função ***it*** também é uma global do *Mocha* e tem a responsabilidade de descrever um caso de teste.  
 Descrições de casos de teste seguem um padrão declarativo, como no exemplo acima: *"Isso deve retornar uma lista de produtos"*.  
