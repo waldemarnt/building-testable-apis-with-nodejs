@@ -166,7 +166,7 @@ export default () => database.connect().then(configureExpress);
 Como alteramos o *app* para retornar uma função que retorna uma *promise*, será necessário alterar o *"server.js"* para fazer a inicialização de maneira correta.
 
 
-## Alterando a inicilização
+## Alterando a inicialização
 
 O *"server.js"* é o arquivo responsável por inicializar a aplicação, chamando o *app*. Como alteramos algumas coisas na etapa anterior precisamos atualizar ele.
 Vamos começar alterando o nome do módulo na importação:
