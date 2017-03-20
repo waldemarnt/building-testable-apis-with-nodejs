@@ -59,7 +59,7 @@ Ok, nenhum teste está passando pois ainda não criamos nenhum.
 Vamos começar a escrever o teste. A primeira coisa será adicionar a descrição desse cenário de testes, como no código a seguir:
 
 ```javascript
-describe(Controllers: Products', () => {
+describe('Controllers: Products', () => {
 
 });
 ```
@@ -67,7 +67,7 @@ describe(Controllers: Products', () => {
 Esse cenário irá englobar todos os testes do *controller* de *products*. Agora vamos criar cenários para cada um dos métodos, adicione mais um cenário com o seguinte código:
 
 ```javascript
-describe(Controllers: Products', () => {
+describe('Controllers: Products', () => {
 
     describe('get() products', () => {
 
@@ -160,7 +160,7 @@ Voltando ao teste, vamos importar o *Sinon* e também usar um *spy* para verific
 import ProductsController from '../../../src/controllers/products';
 import sinon from 'sinon';
 
-describe('Routes: Products', () => {
+describe('Controllers: Products', () => {
   const defaultProduct = [{
     name: 'Default product',
     description: 'product description',
@@ -195,7 +195,7 @@ Para isso foram feitas duas asserções, a primeira verifica se a função *send
 Nosso teste está pronto, se executarmos os testes unitários devemos receber o seguinte erro:
 
 ```sh
-  Routes: Products
+  Controllers: Products
     get() products
       1) should return a list of products
 
@@ -203,7 +203,7 @@ Nosso teste está pronto, se executarmos os testes unitários devemos receber o 
   0 passing (156ms)
   1 failing
 
-  1) Routes: Products get() products should return a list of products:
+  1) Controllers: Products get() products should return a list of products:
      TypeError: productsController.get is not a function
       at Context.it (test/unit/controllers/products_spec.js:19:26)
 ```
@@ -232,7 +232,7 @@ Agora basta executar os testes novamente, a saída do terminal deve ser a seguin
 
 ```sh
 
-  Routes: Products
+  Controllers: Products
     get() products
       ✓ should return a list of products
 
