@@ -242,7 +242,7 @@ Agora basta executar os testes novamente, a saída do terminal deve ser a seguin
 
 ## Integrando controllers e rotas
 
-Nosso *controller* está feito, e estamos obtendo o comportamento esperado, mas até então não integramos com a aplicação. Para realizar essa integração basta alterar a rota de produtos para usar o *controller*. Edite o arquivo *"products.js"** em *"src/routes"*, removendo o bloco de código que foi movido para o *controller* e adicione a chamada para o método *get*, a rota de produtos deve ficar assim:
+Nosso *controller* está feito, e estamos obtendo o comportamento esperado, mas até então não integramos com a aplicação. Para realizar essa integração basta alterar a rota de produtos para usar o *controller*. Edite o arquivo *"products.js"* em *"src/routes"*, removendo o bloco de código que foi movido para o *controller* e adicione a chamada para o método *get*, a rota de produtos deve ficar assim:
 
 ```javascript
 import express from 'express';
