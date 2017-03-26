@@ -5,6 +5,8 @@ Esse é o repositório oficial do livro: ***Construindo APIs testáveis com Node
 
 O livro será grátis e publicado no ***Leanpub***. A primeira release acontecerá em Março de 2017.
 
+<img src="https://github.com/waldemarnt/building-testable-apis-with-nodejs/blob/master/manuscript/images/cover01.jpg" width="400">
+
 # Sobre o Livro
 
 Com o lançamento do Node.js o javascript garantiu seu espaço no server side. A vantagem de ter I/O assíncrono e, principalmente, o fato de ser javascript e já contar com uma grande comunidade.
