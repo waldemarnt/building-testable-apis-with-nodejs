@@ -3,7 +3,7 @@
 Iremos testar de fora para dentro, ou seja, começaremos pelos testes de integração e depois testes de unidade.  
 Para começar vamos instalar as ferramentas de testes com o comando abaixo:
 
-## Instalando Mocha Chai e Supertest
+## Instalando *Mocha Chai* e *Supertest*
 
 ```sh
 $ npm install --save-dev mocha chai supertest

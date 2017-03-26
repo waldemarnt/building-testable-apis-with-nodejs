@@ -70,7 +70,7 @@ O código dessa parte está disponivel [neste link](https://github.com/waldemarn
 
 Como iremos desenvolver uma aplicação *web* precisaremos de um servidor que nos ajude a trabalhar com requisições *HTTP*, transporte de dados, rotas e etc. Dentre muitas opções no universo *Node.js* como o [*Sails.js*](http://sailsjs.com/), [*Hapi.js*](https://hapijs.com/) e [*Koa.js*](http://koajs.com/) iremos optar pelo [*Express.js*](https://expressjs.com/) por possuir um bom tempo de atividade, muito conteúdo na comunidade e ser mantido pela [*Node Foundation*](https://nodejs.org/en/foundation/).
 
-O *Express* é um *framework* para desenvolvimento *web* para *Node.js* inspirado no *Sinatra* desenvolvido para o *ruby on rails*. Criado por TJ Holowaychuk o *Express* foi adquirido pela [*StrongLoop*](https://strongloop.com/) em 2014 e é administrado atualmente pela *Node.js Foundation*.
+O *Express* é um *framework* para desenvolvimento *web* para *Node.js* inspirado no *Sinatra* desenvolvido para o *ruby on rails*. Criado por *TJ Holowaychuk* o *Express* foi adquirido pela [*StrongLoop*](https://strongloop.com/) em 2014 e é administrado atualmente pela *Node.js Foundation*.
 
 Para começar será necessário instalar dois modulos, o *express* e o *body-parser*, como no exemplo a seguir:
 
