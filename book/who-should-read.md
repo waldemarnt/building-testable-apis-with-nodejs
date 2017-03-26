@@ -1,3 +1,0 @@
-# Para quem é esse livro
-
-em breve.

@@ -1,1 +1,0 @@
-![cover](./images/cover01.jpg)
