@@ -10,3 +10,4 @@ directory-structure.txt
 express-routes.txt
 controllers.txt
 database-integration.txt
+mvc-javascript.txt
