@@ -182,12 +182,12 @@ describe('Controllers: Products', () => {
     });
   });
 });
-```
+``` 
 Muita coisa aconteceu nesse bloco de código, mas não se preocupe pois vamos passar por cada uma delas.
 A primeira adição foi o *import* do *Sinon*, módulo que instalamos anteriormente.
-Logo após a descrição do nosso cenário de teste principal foi adicionado uma *constant* chamada ***"defaultProduct"*** a qual armazena um *array* com um objeto referente a um produto com informações estáticas. Ele será útil para reaproveitarmos código nos casos de teste.
+Logo após a descrição do nosso cenário de teste principal foi adicionado uma constant chamada ***"defaultProduct"*** a qual armazena um *array* com um objeto com um produto com informações estáticas. Ele será útil para reaproveitarmos código nos casos de teste.
 Já dentro do caso de teste foram adicionadas duas *constants* que são *request*, que é um objeto *fake* da requisição enviada pela rota do *express* a qual chamamos de *"req"* na aplicação, e *response* que é um objeto *fake* da resposta enviada pela rota do *express* que chamamos de *"res"* na aplicação.
-Note que a propriedade *"send"* do objeto *response* recebe um *spy* do *Sinon*, como vimos antes no capítulo de *test doubles* os *spies* permitem gravar informações como: quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. O que será perfeito em nosso caso de uso pois precisamos validar que a função *send* do objeto response está sendo chamada com os devidos parâmetros.
+Note que a propriedade *"send"* do objeto *response* recebe um *spy* do *Sinon*, como vimos antes no capítulo de *test doubles* os *spies* permitem gravar informações como: quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. O que será perfeito em nosso caso de uso pois precisamos validar que a função send do objeto response está sendo chamada com os devidos parâmetros.
 
 Até aqui já temos a configuração necessária para reproduzir o comportamento que esperamos. O próximo passo é chamar o método *get* do *controller* passando os objetos *request* e *response* que criamos. E o último passo é verificar se o método *get* está chamando a função *send* com o *defaultProduct* como parâmetro.
 Para isso foram feitas duas asserções, a primeira verifica se a função *send* foi chamada, e a segunda se ela foi chamada com o *defaultProduct* como parâmetro.
@@ -208,7 +208,7 @@ Nosso teste está pronto, se executarmos os testes unitários devemos receber o 
       at Context.it (test/unit/controllers/products_spec.js:19:26)
 ```
 
-O erro diz que *productsController.get* não é uma função, então vamos adicionar essa função ao *controller*. 
+O erro diz que *"productsController.get"* não é uma função, então vamos adicionar essa função ao *controller*. 
 A função *get* deverá possuir a lógica que agora está na rota de produtos. Adicione o método *get* no *ProductsController*, o código deve ficar assim:
 
 ```javascript
@@ -240,9 +240,9 @@ Agora basta executar os testes novamente, a saída do terminal deve ser a seguin
   1 passing (189ms)
 ```
 
-## Integrando *controllers* e rotas
+## Integrando controllers e rotas
 
-Nosso *controller* está feito, e estamos obtendo o comportamento esperado, mas até então não integramos com a aplicação. Para realizar essa integração basta alterar a rota de produtos para usar o *controller*. Edite o arquivo *products.js* em *src/routes*, removendo o bloco de código que foi movido para o *controller* e adicione a chamada para o método *get*, a rota de produtos deve ficar assim:
+Nosso *controller* está feito, e estamos obtendo o comportamento esperado, mas até então não integramos com a aplicação. Para realizar essa integração basta alterar a rota de produtos para usar o *controller*. Edite o arquivo *"products.js"* em *"src/routes"*, removendo o bloco de código que foi movido para o *controller* e adicione a chamada para o método *get*, a rota de produtos deve ficar assim:
 
 ```javascript
 import express from 'express';
