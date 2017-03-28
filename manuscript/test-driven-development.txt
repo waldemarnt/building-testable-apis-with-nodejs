@@ -1,11 +1,11 @@
 # Desenvolvimento guiado por testes
 
-Agora que vamos começar a desenvolver nossa aplicação, precisamos garantir que a responsabilidade, as possíveis rotas, as requisições e as respostas estão sendo atendidas; que estamos entregando o que prometemos e que está tudo funcionando. Para isso, vamos seguir um modelo conhecido como *TDD* (*Test Driven Development* ou Desenvolvimento Guiado por Testes).
+Agora que vamos começar a desenvolver nossa aplicação precisamos garantir que a responsabilidade, as possíveis rotas, as requisições e as respostas estão sendo atendidas; que estamos entregando o que prometemos e que está tudo funcionando. Para isso, vamos seguir um modelo conhecido como *TDD* (*Test Driven Development* ou Desenvolvimento Guiado por Testes).
 
-## Test Driven Development - TDD
-O *TDD* é um processo de desenvolvimento de *software* que visa o *feedback* rápido e garantia de que o comportamento da aplicação está cumprindo o que é requerido. Para isso, o processo funciona em ciclos pequenos e os requerimentos são escritos como casos de teste.
+## TDD - Test Driven Development
+O *TDD* é um processo de desenvolvimento de *software* que visa o *feedback* rápido e a garantia de que o comportamento da aplicação está cumprindo o que é requerido. Para isso, o processo funciona em ciclos pequenos e os requerimentos são escritos como casos de teste.
 
-A prática do *TDD* aumentou depois que *Kent Beck* publicou o livro [*TDD - Test Driven Development*](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530) e fomentou a discussão. Grandes figuras da comunidade ágil como *Martin Fowler* também influenciaram na adoção dessa prática publicando artigos, palestras e cases de sucesso.
+A prática do *TDD* aumentou depois que *Kent Beck* publicou o livro [*TDD - Test Driven Development*](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530) e fomentou a discussão em torno do tema. Grandes figuras da comunidade ágil como *Martin Fowler* também influenciaram na adoção dessa prática publicando artigos, ministrando palestras e compartilhando *cases* de sucesso.
 
 ## Os ciclos do *TDD*
 
@@ -13,42 +13,42 @@ Quando desenvolvemos guiados por testes, o teste acaba se tornando uma consequê
 
 ### *Red*
 
-Significa escrever o teste antes da funcionalidade e executá-lo, nesse momento como a funcionalidade ainda não foi implementada o teste deve quebrar, pois se não, há algo errado nele, essa fase também serve para verificar se não há erros na sintaxe e na semântica. 
+Significa escrever o teste antes da funcionalidade e executá-lo. Nesse momento, como a funcionalidade ainda não foi implementada, o teste deve quebrar. Essa fase também serve para verificar se não há erros na sintáxe e na semântica. 
 
 ### *Green*
 
-Refere-se a etapa em que a funcionalidade é adicionada para que o teste passe. Nesse momento não é necessário ter a lógica definida, mas é importante atender os requerimentos do teste. Aqui podem ser deixados *to-dos*, dados estáticos, *fixmes*, ou seja, o suficiente para o teste passar.
+Refere-se a etapa em que a funcionalidade é adicionada para que o teste passe. Nesse momento ainda não é necessário ter a lógica definida mas é importante atender aos requerimentos do teste. Aqui podem ser deixados *to-dos*, dados estáticos, *fixmes*, ou seja, o suficiente para o teste passar.
 
 ### *Refactor*
 
-É onde se aplica a lógica necessária e como o teste já foi validado nos passos anteriores ele garantirá que a funcionalidade está sendo implementada corretamente. Nesse momento devem ser removidos os dados estáticos além de coisas adicionadas somente para que o teste passasse, e ser feita a implementação real até que o teste volte a passar.
+É onde se aplica a lógica necessária. Como o teste já foi validado nos passos anteriores, o *refactor* garantirá que a funcionalidade está sendo implementada corretamente. Nesse momento devem ser removidos os dados estáticos e todos itens adicionadas apenas para forçar o teste a passar, em seguida deve ser feita a implementação real para que o teste volte a passar.
 A imagem abaixo representa o ciclo do *TDD*:
 
 ![](images/image-1.png)
 
-## A piramide de testes
+## A pirâmide de testes
 
-  A pirâmide de testes é um conceito criado por *Mike Cohn*, escritor do livro [*Succeeding with Agile*](https://www.amazon.com/Succeeding-Agile-Software-Development-Using/dp/0321579364). O livro propõe que hajam mais testes de baixo nível, ou seja: testes de unidade, depois testes de integração e, no topo, testes que envolvem interface.
+  A pirâmide de testes é um conceito criado por *Mike Cohn*, escritor do livro [*Succeeding with Agile*](https://www.amazon.com/Succeeding-Agile-Software-Development-Using/dp/0321579364). O livro propõe que hajam mais testes de baixo nível, ou seja, testes de unidade, depois testes de integração e no topo os testes que envolvem interface.
 
 ![](images/image-2.png)
 
-  O autor observa que os testes de interface são custosos, para alguns testes é necessário inclusive licença de *softwares* que permitam a gravação dos passos e depois a execução do *playback* para ter a resposta do teste. Apesar de valioso, esse tipo de teste necessita de todo o ambiente para rodar e tende a demorar muito tempo.
+  O autor observa que os testes de interface são custosos, para alguns testes é necessário inclusive licença de *softwares*. Apesar de valioso, esse tipo de teste necessita da preparação de todo um ambiente para rodar e tende a ocupar muito tempo.
   O que *Mike* defende é ter a base do desenvolvimento com uma grande cobertura de testes de unidade; no segundo nível, garantir a integração entre os serviços e componentes com testes de integração, sem precisar envolver a interface do usuário. E no topo, possuir testes que envolvam o fluxo completo de interação com a *UI*, para validar todo o fluxo.
 
   Vale lembrar que testes de unidade e integração podem ser feitos em qualquer parte da aplicação, tanto no lado do servidor quanto no lado do cliente, isso elimina a necessidade de ter testes complexos envolvendo todo o fluxo.
 
 ## Os tipos de testes
 
-  Atualmente contamos com uma variada gama de testes, sempre em crescimento de acordo com o surgimento de novas necessidades. Os mais comuns são os teste de unidade e integração, os quais iremos focar aqui.
+  Atualmente contamos com uma variada gama de testes, sempre em crescimento de acordo com o surgimento de novas necessidades. Os mais comuns são os teste de unidade e integração, nos quais iremos focar aqui.
 
 ### Testes de unidade (*Unit tests*)
 
-  Testes de unidade são a base da pirâmide de testes e possivelmente os mais comuns, ainda assim existem muitas pessoas que confundem o termo e as responsabilidades dos mesmos. Segundo [*Martin Fowler*](http://martinfowler.com/bliki/UnitTest.html) , testes unitários são de baixo nível, com foco em pequenas partes do *software* e tendem a ser mais rapidamente executados quando comparados com outros testes, pois, testam partes isoladas. 
+  Testes de unidade são a base da pirâmide de testes. Segundo [*Martin Fowler*](http://martinfowler.com/bliki/UnitTest.html) testes unitários são de baixo nível, com foco em pequenas partes do *software* e tendem a ser mais rapidamente executados quando comparados com outros testes, pois testam partes isoladas. 
 
-  O primeiro ponto que deve ficar claro é: o que é uma unidade afinal? Esse conceito é divergente e pode variar de projeto, linguagem, time e paradigma de programação. Linguagens orientadas a objeto tendem a ter classes como uma unidade, já linguagens procedurais ou funcionais consideram normalmente funções como sendo uma unidade. Essa definição é algo muito relativo e depende do contexto e do acordo dos desenvolvedores envolvidos no processo. Nada impede que um grupo de classes relacionadas entre sí ou funções, sejam uma unidade.
+  Mas o que é uma unidade afinal? Esse conceito é divergente e pode variar de projeto, linguagem, time e paradigma de programação. Linguagens orientadas a objeto tendem a ter classes como uma unidade, já linguagens procedurais ou funcionais consideram normalmente funções como sendo uma unidade. Essa definição é algo muito relativo e depende do contexto e do acordo dos desenvolvedores envolvidos no processo. Nada impede que um grupo de classes relacionadas entre sí ou funções, sejam uma unidade.
 
   No fundo, o que define uma unidade é o comportamento e a facilidade de ser isolada das suas dependências (dependências podem ser classes ou funções que tenham algum tipo de interação com a unidade).
-  Digamos que, por exemplo, decidimos que as nossas unidade serão as classes e estamos testando uma função da classe *Billing* que depende de uma função da classe *Orders*. A imagem abaixo mostra a dependência:
+  Digamos que, por exemplo, decidimos que as nossas unidade serão as classes e estamos testando uma função da classe *Billing* que depende de uma função da classe *Orders*. A imagem abaixo ilustra a dependência:
 
 ![](images/image-3.png)
 
@@ -60,7 +60,7 @@ A imagem abaixo representa o ciclo do *TDD*:
 
 ### Testes de integração (*Integration tests*)
 
-  Testes de integração servem para verificar se a comunicação entre os componentes de um sistema está funcionando conforme o esperado. Diferente dos testes de unidade, onde a unidade é isolada de duas dependências, no teste de integração deve ser testado o comportamento da interação entre as unidades. 
+  Testes de integração servem para verificar se a comunicação entre os componentes de um sistema está ocorrendo conforme o esperado. Diferente dos testes de unidade, onde a unidade é isolada de duas dependências, no teste de integração deve ser testado o comportamento da interação entre as unidades. 
   Não há um nível de granularidade específico, a integração pode ser testada em qualquer nível, seja a interação entre camadas, classes ou até mesmo serviços. 
 
   No exemplo a seguir temos uma arquitetura comum de aplicações *Node.js* e desejamos testar a integração entre as rotas, *controllers*, *models* e banco de dados:
@@ -71,7 +71,7 @@ A imagem abaixo representa o ciclo do *TDD*:
 
 ![](images/image-6.png)
 
-  Esse teste é imprescindível mas custoso. Será necessário limpar o banco de dados a cada teste e criar os dados novamente, além de custar tempo e depender de um serviço externo como o *MongoDB*. Um grau de interação desse nível terá vários possíveis casos de teste, como por exemplo o usuário mandou um dado errado e deve receber um erro de validação, para esses tipos de cenário, às vezes é melhor diminuir a granularidade do teste para que seja possível ter mais casos de teste.
+  Esse teste é custoso porém imprescindível. Será necessário limpar o banco de dados a cada teste e criar os dados novamente, além de custar tempo e depender de um serviço externo como o *MongoDB*. Um grau de interação desse nível terá vários possíveis casos de teste, como por exemplo: o usuário mandou um dado errado e deve receber um erro de validação. Para esse tipo de cenário pode ser melhor diminuir a granularidade do teste para que seja possível ter mais casos de teste.
   Para um caso onde o *controller* chama o *model* passando dados inválidos e a válidação deve emitir um erro, poderíamos testar a integração entre o *controller* e o *model*, como no exemplo a seguir:
 
 ![](images/image-7.png)
@@ -83,7 +83,7 @@ A imagem abaixo representa o ciclo do *TDD*:
 ### Teste de integração de contrato (*Integration contract tests*)
 
   Testes de contrato ganharam muita força devido ao crescimento das *APIs* e dos micro serviços. Normalmente, quando testamos a nossa aplicação, mesmo com o teste de integração, tendemos a não usar os serviços externos e sim um substituto que devolve a resposta esperada. Isso por que serviços externos podem afetar no tempo de resposta da requisição, podem cair, aumentar o custo e isso pode afetar nossos testes.
-  Mas por outro lado, quando isolamos nossa aplicação dos outros serviços para testar ficamos sem garantia de que esses serviços não mudaram suas *APIs*, que a resposta esperada ainda é a mesma, para solucionar esses problemas existem os testes de contrato.
+  Mas por outro lado, quando isolamos nossa aplicação dos outros serviços para testar ficamos sem garantia de que esses serviços não mudaram suas *APIs* e que a resposta esperada ainda é a mesma. Para solucionar esses problemas existem os testes de contrato.
 
 ### A definição de um contrato
 
@@ -104,7 +104,7 @@ A imagem abaixo representa o ciclo do *TDD*:
 
   Quando as unidades que estão sendo testadas possuem dependências que produzem efeitos colaterais, como os exemplos acima, não temos garantia de que a unidade está sendo testada isoladamente. Isso abre espaço para que o teste quebre por motivos não vinculados a unidade em sí, como por exemplo o serviço de banco não estar disponível ou uma *API* externa retornar uma resposta diferente da esperada no teste.
 
-  Há alguns anos atrás Gerard Meszaros publicou  o livro *XUnit Test Patterns: Refactoring Test Code* e introduziu o termo *Test Double* (traduzido como “dublê de testes”) que nomeia as diferentes maneiras de substituir dependências. A seguir vamos conhecer os mais comuns *test doubles* e quais são suas características além dos prós e contras.
+  Há alguns anos atrás Gerard Meszaros publicou  o livro *XUnit Test Patterns: Refactoring Test Code* e introduziu o termo *Test Double* (traduzido como “dublê de testes”) que nomeia as diferentes maneiras de substituir dependências. A seguir vamos conhecer os mais comuns *test doubles* e quais são suas características, prós e contras.
 
   Para facilitar a explicação será utilizado o mesmo exemplo para os diferentes tipos de *test doubles*, também será usada uma biblioteca de suporte chamada [*Sinon.js*](http://sinonjs.org/) que possibilita a utilização de *stubs*, *mocks* e *spies*. 
 
@@ -241,7 +241,7 @@ Quando a função *findAll* for chamada com o parâmetro *users*, retorna a resp
 
 Com *stubs* é possível ter vários comportamentos para a mesma função com base nos parâmetros que são passados, essa é uma das maiores diferenças entre *stubs* e *spies*.
 
-Como dito anteriormente, *stubs* são *spies* que conseguem alterar o comportamento. É possível notar isso na asserção *sinon.assert.calledWith(findAll, 'users')* ela é a mesma asserção do *spy* anterior. Nesse teste são feitas duas asserções, apenas para mostrar a semelhança com *spies*, pois múltiplas asserções em um mesmo caso de teste é considerado uma má prática.
+Como dito anteriormente, *stubs* são *spies* que conseguem alterar o comportamento. É possível notar isso na asserção *sinon.assert.calledWith(findAll, 'users')* ela é a mesma asserção do *spy* anterior. Nesse teste são feitas duas asserções, isso é feito apenas para mostrar a semelhança com *spies*, múltiplas asserções em um mesmo caso de teste é considerado uma má prática.
 
 Vantagens:
 
@@ -282,12 +282,12 @@ A primeira coisa a se notar no código é a maneira de fazer asserções com *Mo
 databaseMock.expects('findAll').once().withArgs('users');
 ```
 
-Nela são feitas duas asserções, a primeira para verificar se o método *findAll* foi chamado uma vez e na segunda se ele foi chamado com o argumento *users*, após isso o código é executado e é chamada a função *verify()* do *Mock* que irá verificar se as expectativas foram atingidas.
+Nela são feitas duas asserções, a primeira para verificar se o método *findAll* foi chamado uma vez e na segunda se ele foi chamado com o argumento *users*, em seguida o código é executado e é chamada a função *verify()* do *Mock* que irá verificar se as expectativas foram atingidas.
 
 Vantagens:
 
-- Verficicação interna de comportamento
-- Diversos asserções ao mesmo tempo
+- Verificação interna de comportamento
+- Diversas asserções ao mesmo tempo
 
 Desvantagens:
 
@@ -313,4 +313,4 @@ Alguns *test runners* possuem bibliotecas de *assert* por padrão, mas é bem co
 
 ### Bibliotecas de suporte
 
-Somente rodar os arquivos de teste e fazer o *assert* nem sempre basta, é necessário substituir dependências, subir servidores *fake*, alterar o *DOM* e várias outras coisas. Para isso existem as bibliotecas de suporte, elas se separam em diversas responsabilidades como por exemplo para fazer *mocks* e *spys* temos o [*SinonJS*](http://sinonjs.org/) e o [*TestDoubleJS*](http://sinonjs.org/). Já para emular servidores existe o [*supertest*](http://sinonjs.org/).
+Somente executar os arquivos de teste e fazer o *assert* nem sempre é o suficiente. Pode ser necessário substituir dependências, subir servidores *fake*, alterar o *DOM* e etc. Para isso existem as bibliotecas de suporte. As bibliotecas de suporte se separam em diversas responsabilidades, como por exemplo: para fazer *mocks* e *spys* temos o [*SinonJS*](http://sinonjs.org/) e o [*TestDoubleJS*](http://sinonjs.org/) já para emular servidores existe o [*supertest*](http://sinonjs.org/).
