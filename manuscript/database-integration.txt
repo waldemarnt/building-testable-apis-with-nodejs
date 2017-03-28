@@ -251,7 +251,7 @@ describe('Routes: Products', () => {
 +
 ```
 
-No bloco acima é criado um *let* para o *request* do *supertest* e no *"before"*  a aplicação é inicializada, assim que o *setupApp* retornar uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let request* que definimos anteriormente.
+No bloco acima é criado um *let* para o *request* do *supertest* e no *before*  a aplicação é inicializada, assim que o *setupApp* retornar uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let request* que definimos anteriormente.
 
 T> ## *let* no lugar de *const*
 T> *let* e *const* são novos tipos de declaração de variaveis do *Ecmascript* T> 6 ambas possuem comportamento similar mas com uma grande diferença, 

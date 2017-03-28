@@ -108,7 +108,7 @@ A imagem abaixo representa o ciclo do *TDD*:
 
   Para facilitar a explicação será utilizado o mesmo exemplo para os diferentes tipos de *test doubles*, também será usada uma biblioteca de suporte chamada [*Sinon.js*](http://sinonjs.org/) que possibilita a utilização de *stubs*, *mocks* e *spies*. 
 
-  A *controller* abaixo é uma classe que recebe um banco de dados como dependência no construtor. O método que iremos testar unitariamente dessa classe é o método ***"getAll"***, ele retorna uma consulta do banco de dados com uma lista de usuários.
+  A *controller* abaixo é uma classe que recebe um banco de dados como dependência no construtor. O método que iremos testar unitariamente dessa classe é o método ***getAll***, ele retorna uma consulta do banco de dados com uma lista de usuários.
 
 ```javascript
 const Database = {
@@ -152,8 +152,8 @@ describe('UsersController getAll()', () => {
 });
 
 ```
-Nesse caso de teste não é necessária nenhuma biblioteca de suporte, tudo é feito apenas criando um objeto *fake* para substituir a dependência do banco de dados. O método ***"findAll"*** passa a ter uma resposta fixa, que é uma lista com um usuário.
-Para validar o teste é necessário verificar se a resposta do método *"getAll"* do *controller* responde com uma lista igual a declarada no *"expectedDatabaseResponse"*.
+Nesse caso de teste não é necessária nenhuma biblioteca de suporte, tudo é feito apenas criando um objeto *fake* para substituir a dependência do banco de dados. O método ***findAll*** passa a ter uma resposta fixa, que é uma lista com um usuário.
+Para validar o teste é necessário verificar se a resposta do método *getAll* do *controller* responde com uma lista igual a declarada no *expectedDatabaseResponse*.
 
 Vantagens:
 
@@ -173,7 +173,7 @@ Quando usar *fakes*:
 ### *Spy*
 
 Como vimos anteriormente os *fakes* permitem substituir uma dependência por algo customizado mas não possibilitam saber, por exemplo, quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. Para isso existem os *spies*, como o próprio nome já diz, eles gravam informações sobre o comportamento do que está sendo “espionado”.
-No exemplo abaixo é adicionado um *spy* no método *"findAll"* do *Database* para verificar se ele está sendo chamado com os parâmetros corretos:
+No exemplo abaixo é adicionado um *spy* no método *findAll* do *Database* para verificar se ele está sendo chamado com os parâmetros corretos:
 
 ```javascript
 describe('UsersController getAll()', () => {
@@ -189,7 +189,7 @@ describe('UsersController getAll()', () => {
 });
 ```
 
-Note que é adicionado um *spy* na função ***"findAll"*** do *Database*, dessa maneira o *Sinon* devolve uma referência a essa função e também adiciona alguns comportamentos a ela que possibilitam realizar checagens como *"sinon.assert.calledWith(findAll, 'users')"* onde é verificado se a função foi chamada com o parâmetro esperado.
+Note que é adicionado um *spy* na função ***findAll*** do *Database*, dessa maneira o *Sinon* devolve uma referência a essa função e também adiciona alguns comportamentos a ela que possibilitam realizar checagens como *sinon.assert.calledWith(findAll, 'users')* onde é verificado se a função foi chamada com o parâmetro esperado.
 
 Vantagens:
 
@@ -237,7 +237,7 @@ Quando usamos *stubs* podemos descrever o comportamento esperado, como nessa par
 ```javascript
 findAll.withArgs('users').returns(expectedDatabaseResponse);
 ```
-Quando a função *"findAll"* for chamada com o parâmetro *"users"*, retorna a resposta padrão. 
+Quando a função *findAll* for chamada com o parâmetro *users*, retorna a resposta padrão. 
 
 Com *stubs* é possível ter vários comportamentos para a mesma função com base nos parâmetros que são passados, essa é uma das maiores diferenças entre *stubs* e *spies*.
 
