@@ -96,7 +96,7 @@ A imagem abaixo representa o ciclo do *TDD*:
 
 ![](images/image-10.png)
 
-  Testes de contrato possuem diversas extensões, o caso acima é chamado de *consumer contract* onde o consumidor verifica o contrato e, caso o teste falhe, notifica o *provider* (provedor) ou altera sua aplicação para o novo contrato. Também existe o *provider contracts* onde o próprio provedor testa se as alterações feitas irão quebrar os consumidores.
+  Testes de contrato possuem diversas extensões, o caso acima é chamado de [*consumer contract*](https://www.thoughtworks.com/pt/radar/techniques/consumer-driven-contract-testing) onde o consumidor verifica o contrato e, caso o teste falhe, notifica o *provider* (provedor) ou altera sua aplicação para o novo contrato. Também existe o *provider contracts* onde o próprio provedor testa se as alterações feitas irão quebrar os consumidores.
 
 ## *Test Doubles*
 
