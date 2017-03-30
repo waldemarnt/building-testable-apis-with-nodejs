@@ -258,9 +258,10 @@ describe('Routes: Products', () => {
 No bloco acima, criamos um *let* para o *request* do *supertest* e no *before* a aplicação é inicializada. Assim que o *setupApp* retornar uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let request* que definimos anteriormente.
 
 T> ## *let* no lugar de *const*
-T> *let* e *const* são novos tipos de declaração de variáveis do *Ecmascript* T> 6 ambas possuem comportamento similar mas com uma grande diferença, 
-T> *constants* não podem ter seu valor alterado. Por isso foi utilizado *let* T> no código acima, pois o valor precisa ser reescrito após o *before*.
-T> Leia mais sobre *let*, *const* e *block bindings* [aqui](http://walde.co/2016/05/13/javascript-es6-let-e-const-e-block-bindings/).
+T> 
+T> *let* e *const* são novos tipos de declaração de variáveis do *Ecmascript*  T> 6 ambas possuem comportamento similar mas com uma grande diferença,  
+T> *constants* não podem ter seu valor alterado. Por isso foi utilizado *let*  T> no código acima, pois o valor precisa ser reescrito após o *before*. 
+T> Leia mais sobre *let*, *const* e *block bindings* [aqui](http://walde.co/2016/05/13/javascript-es6-let-e-const-e-block-bindings/). 
 
 Executando os testes novamente, a saída deve ser a seguinte:
 
