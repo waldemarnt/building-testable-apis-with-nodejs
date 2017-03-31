@@ -10,25 +10,27 @@ Mesmo assim podemos aproveitar os padrões comuns entre esses projetos para estr
 
 O diretório raiz do projeto é o ponto de entrada e fornece a primeira impressão. No exemplo a seguir, temos uma estrutura comum em aplicações usando o *framework Express.js*:
 
-* controllers/
-* middlewares/
-* models/
-* tests/
-* .gitignore
-* app.js
-* package.json
+```sh
+├── app.js
+├── controllers
+├── middlewares
+├── models
+├── package.json
+└── tests
+```
 
 Essa estrutura é legível e organizada, mas com o crescimento da aplicação pode misturar diretórios de código com diretórios de teste, *build* e etc. Um padrão comum em diversas linguagens é armazenar o código da aplicação em um diretório *source* normalmente chamado *src*.
 
-* src
-    * controllers/
-    * middlewares/
-    * models/
-* app.js
-* tests/
-* .gitignore
-* server.js
-* package.json
+```sh
+├── package.json
+├── server.js
+├── src
+│   ├── controllers
+│   ├── middlewares
+│   └── models
+│   └── app.js
+└── tests
+```
 
 Dessa maneira o código da aplicação é isolado em um diretório deixando a raiz do projeto mais limpa e acabando com a mistura de diretórios de código com diretórios de testes e arquivos de configuração.
 
@@ -37,25 +39,26 @@ Dessa maneira o código da aplicação é isolado em um diretório deixando a ra
 No exemplo acima movemos o código da aplicação para o diretório *src* mas mantivemos o  diretório *tests*, isso acontece porque testes são executados por linha de comando ou por outras ferramentas. Inclusive os *test runners* como *mocha* e *karma* esperam que o diretório *tests* esteja no diretório principal. 
 Outros diretórios comumente localizados na raiz são *scripts* de suporte ou *build*, exemplos, documentação e arquivos estáticos. No exemplo abaixo vamos incrementar nossa aplicação com mais alguns diretórios:
 
-* env/
-    * prod.env
-    * dev.env
-* public/
-    * assets/
-    * images/
-    * css/
-    * js/
-* src
-    * controllers/
-    * middlewares/
-    * models/
-    * app.js
-* tests/
-* scripts/
-    * deploy.sh
-* .gitignore
-* server.js
-* package.json
+```sh
+├── env
+│   ├── dev.env
+│   └── prod.env
+├── package.json
+├── public
+│   ├── assets
+│   ├── css
+│   ├── images
+│   └── js
+├── scripts
+│   └── deploy.sh
+├── server.js
+├── src
+│   ├── app.js
+│   ├── controllers
+│   ├── middlewares
+│   └── models
+└── tests
+```
 
 O diretório *public* é responsável por guardar tudo aquilo que vai ser entregue para o usuário. Mantê-lo na raiz facilita a criação de rotas de acesso e a movimentação dos assets, caso necessário. Os diretórios *scripts* e *env* são relacionados a execução da aplicação e serão chamados por alguma linha de comando ou ferramenta externa, colocá-los em um diretório acessível promove a usabilidade.
 
@@ -67,79 +70,90 @@ No segundo passo, quando movemos o código para o diretório *src*, criamos um a
 
 Agora que já entendemos o que fica fora do diretório *src* vamos ver como organizá-lo baseado nas nossas necessidades.
 
-* src/
-    * controllers/
-    * routes/
-    * models/
-    * middlewares/
-    * app.js
+```sh
+├── src
+│   ├── app.js
+│   ├── controllers
+│   ├── middlewares
+│   ├── models
+│   └── routes
+```
 
 Essa estrutura é bastante utilizada, ela é clara e separa as responsabilidades de cada componente, além de permitir o carregamento dinâmico.
 
 ## Responsabilidades diferentes dentro de um mesmo source 
 Ás vezes, quando começamos uma aplicação, já sabemos o que será desacoplado e queremos dirigir nosso *design* para que no futuro seja possível separar e tornar parte do código um novo módulo. Outra necessidade comum é ter *APIs* específicas para diferentes tipos de clientes, como no exemplo a seguir:
 
-* src/
-    * mobile/
-        * controllers/
-        * routes/
-        * models/
-        * middlewares/
-        * index.js
-    * web
-        * controllers/
-        * routes/
-        * models/
-        * middlewares/
-        * index.js
-    * app.js
+```sh
+└── src
+    ├── app.js
+    ├── mobile
+    │   ├── controllers
+    │   ├── index.js
+    │   ├── middlewares
+    │   ├── models
+    │   └── routes
+    └── web
+        ├── controllers
+        ├── index.js
+        ├── middlewares
+        ├── models
+        └── routes
+```
 
 Esse cenário funciona bem mas pode dificultar o reúso de código entre os componentes. Então, antes de implementar, tenha certeza que seu caso de uso permite a separação dos clientes sem que um dependa do outro.
 
 ## *Server* e *client* no mesmo repositório
 Muitas vezes temos o *backend* e o *front-end* separados mas versionados juntos, no mesmo repositório, seja ele *git*, *mercurial*, ou qualquer outro controlador de versão. A estrutura mais comum que pude observar na comunidade para esse tipo de situação é separar o *server* e o *client* como no exemplo abaixo:
 
-* client/
-    * controllers/
-    * models/
-    * views/
-* server/
-    * controllers/
-    * models/
-    * routes/
-* tests/
-* config/
-* package.json
-* server.js
-* client.js
-* README.md
+```sh
+├── client
+│   ├── controllers
+│   ├── models
+│   └── views
+├── client.js
+├── config
+├── package.json
+├── server
+│   ├── controllers
+│   ├── models
+│   └── routes
+├── server.js
+└── tests
+```
 
 Essa estrutura é totalmente adaptável ás necessidades. No exemplo acima, os testes de ambas as aplicações estão no diretório *tests* no diretório raiz. Assim, se o projeto for adicionado em uma integração contínua ele vai executar a bateria de testes de ambas as aplicações. O **server.js** e o **client.js** são responsáveis por iniciar as respectivas aplicações. Podemos ter um *npm start* no *package.json* que inicie os dois arquivos juntos.
 
 ## Separação por funcionalidade
 Um padrão bem frequente é o que promove a separação por funcionalidade. Nele abstraímos os diretórios baseado nas funcionalidades e não nas responsabilidades, como no exemplo abaixo:
 
-* src/
-    * products/
-        * products.controller.js
-        * products.model.js
-        * products.routes.js
-    * orders/
-        * orders.controller.js
-        * orders.routes.js
-    * app.js
+```sh
+└── src
+    ├── app.js
+    ├── orders
+    │   ├── orders.controller.js
+    │   └── orders.routes.js
+    └── products
+        ├── products.controller.js
+        ├── products.model.js
+        └── products.routes.js
+```
 
 Essa estrutura possui uma boa legibilidade e escalabilidade, por outro lado, pode crescer muito tornando o reúso de componentes limitado e dificultando o carregamento dinâmico de arquivos. 
 
 ## Conversão de nomes
-Quando separamos os diretórios por suas responsabilidades pode não ser necessário deixar explícito a responsabilidade no nome do arquivo. Veja o exemplo abaixo:
 
-* src/
-    * controllers/
-        * products.js
-    * routes/ 
-        * products.js
+Quando separamos os diretórios por suas responsabilidades pode não ser necessário deixar explícito a responsabilidade no nome do arquivo.
 
+Veja o exemplo abaixo:
+
+```sh
+└── src
+    ├── controllers
+    │   └── products.js
+    └── routes
+        └── products.js
+```
 
 Como o nosso diretório é responsável por informar qual a responsabilidade dos arquivos que estão dentro dele, podemos nomear os arquivos sem adicionar o sufixo *_* + nome do diretório (por exemplo: “_controller”). Além disso, o *javascript* permite nomear um módulo quando o importamos, permitindo que mesmo arquivos com o mesmo nome sejam facilmente distinguidos por quem está lendo o código, veja o exemplo:
 
