@@ -149,3 +149,5 @@ Import ProductsRoute from './src/routes/products';
 ```
 
 Dessa maneira não adicionamos nenhuma informação desnecessária ao nomes dos arquivos e ainda mantemos a legibilidade do código.
+
+No decorrer do livro utilizaremos o exemplo seguindo o padrão *MVC* com a diretório *source* e os demais diretórios dentro, como *controllers*, *models* e etc.
