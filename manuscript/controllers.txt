@@ -189,7 +189,7 @@ A primeira adição foi o *import* do *Sinon*, módulo que instalamos anteriorme
 
 Logo após a descrição do nosso cenário de teste principal adicionamos uma *constant* chamada ***defaultProduct*** que armazena um *array* com um objeto referente a um produto com informações estáticas. Ele será útil para reaproveitarmos código nos casos de teste.
 
-Dentro do caso de teste foram adicionadas duas *constants*: *request*, que é um objeto *fake* da requisição enviada pela rota do *express*, que vamos chamar de *res* na aplicação, e *response*, que é um objeto *fake* da resposta enviada pela rota do *express*, a qual vamos chamar de *res* na aplicação.
+Dentro do caso de teste foram adicionadas duas *constants*: *request*, que é um objeto *fake* da requisição enviada pela rota do *express*, que vamos chamar de *req* na aplicação, e *response*, que é um objeto *fake* da resposta enviada pela rota do *express*, a qual vamos chamar de *res* na aplicação.
 
 Note que a propriedade *send* do objeto *response* recebe um *spy* do *Sinon*, como vimos anteriormente, no capítulo de *test doubles*, os *spies* permitem gravar informações como quantas vezes uma função foi chamada, quais parâmetros ela recebeu e etc. O que será perfeito em nosso caso de uso pois precisamos validar que a função *send* do objeto response está sendo chamada com os devidos parâmetros.
 
