@@ -313,4 +313,4 @@ Alguns *test runners* possuem bibliotecas de *assert* por padrão, mas é bem co
 
 ### Bibliotecas de suporte
 
-Somente executar os arquivos de teste e fazer o *assert* nem sempre é o suficiente. Pode ser necessário substituir dependências, subir servidores *fake*, alterar o *DOM* e etc. Para isso existem as bibliotecas de suporte. As bibliotecas de suporte se separam em diversas responsabilidades, como por exemplo: para fazer *mocks* e *spys* temos o [*SinonJS*](http://sinonjs.org/) e o [*TestDoubleJS*](http://sinonjs.org/) já para emular servidores existe o [*supertest*](http://sinonjs.org/).
+Somente executar os arquivos de teste e fazer o *assert* nem sempre é o suficiente. Pode ser necessário substituir dependências, subir servidores *fake*, alterar o *DOM* e etc. Para isso existem as bibliotecas de suporte. As bibliotecas de suporte se separam em diversas responsabilidades, como por exemplo: para fazer *mocks* e *spys* temos o [*SinonJS*](http://sinonjs.org/) e o [*TestDoubleJS*](https://github.com/testdouble/testdouble.js) já para emular servidores existe o [*supertest*](https://github.com/visionmedia/supertest).
