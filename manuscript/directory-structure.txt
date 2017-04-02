@@ -56,7 +56,8 @@ Outros diretórios comumente localizados na raiz são *scripts* de suporte ou *b
 │   ├── app.js
 │   ├── controllers
 │   ├── middlewares
-│   └── models
+│   ├── models
+│   └── routes
 └── tests
 ```
 
