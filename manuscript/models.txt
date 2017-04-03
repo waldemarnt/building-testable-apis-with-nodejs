@@ -360,13 +360,13 @@ Como estamos testando a rota products que retorna todos os produtos, precisamos 
 Logo abaixo do código anterior adicione o seguinte código:
 
 ```diff
- + beforeEach(() => {
- +   const product = new Product(defaultProduct);
- +   product._id = '56cb91bdc3464f14678934ca';
- +   return Product.remove({})
- +     .then(() => product.save());
- + });
- +
++ beforeEach(() => {
++   const product = new Product(defaultProduct);
++   product._id = '56cb91bdc3464f14678934ca';
++   return Product.remove({})
++     .then(() => product.save());
++ });
++
 ```
 
 O que o código acima faz, é criar um novo produto utilizando os dados da *constant* *defaultProduct* e atribuir a nova instância do produto a *constant product*. Na linha seguinte a propriedade *product._id* do objeto criado pelo *mongoose* é sobrescrita por um *id* estático que geramos.
