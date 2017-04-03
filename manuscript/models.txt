@@ -1,0 +1,469 @@
+# *Models*
+
+Como visto no capítulo sobre *MVC* os *models* são responsáveis pelos dados, persistência e validação na aplicação. Aqui estamos utilizando o *Mongoose*, que já provê uma *API* para a utilização de *models*.
+
+## Criando o *model* com *Mongoose*
+
+O primeiro passo será a criação de um diretório chamando ***models*** e um arquivo chamado ***products.js*** dentro de *src*, como no exemplo abaixo:
+
+```sh
+├── src
+│   ├── models
+│   │   └── product.js
+```
+
+No *products.js* devemos começar importando o módulo do *mongoose*:
+
+```javascript
+import mongoose from 'mongoose';
+```
+
+Após isso será necessário descrever o *schema* do *model* de *products*. O *schema* é utilizado pelo *mongoose* para válidar e mapear os dados do *model*. Cada *schema* representa uma *collection* do *MongoDB*.
+
+Adicione um *schema* como o seguinte:
+
+```javascript
+const schema = new mongoose.Schema({
+  name: String,
+  description: String,
+  price: Number
+});
+```
+
+No bloco acima uma nova instância de *schema* é definida e atribuída a *constant schema*, o *model* está definido, agora basta exportá-lo para que ela possa ser utilizado na aplicação:
+
+```javascript
+const Product = mongoose.model('Product', schema);
+
+export default Product;
+```
+
+Chamando *mongoose.model* com um nome, no nosso caso *Product*, como no exemplo acima definimos um *model* no módulo *global* do *mongoose*. O que significa que qualquer lugar que importar o módulo do *mongoose* a partir de agora na aplicação poderá acessar o *model* de *products* que foi definido pois o módulo do *mongoose* é um *Singleton*.
+
+A versão final do *model Product* deve ficar similar a esta:
+
+```javascript
+import mongoose from 'mongoose';
+
+const schema = new mongoose.Schema({
+  name: String,
+  description: String,
+  price: Number
+});
+const Product = mongoose.model('Product', schema);
+
+export default Product;
+```
+
+## Integrando *models* e *controllers*
+
+Até agora nosso *controller* responde com dados *fakes* e nosso teste de integração ainda está no estado *GREEN*. 
+Adicionamos o *model* e agora precisamos integrar ele com o *controller* e depois com a rota para que seja possível finalizar a integração e completar o passo de *REFACTOR* do nosso teste de integração.
+
+Para começar vamos atualizar o teste de unidade do *controller* para refletir o comportamento que esperamos. Para isso devemos começar atualizando o arquivo *test/unit/controllers/products_spec.js* importando os módulos necessários para descrever o comportamento esperado no teste:
+
+```diff
+ import ProductsController from '../../../src/controllers/products';
+ import sinon from 'sinon';
+ +import sinonAsPromised from 'sinon-as-promised';
+ +import Product from '../../../src/models/product';
+```
+
+Aqui importamos dois módulos, um deles é o model de *Product* que criamos anteriormente e será usado pelo *controller* e também o *sinon-as-promised*, módulo que possibilita ao *sinon* trabalhar com *Promises*. Precisamos instalar o *sinon-as-promised* antes de prosseguir, execute o seguinte comando no terminal:
+
+```sh
+$ npm install --save-dev sinon-as-promised
+```
+
+Instalado, estara disponivel para uso.
+
+Agora vamos mudar o caso de teste incluindo o comportamento que esperamos quando integrarmos com o *model*.
+
+```diff
+   describe('get() products', () => {
+ -    it('should return a list of products', () => {
+ +    it('should call send with a list of products', () => {
+        const request = {};
+        const response = {
+          send: sinon.spy()
+        };
+ +      Product.find = sinon.stub();
+```
+
+No código acima começamos atualizando a descrição, não iremos checar o retorno pois a saída da função *get* é uma chamada para a função *send* do *express*, então nossa descrição deve refletir isso, dizemos que: "Isso deve chamar a função *send* com uma lista de produtos".
+
+Logo após atribuimos um *stub* para a função *find* do *model Product*. Dessa maneira será possível adicionar qualquer comportamento para essa função simulando uma chamada de banco de dados por exemplo.
+O próximo passo será mudar o seguinte código para utilizar o *stub*:
+
+```diff
+-      const productsController = new ProductsController();
+-      productsController.get(request, response);
++      Product.find.withArgs({}).resolves(defaultProduct);
+```
+
+No *withArgs({})* dizemos para o *stub* que quando ele for chamado com um objeto vazio ele deve resolver uma *Promise *retornando o *defaultProduct*. Esse comportamento será o mesmo que o *moongose* fará quando buscar os dados do banco de dados. Mas como queremos testar isoladamente vamos remover essa integração com o banco de dados utilizando esse *stub*.
+
+Agora precisamos mudar o comportamento esperado:
+
+```diff
+-      expect(response.send.called).to.be.true;
+ -      expect(response.send.calledWith(defaultProduct)).to.be.true;
+ +      const productsController = new ProductsController(Product);
+ +      return productsController.get(request, response)
+ +        .then(() => {
+ +          sinon.assert.calledWith(response.send, defaultProduct);
+ +        });
+ +    });
+```
+
+No código acima, o primeiro passo foi iniciar uma nova instância de *ProductsController* passando por parâmetro o *model*. Dessa maneira esperamos que cada instância de *controller* possua um *model*.
+Na linha seguinte retornamos a função *get* do *productsController*. Isso por que ela será uma *Promise*, e precisamos retornar para que nosso *test runner*, o *Mocha*, a chame para que ela possa ser resolvida. Quando a *Promise* for resolvida é checado se a função *send* do objeto *response*, que é um *spy*, foi chamada com o *defaultProduct*:
+
+```javascript
+sinon.assert.calledWith(response.send, defaultProduct);
+```
+
+Isso valida que a função *get* foi chamada, chamou a função *find* do *model* *Product* passando um objeto vazio e ele retornou uma *Promise* contendo o *defaultProduct*. O código final deve estar similar a este:
+
+```javascript
+import ProductsController from '../../../src/controllers/products';
+import sinon from 'sinon';
+import sinonAsPromised from 'sinon-as-promised';
+import Product from '../../../src/models/product';
+
+describe('Constrollers: Products', () => {
+  const defaultProduct = [{
+    name: 'Default product',
+    description: 'product description',
+    price: 100
+  }];
+
+  describe('get() products', () => {
+    it('should call send with a list of products', () => {
+      const request = {};
+      const response = {
+        send: sinon.spy()
+      };
+      Product.find = sinon.stub();
+
+      Product.find.withArgs({}).resolves(defaultProduct);
+
+      const productsController = new ProductsController(Product);
+      return productsController.get(request, response)
+        .then(() => {
+          sinon.assert.calledWith(response.send, defaultProduct);
+        });
+    });
+
+  });
+});
+```
+
+Se executarem os testes de unidade agora, eles estão falhando, então vamos a implementação!
+
+## Atualizando o *controller* para utilizar o *model*
+
+Agora precisamos atualizar o *controller products* que fica em: *src/controllers/products.js*. Vamos começar adicionando um construtor para poder receber o *model Product*, como no código a seguir:
+
+```diff
+class ProductsController {
+ +  constructor(Product) {
+ +    this.Product = Product;
+ +  };
+```
+
+O construtor irá garantir que toda a vez que alguém tentar criar uma instância do *controller* ele deve passar o *model Product* por parâmetro. Mas ai vocês me perguntam, mas por que não importar ele diretamente no *productsController.js*? Pois assim não seria possível usar *stub* no *model* e tornaria o código acoplado. Veremos mais sobre como gerenciar dependencias nos capítulos seguintes.
+
+Seguindo a atualização do *controller* agora devemos atualizar o método que estamos testando, o *get*. Como no código a seguir:
+
+```diff
+   get(req, res) {
+ -    return res.send([{
+ -      name: 'Default product',
+ -      description: 'product description',
+ -      price: 100
+ -    }])
+ +    return this.Product.find({})
+ +      .then(products => res.send(products));
+    }
+  }
+```
+
+Aqui removemos o produto *fake* que era retornado, para aplicar a lógica real de integração com o banco. Note que *this.Product.find({})* segundo a [documentação do *mongoose*](http://mongoosejs.com/docs/queries.html) irá retornar uma lista de objetos, então o que está sendo feito quando a *Promise* resolver é passar essa lista para a função *send* do objeto *res* do *express* para que ele retorne para o usuário que fez a requisição.
+
+Essa é a implementação necessária para que o teste passe, vamos rodá-lo:
+
+```sh
+$ npm run test:unit
+```
+
+A resposta deve ser:
+
+```sh
+  Controllers: Products
+    get() products
+      ✓ should call send with a list of products
+
+
+  1 passing (217ms)
+```
+
+## Testando casos de erro
+
+Até agora apenas testamos o [*happy path*](https://en.wikipedia.org/wiki/Happy_path) (termo usado para descrever o caminho feliz esperado em um teste), mas o que acontecerá se der algum erro na consulta ao banco? Que código de erro e mensagem devemos enviar para o usuário?
+
+Vamos escrever um caso de teste unitário para esse comportamento, o caso de teste deve ser como o seguinte:
+
+```javascript
+  it('should return 400 when an error occurs', () => {
+			const request = {};
+      const response = {
+        send: sinon.spy(),
+        status: sinon.stub()
+      };
+
+      response.status.withArgs(400).returns(response);
+      Product.find = sinon.stub();
+      Product.find.withArgs({}).rejects("Error");
+
+      const productsController = new ProductsController(Product);
+
+      return productsController.get(request, response)
+      .then(() => {
+        sinon.assert.calledWith(response.send, 'Error');
+      });
+    });
+```
+
+Devemos dar atenção a dois pontos nesse teste, primeiro é:
+
+```javascript
+response.status.withArgs(400).returns(response);
+```
+
+Onde dizemos que: Quando a função *status* for chamada com o argumento *400* ela deve retornar o objeto *response*, isso por que a *API* do *express* concatena as chamadas de funções. O próximo ponto é:
+
+```javascript
+Product.find.withArgs({}).rejects("Error");
+```
+
+Aqui utilizamos o *stub* para rejeitar a *Promise* e simular uma consulta ao banco que retornou uma falha.
+Se executarmos os testes agora receberemos um erro, pois não implementamos ainda, então vamos implementar.
+Atualize a função *get* do *controller* de *products* adicionando um *catch* na busca, ele deve ficar assim:
+
+```javascript
+  get(req, res) {
+    return this.Product.find({})
+      .then(products => res.send(products))
+      .catch(err => res.status(400).send(err.message));
+  }
+```
+
+Aqui é dito que, quando ocorrer algum erro, o *status* da requisição será 400, usamos *res.status* que é uma função do *express* que adiciona o *statusCode* da resposta *HTTP*. Após isso enviamos a resposta adicionando a mensagem do erro como corpo utilizando a função *send* do objeto de resposta do *express*.
+
+Agora basta executar os testes de unidade novamente e eles devem estar passando:
+
+```sh
+$ npm run test:unit
+```
+
+A resposta deve ser:
+
+```sh
+  Constrollers: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+
+
+  2 passing (223ms)
+```
+
+Nossa unidade está pronta para ser integrada com o resto da aplicação, faremos isso no próximo passo.
+
+# O passo *Refactor* do *TDD*
+
+Lembram que nosso teste de integração está no passo *GREEN* do *TDD*? Ou seja, está com lógica suficiente para passar mas não está com a implementação real. Agora que o *controller* já está completo, integrando com o *model*, é o melhor momento para refatorar o resto dos componentes fazendo a integração com o *model* e *controller*.
+
+## Integração entre rota, *controller* e *model*
+
+Nesse passo vamos refatorar nossa rota de *products* para que ela consiga criar o *controller* corretamente, passando o *model* como dependência. Altere o arquivo *src/routes/products.js* para que ele fique como o código a seguir:
+
+```diff
+import express from 'express';
+  import ProductsController from '../controllers/products';
+ +import Product from '../models/product';
+  
+  const router = express.Router();
+ -const productsController = new ProductsController();
+ +const productsController = new ProductsController(Product);
+  router.get('/', (req, res) => productsController.get(req, res));
+  
+  export default router;
+```
+
+A única mudança é que a nova instância do *controller* recebe o *model Product* por parâmetro. A integração parece estar pronta, vamos executar os testes de integração:
+
+```sh
+$ npm run test:integration
+```
+
+A saida sera como a seguinte: 
+
+```sh
+Routes: Products
+    GET /products
+      1) should return a list of products
+
+
+  0 passing (286ms)
+  1 failing
+
+  1) Routes: Products GET /products should return a list of products:
+     Uncaught AssertionError: expected undefined to deeply equal { Object (name, description, ...) }
+      at Test.request.get.end (test/integration/routes/products_spec.js:41:34)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1549:8)
+      at _combinedTickCallback (internal/process/next_tick.js:71:11)
+      at process._tickCallback (internal/process/next_tick.js:98:9)
+```
+
+
+O teste falhou, e isso é esperado, pois agora utilizamos o *MongoDB* e vamos precisar criar um produto antes de executar o teste para que seja possível reproduzir o cenário que queremos.
+
+Vamos adicionar o que precisamos no teste de integração da rota de productos, abra o arquivo *test/integration/routes/products_spec.js*.
+A primeira coisa é a resposta que esperamos do *MongoDB*. O *MongoDB* adiciona alguns campos aos documentos salvos que são *_v*, corresponde a versão do documento e *_id* que é o identificador único do documento, normalmente um [*uuid.v4*](https://en.wikipedia.org/wiki/Universally_unique_identifier).
+
+```diff
+const defaultProduct = {
+      name: 'Default product',
+      description: 'product description',
+      price: 100
+    };
+ +  const expectedProduct = {
+ +    __v: 0,
+ +    _id: '56cb91bdc3464f14678934ca',
+ +    name: 'Default product',
+ +    description: 'product description',
+ +    price: 100
+ +  };
+ +
+```
+
+Logo abaixo do *defaultProduct* adicionamos uma *constant* chamada *expectedProduct* correspondente ao produto que esperamos ser criado pelo *MongoDB*.
+Agora já possuímos o produto que queremos salvar que é *defaultProduct* e também o que esperamos de resposta do *MongoDB*.
+
+Como estamos testando a rota products que retorna todos os produtos, precisamos ter produtos no banco de dados para poder validar o comportamento esse comportamento. Para isso iremos utilizar o *callback* do *Mocha* chamado *beforeEach*, que significa: antes de cada. Esse *callback* é executado pelo *Mocha* antes de cada caso de teste, então ele é perfeito para nosso cenário onde precisamos ter um produto disponível no banco antes de executar o teste.
+
+Logo abaixo do código anterior adicione o seguinte código:
+
+```diff
++  beforeEach(() => {
+ +    const product = new Product(defaultProduct);
+ +    product._id = '56cb91bdc3464f14678934ca';
+ +    return Product.remove({})
+ +      .then(() => product.save());
+ +  });
+ +
+```
+
+O que o código acima faz, é criar um novo produto utilizando os dados da *constant* *defaultProduct* e atribuir a nova instância do produto a *constant product*. Na linha seguinte a propriedade *product._id* do objeto criado pelo *mongoose* é sobrescrita por um *id* estático que geramos.
+Por padrão o *mongoose* gera um *uuid* para cada novo documento, mas no caso do teste precisamos saber qual é o *id* do documento que estamos salvando para poder comparar dentro do caso de teste, se utilizarmos o *uuid* gerado pelo *mongoose* o teste nunca conseguirá comparar o mesmo *id*. Dessa maneira sobrescrevemos por um *id* gerado por nós mesmos.
+Existem vários sites na *internet* para gerar *uuid*, eu por exemplo utilizei este [*uuid generator*](https://www.uuidgenerator.net/).
+
+Após a atribuição do *id* retornamos uma *Promise* que remove todos os produtos do banco de dados e depois salva o produto que criamos.
+
+O próximo passo é garantir que iremos deixar o terreno limpo após executar o teste. Quando criamos testes que criam dados em banco de dados, escrevem arquivos em disco, ou seja, testes que podem deixar rastros para outros testes devemos limpar todo o estado e garantir que após a execução do teste não terá nenhum vestígio para os próximos.
+Para isso vamos adicionar também o *callback afterEach* que significa: Depois de cada, para garantir que o *MongoDB * ficará limpo, ou seja, sem dados. Para isso adicione o seguinte código logo abaixo do anterior:
+
+```diff
++  afterEach(() => Product.remove({}));
+```
+
+O último passo é atualizar o caso de teste para que ele verifique o *expectedProduct* no lugar do *defaultProduct*:
+
+```diff
+   describe('GET /products', () => {
+      it('should return a list of products', done => {
+  
+        request
+        .get('/products')
+        .end((err, res) => {
+ -        expect(res.body[0]).to.eql(defaultProduct);
+ +        expect(res.body).to.eql([expectedProduct]);
+          done(err);
+        });
+      });
+```
+
+O código final do *products_spec.js* deve estar similar a este:
+
+```javascript
+import Product from '../../../src/models/product';
+
+describe('Routes: Products', () => {
+  let request;
+
+  before(()=> {
+    return setupApp()
+      .then(app => {
+        request = supertest(app)
+      });
+  });
+
+  const defaultProduct = {
+    name: 'Default product',
+    description: 'product description',
+    price: 100
+  };
+  const expectedProduct = {
+    __v: 0,
+    _id: '56cb91bdc3464f14678934ca',
+    name: 'Default product',
+    description: 'product description',
+    price: 100
+  };
+
+  beforeEach(() => {
+    const product = new Product(defaultProduct);
+    product._id = '56cb91bdc3464f14678934ca';
+    return Product.remove({})
+      .then(() => product.save());
+  });
+
+  afterEach(() => Product.remove({}));
+
+  describe('GET /products', () => {
+    it('should return a list of products', done => {
+
+      request
+        .get('/products')
+        .end((err, res) => {
+          expect(res.body).to.eql([expectedProduct]);
+          done(err);
+        });
+    });
+  });
+});
+```
+
+Executando os testes de integração novamente:
+
+```sh
+$ npm run test:integration
+```
+
+Devemos ter a seguinte resposta:
+
+```sh
+  Routes: Products
+    GET /products
+
+      ✓ should return a list of products
+
+
+  1 passing (307ms)
+```
+
+Nosso ciclo de *TDD* nos testes de integração está completo, refatoramos e adicionamos o comportamento esperado. Essa padrão de começar por testes de integração, depois criar componentes internos como fizemos com *controllers* e *models* e utilizar o teste de integração para validar todo o comportamento é conhecido como *outside-in*, termo esse que falaremos a seguir.
