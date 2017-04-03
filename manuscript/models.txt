@@ -1,6 +1,6 @@
 # *Models*
 
-Como visto no capítulo sobre *MVC* os *models* são responsáveis pelos dados, persistência e validação na aplicação. Aqui estamos utilizando o *Mongoose*, que já provê uma *API* para a utilização de *models*.
+Como visto no capítulo sobre *MVC*, os *models* são responsáveis pelos dados, persistência e validação na aplicação. Aqui estamos utilizando o *Mongoose*, que já provê uma *API* para a utilização de *models*.
 
 ## Criando o *model* com *Mongoose*
 
@@ -30,7 +30,7 @@ const schema = new mongoose.Schema({
 });
 ```
 
-No bloco acima uma nova instância de *schema* é definida e atribuída a *constant schema*, o *model* está definido, agora basta exportá-lo para que ela possa ser utilizado na aplicação:
+No bloco acima uma nova instância de *schema* é definida e atribuída a *constant schema*, o *model* está definido, agora basta exportá-lo para que ele possa ser utilizado na aplicação:
 
 ```javascript
 const Product = mongoose.model('Product', schema);
@@ -38,7 +38,7 @@ const Product = mongoose.model('Product', schema);
 export default Product;
 ```
 
-Chamando *mongoose.model* com um nome, no nosso caso *Product*, como no exemplo acima definimos um *model* no módulo *global* do *mongoose*. O que significa que qualquer lugar que importar o módulo do *mongoose* a partir de agora na aplicação poderá acessar o *model* de *products* que foi definido pois o módulo do *mongoose* é um *Singleton*.
+Chamando *mongoose.model* com um nome, no nosso caso *Product* definimos um *model* no módulo *global* do *mongoose*. O que significa que qualquer lugar que importar o módulo do *mongoose* a partir de agora na aplicação poderá acessar o *model* de *products* que foi definido pois o módulo do *mongoose* é um *Singleton*.
 
 A versão final do *model Product* deve ficar similar a esta:
 
@@ -75,24 +75,25 @@ Aqui importamos dois módulos, um deles é o model de *Product* que criamos ante
 $ npm install --save-dev sinon-as-promised
 ```
 
-Instalado, estara disponivel para uso.
+Assim que instalado estará disponível para uso.
 
 Agora vamos mudar o caso de teste incluindo o comportamento que esperamos quando integrarmos com o *model*.
 
 ```diff
-   describe('get() products', () => {
- -    it('should return a list of products', () => {
- +    it('should call send with a list of products', () => {
-        const request = {};
-        const response = {
-          send: sinon.spy()
-        };
- +      Product.find = sinon.stub();
+
+  describe('get() products', () => {
+ -   it('should return a list of products', () => {
+ +   it('should call send with a list of products', () => {
+       const request = {};
+       const response = {
+         send: sinon.spy()
+       };
+ +     Product.find = sinon.stub();
 ```
 
 No código acima começamos atualizando a descrição, não iremos checar o retorno pois a saída da função *get* é uma chamada para a função *send* do *express*, então nossa descrição deve refletir isso, dizemos que: "Isso deve chamar a função *send* com uma lista de produtos".
 
-Logo após atribuimos um *stub* para a função *find* do *model Product*. Dessa maneira será possível adicionar qualquer comportamento para essa função simulando uma chamada de banco de dados por exemplo.
+Logo após atribuimos um *stub* para a função *find* do *model Product*. Desta maneira será possível adicionar qualquer comportamento para essa função simulando uma chamada de banco de dados por exemplo.
 O próximo passo será mudar o seguinte código para utilizar o *stub*:
 
 ```diff
@@ -101,7 +102,7 @@ O próximo passo será mudar o seguinte código para utilizar o *stub*:
 +      Product.find.withArgs({}).resolves(defaultProduct);
 ```
 
-No *withArgs({})* dizemos para o *stub* que quando ele for chamado com um objeto vazio ele deve resolver uma *Promise *retornando o *defaultProduct*. Esse comportamento será o mesmo que o *moongose* fará quando buscar os dados do banco de dados. Mas como queremos testar isoladamente vamos remover essa integração com o banco de dados utilizando esse *stub*.
+No *withArgs({})* dizemos para o *stub* que quando ele for chamado com um objeto vazio ele deve resolver uma *Promise* retornando o *defaultProduct*. Esse comportamento será o mesmo que o *moongose* fará quando buscar os dados do banco de dados. Mas como queremos testar isoladamente vamos remover essa integração com o banco de dados utilizando esse *stub*.
 
 Agora precisamos mudar o comportamento esperado:
 
@@ -117,7 +118,7 @@ Agora precisamos mudar o comportamento esperado:
 ```
 
 No código acima, o primeiro passo foi iniciar uma nova instância de *ProductsController* passando por parâmetro o *model*. Dessa maneira esperamos que cada instância de *controller* possua um *model*.
-Na linha seguinte retornamos a função *get* do *productsController*. Isso por que ela será uma *Promise*, e precisamos retornar para que nosso *test runner*, o *Mocha*, a chame para que ela possa ser resolvida. Quando a *Promise* for resolvida é checado se a função *send* do objeto *response*, que é um *spy*, foi chamada com o *defaultProduct*:
+Na linha seguinte retornamos a função *get* do *productsController*. Isso por que ela será uma *Promise*, e precisamos retornar para que nosso *test runner*, o *Mocha*, a chame e a resolva. Quando a *Promise* é resolvida é checado se a função *send* do objeto *response*, que é um *spy*, foi chamada com o *defaultProduct*:
 
 ```javascript
 sinon.assert.calledWith(response.send, defaultProduct);
@@ -354,23 +355,23 @@ const defaultProduct = {
 Logo abaixo do *defaultProduct* adicionamos uma *constant* chamada *expectedProduct* correspondente ao produto que esperamos ser criado pelo *MongoDB*.
 Agora já possuímos o produto que queremos salvar que é *defaultProduct* e também o que esperamos de resposta do *MongoDB*.
 
-Como estamos testando a rota products que retorna todos os produtos, precisamos ter produtos no banco de dados para poder validar o comportamento esse comportamento. Para isso iremos utilizar o *callback* do *Mocha* chamado *beforeEach*, que significa: antes de cada. Esse *callback* é executado pelo *Mocha* antes de cada caso de teste, então ele é perfeito para nosso cenário onde precisamos ter um produto disponível no banco antes de executar o teste.
+Como estamos testando a rota products que retorna todos os produtos, precisamos ter produtos no banco de dados para poder validar o comportamento. Para isso iremos utilizar o *callback* do *Mocha* chamado *beforeEach*, que significa: antes de cada. Esse *callback* é executado pelo *Mocha* antes de cada caso de teste, então ele é perfeito para nosso cenário onde precisamos ter um produto disponível no banco antes de executar o teste.
 
 Logo abaixo do código anterior adicione o seguinte código:
 
 ```diff
-+  beforeEach(() => {
- +    const product = new Product(defaultProduct);
- +    product._id = '56cb91bdc3464f14678934ca';
- +    return Product.remove({})
- +      .then(() => product.save());
- +  });
+ + beforeEach(() => {
+ +   const product = new Product(defaultProduct);
+ +   product._id = '56cb91bdc3464f14678934ca';
+ +   return Product.remove({})
+ +     .then(() => product.save());
+ + });
  +
 ```
 
 O que o código acima faz, é criar um novo produto utilizando os dados da *constant* *defaultProduct* e atribuir a nova instância do produto a *constant product*. Na linha seguinte a propriedade *product._id* do objeto criado pelo *mongoose* é sobrescrita por um *id* estático que geramos.
 Por padrão o *mongoose* gera um *uuid* para cada novo documento, mas no caso do teste precisamos saber qual é o *id* do documento que estamos salvando para poder comparar dentro do caso de teste, se utilizarmos o *uuid* gerado pelo *mongoose* o teste nunca conseguirá comparar o mesmo *id*. Dessa maneira sobrescrevemos por um *id* gerado por nós mesmos.
-Existem vários sites na *internet* para gerar *uuid*, eu por exemplo utilizei este [*uuid generator*](https://www.uuidgenerator.net/).
+Existem vários sites na *internet* para gerar *uuid*, aqui no livro por exemplo foi utilizado este: [*uuid generator*](https://www.uuidgenerator.net/).
 
 Após a atribuição do *id* retornamos uma *Promise* que remove todos os produtos do banco de dados e depois salva o produto que criamos.
 
@@ -466,6 +467,6 @@ Devemos ter a seguinte resposta:
   1 passing (307ms)
 ```
 
-Nosso ciclo de *TDD* nos testes de integração está completo, refatoramos e adicionamos o comportamento esperado. Essa padrão de começar por testes de integração, depois criar componentes internos como fizemos com *controllers* e *models* e utilizar o teste de integração para validar todo o comportamento é conhecido como *outside-in*, termo esse que falaremos a seguir.
+Nosso ciclo de *TDD* nos testes de integração está completo, refatoramos e adicionamos o comportamento esperado. Esse padrão onde começamos por testes de integração, depois criamos componentes internos como fizemos com *controllers* e *models* e utilizamos o teste de integração para válidar todo o comportamento, é conhecido como *outside-in*, termo esse que falaremos a seguir.
 
 O código deste capitulo está disponível [aqui](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step7).
