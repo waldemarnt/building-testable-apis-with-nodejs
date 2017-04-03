@@ -63,10 +63,10 @@ Adicionamos o *model* e agora precisamos integrar ele com o *controller* e depoi
 Para começar vamos atualizar o teste de unidade do *controller* para refletir o comportamento que esperamos. Para isso devemos começar atualizando o arquivo *test/unit/controllers/products_spec.js* importando os módulos necessários para descrever o comportamento esperado no teste:
 
 ```diff
- import ProductsController from '../../../src/controllers/products';
- import sinon from 'sinon';
- +import sinonAsPromised from 'sinon-as-promised';
- +import Product from '../../../src/models/product';
+import ProductsController from '../../../src/controllers/products';
+import sinon from 'sinon';
++import sinonAsPromised from 'sinon-as-promised';
++import Product from '../../../src/models/product';
 ```
 
 Aqui importamos dois módulos, um deles é o model de *Product* que criamos anteriormente e será usado pelo *controller* e também o *sinon-as-promised*, módulo que possibilita ao *sinon* trabalhar com *Promises*. Precisamos instalar o *sinon-as-promised* antes de prosseguir, execute o seguinte comando no terminal:
@@ -82,13 +82,13 @@ Agora vamos mudar o caso de teste incluindo o comportamento que esperamos quando
 ```diff
 
   describe('get() products', () => {
- -   it('should return a list of products', () => {
- +   it('should call send with a list of products', () => {
-       const request = {};
-       const response = {
-         send: sinon.spy()
-       };
- +     Product.find = sinon.stub();
+-   it('should return a list of products', () => {
++   it('should call send with a list of products', () => {
+      const request = {};
+      const response = {
+        send: sinon.spy()
+      };
++     Product.find = sinon.stub();
 ```
 
 No código acima começamos atualizando a descrição, não iremos checar o retorno pois a saída da função *get* é uma chamada para a função *send* do *express*, então nossa descrição deve refletir isso, dizemos que: "Isso deve chamar a função *send* com uma lista de produtos".
@@ -108,13 +108,13 @@ Agora precisamos mudar o comportamento esperado:
 
 ```diff
 -      expect(response.send.called).to.be.true;
- -      expect(response.send.calledWith(defaultProduct)).to.be.true;
- +      const productsController = new ProductsController(Product);
- +      return productsController.get(request, response)
- +        .then(() => {
- +          sinon.assert.calledWith(response.send, defaultProduct);
- +        });
- +    });
+-      expect(response.send.calledWith(defaultProduct)).to.be.true;
++      const productsController = new ProductsController(Product);
++      return productsController.get(request, response)
++        .then(() => {
++          sinon.assert.calledWith(response.send, defaultProduct);
++        });
++    });
 ```
 
 No código acima, o primeiro passo foi iniciar uma nova instância de *ProductsController* passando por parâmetro o *model*. Dessa maneira esperamos que cada instância de *controller* possua um *model*.
@@ -168,9 +168,9 @@ Agora precisamos atualizar o *controller products* que fica em: *src/controllers
 
 ```diff
 class ProductsController {
- +  constructor(Product) {
- +    this.Product = Product;
- +  };
++  constructor(Product) {
++    this.Product = Product;
++  };
 ```
 
 O construtor irá garantir que toda a vez que alguém tentar criar uma instância do *controller* ele deve passar o *model Product* por parâmetro. Mas ai vocês me perguntam, mas por que não importar ele diretamente no *productsController.js*? Pois assim não seria possível usar *stub* no *model* e tornaria o código acoplado. Veremos mais sobre como gerenciar dependencias nos capítulos seguintes.
@@ -179,13 +179,13 @@ Seguindo a atualização do *controller* agora devemos atualizar o método que e
 
 ```diff
    get(req, res) {
- -    return res.send([{
- -      name: 'Default product',
- -      description: 'product description',
- -      price: 100
- -    }])
- +    return this.Product.find({})
- +      .then(products => res.send(products));
+-    return res.send([{
+-      name: 'Default product',
+-      description: 'product description',
+-      price: 100
+-    }])
++    return this.Product.find({})
++      .then(products => res.send(products));
     }
   }
 ```
@@ -293,11 +293,11 @@ Nesse passo vamos refatorar nossa rota de *products* para que ela consiga criar 
 ```diff
 import express from 'express';
   import ProductsController from '../controllers/products';
- +import Product from '../models/product';
++ import Product from '../models/product';
   
   const router = express.Router();
- -const productsController = new ProductsController();
- +const productsController = new ProductsController(Product);
+- const productsController = new ProductsController();
++ const productsController = new ProductsController(Product);
   router.get('/', (req, res) => productsController.get(req, res));
   
   export default router;
@@ -342,14 +342,14 @@ const defaultProduct = {
       description: 'product description',
       price: 100
     };
- +  const expectedProduct = {
- +    __v: 0,
- +    _id: '56cb91bdc3464f14678934ca',
- +    name: 'Default product',
- +    description: 'product description',
- +    price: 100
- +  };
- +
++  const expectedProduct = {
++    __v: 0,
++    _id: '56cb91bdc3464f14678934ca',
++    name: 'Default product',
++    description: 'product description',
++    price: 100
++  };
++
 ```
 
 Logo abaixo do *defaultProduct* adicionamos uma *constant* chamada *expectedProduct* correspondente ao produto que esperamos ser criado pelo *MongoDB*.
@@ -391,8 +391,8 @@ O último passo é atualizar o caso de teste para que ele verifique o *expectedP
         request
         .get('/products')
         .end((err, res) => {
- -        expect(res.body[0]).to.eql(defaultProduct);
- +        expect(res.body).to.eql([expectedProduct]);
+-         expect(res.body[0]).to.eql(defaultProduct);
++         expect(res.body).to.eql([expectedProduct]);
           done(err);
         });
       });
