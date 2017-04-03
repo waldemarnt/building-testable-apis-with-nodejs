@@ -467,3 +467,5 @@ Devemos ter a seguinte resposta:
 ```
 
 Nosso ciclo de *TDD* nos testes de integração está completo, refatoramos e adicionamos o comportamento esperado. Essa padrão de começar por testes de integração, depois criar componentes internos como fizemos com *controllers* e *models* e utilizar o teste de integração para validar todo o comportamento é conhecido como *outside-in*, termo esse que falaremos a seguir.
+
+O código deste capitulo está disponível [aqui](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step7).
