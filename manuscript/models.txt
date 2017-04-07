@@ -55,6 +55,88 @@ const Product = mongoose.model('Product', schema);
 export default Product;
 ```
 
+## *Singleton Design Pattern*
+
+No *Node.js*, e no *Javascript* em geral, existem inúmeras maneiras de aplicar o *Singleton*, vamos revisar as formas mais utilizadas.
+Tradicionalmente o *Singleton* restringe a inicialização de uma nova classe a um único objeto ou referência.
+Segundo Addy Osmani, no livro [*Javascript Design Patterns*](https://addyosmani.com/resources/essentialjsdesignpatterns/book/):
+
+> With JavaScript, singletons serve as a namespace provider which isolate implementation code from the global namespace so-as to provide a single point of access for functions.
+
+Traduzindo livremente:
+
+*Singletons* em *javascript* servem como um provedor de *namespaces* isolando a implementação do código do *namespace* global possibilitando assim acesso a somente um ponto, que podem ser funções ou classes por exemplo.
+
+No código a seguir definimos um *Model* no *Mongoose*:
+
+```javascript
+import mongoose from 'mongoose';
+
+const schema = new mongoose.Schema({
+  name: String,
+  description: String,
+  price: Number
+});
+const Product = mongoose.model('Product', schema);
+
+export default Product;
+```
+
+Note que importamos o módulo do *Mongoose* e não iniciamos uma nova instância com *new*, apenas acessamos o módulo diretamente. Em seguida, definimos um novo *schema* para o *Model* e então, utilizando a função *mongoose.model*, definimos um *model* chamado *Product* na instância do *mongoose* que importamos.
+
+Agora se importarmos o módulo do *Mongoose* em qualquer outro lugar da aplicação e acessarmos os *models* teremos uma resposta como a seguinte:
+
+```javascript
+//src/routes/products.js
+
+import mongoose from 'mongoose';
+
+console.log(mongoose.models);
+```
+O *console.log* mostrará:
+
+```sh
+{ Product:
+   { [Function: model]
+...
+```
+
+Essa é a implementação e a responsabilidade de um *Singleton*: prover acesso a mesma instância independente de quantas vezes ou da maneira que for chamada.
+
+Vamos ver como é implementado o *Singleton* no código do *Mongoose*. No arquivo */lib/index.js* do módulo temos a seguinte função:
+
+```javascript
+function Mongoose() {
+  this.connections = [];
+  this.plugins = [];
+  this.models = {};
+  this.modelSchemas = {};
+  // default global options
+  this.options = {
+    pluralization: true
+  };
+  var conn = this.createConnection(); // default connection
+  conn.models = this.models;
+}
+```
+
+Para quem não é familiarizado com *es2015*, a função *Mongoose()* representará uma classe.
+No final do arquivo podemos ver como o módulo é exportado:
+
+```javascript
+var mongoose = module.exports = exports = new Mongoose;
+```
+
+Essa atribuições: *var mongoose = module.exports = exports* não são o nosso foco. A parte importante dessa linha é o *new Mongoose* que garante que o módulo exportado será uma nova instância da classe *Mongoose*.
+
+Você pode estar se perguntando se uma nova instância será criada sempre que importamos o módulo, a resposta é não.
+Módulos no *Node.js* são *cacheados* uma vez que carregados, o que significa que o que acontece no *module.exports* só acontecerá uma vez a cada inicialização da a aplicação  ou quando o *cache* for limpo (o que só pode ser feito manualmente).
+Dessa maneira o código acima exporta uma referência a uma nova classe e quando a importamos temos acesso diretamente a seus atributos e funções internas.
+
+*Singletons* são extremamente úteis para manter estado em memória possibilitando segurança entre o compartilhamento de uma mesma instância a todos que a importarem.
+
+Veremos mais sobre módulos no capítulo sobre modularização.
+
 ## Integrando *models* e *controllers*
 
 Até agora nosso *controller* responde com dados *fakes* e nosso teste de integração ainda está no estado *GREEN*. 
