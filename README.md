@@ -26,6 +26,6 @@ Este livro vai guiar você na criação de uma API utilizando as melhores práti
 * Porque testes facilitam o desenvolvimento
 * Como testar aplicações em javascript
 
-Antes de usar seu conteudo por favor consulte o [**LICENSE**](./LICENSE.md).
+Antes de usar seu conteudo por favor consulte o [**LICENSE**](./LICENSE).
 
 Código utilizado no livro: https://github.com/waldemarnt/building-testable-apis-with-nodejs-code
