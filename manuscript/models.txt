@@ -458,7 +458,7 @@ Existem vários sites na *internet* para gerar *uuid*, aqui no livro por exemplo
 Após a atribuição do *id* retornamos uma *Promise* que remove todos os produtos do banco de dados e depois salva o produto que criamos.
 
 O próximo passo é garantir que iremos deixar o terreno limpo após executar o teste. Quando criamos testes que criam dados em banco de dados, escrevem arquivos em disco, ou seja, testes que podem deixar rastros para outros testes devemos limpar todo o estado e garantir que após a execução do teste não terá nenhum vestígio para os próximos.
-Para isso vamos adicionar também o *callback afterEach* que significa: Depois de cada, para garantir que o *MongoDB * ficará limpo, ou seja, sem dados. Para isso adicione o seguinte código logo abaixo do anterior:
+Para isso vamos adicionar também o *callback afterEach* que significa: Depois de cada, para garantir que o *MongoDB* ficará limpo, ou seja, sem dados. Para isso adicione o seguinte código logo abaixo do anterior:
 
 ```diff
 +  afterEach(() => Product.remove({}));
