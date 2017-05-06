@@ -151,13 +151,7 @@ import sinon from 'sinon';
 +import Product from '../../../src/models/product';
 ```
 
-Aqui importamos dois módulos, um deles é o model de *Product* que criamos anteriormente e será usado pelo *controller* e também o *sinon-as-promised*, módulo que possibilita ao *sinon* trabalhar com *Promises*. Precisamos instalar o *sinon-as-promised* antes de prosseguir, execute o seguinte comando no terminal:
-
-```sh
-$ npm install --save-dev sinon-as-promised
-```
-
-Assim que instalado estará disponível para uso.
+Aqui importamos o módulo referente ao model de *Product* que criamos anteriormente e será usado pelo *controller*.
 
 Agora vamos mudar o caso de teste incluindo o comportamento que esperamos quando integrarmos com o *model*.
 
@@ -211,7 +205,6 @@ Isso valida que a função *get* foi chamada, chamou a função *find* do *model
 ```javascript
 import ProductsController from '../../../src/controllers/products';
 import sinon from 'sinon';
-import sinonAsPromised from 'sinon-as-promised';
 import Product from '../../../src/models/product';
 
 describe('Constrollers: Products', () => {
@@ -298,8 +291,8 @@ Até agora apenas testamos o [*happy path*](https://en.wikipedia.org/wiki/Happy_
 Vamos escrever um caso de teste unitário para esse comportamento, o caso de teste deve ser como o seguinte:
 
 ```javascript
-  it('should return 400 when an error occurs', () => {
-			const request = {};
+    it('should return 400 when an error occurs', () => {
+      const request = {};
       const response = {
         send: sinon.spy(),
         status: sinon.stub()
@@ -307,14 +300,14 @@ Vamos escrever um caso de teste unitário para esse comportamento, o caso de tes
 
       response.status.withArgs(400).returns(response);
       Product.find = sinon.stub();
-      Product.find.withArgs({}).rejects("Error");
+      Product.find.withArgs({}).rejects({ message: 'Error' });
 
       const productsController = new ProductsController(Product);
 
       return productsController.get(request, response)
-      .then(() => {
-        sinon.assert.calledWith(response.send, 'Error');
-      });
+        .then(() => {
+          sinon.assert.calledWith(response.send, 'Error');
+        });
     });
 ```
 
@@ -327,7 +320,7 @@ response.status.withArgs(400).returns(response);
 Onde dizemos que: Quando a função *status* for chamada com o argumento *400* ela deve retornar o objeto *response*, isso por que a *API* do *express* concatena as chamadas de funções. O próximo ponto é:
 
 ```javascript
-Product.find.withArgs({}).rejects("Error");
+Product.find.withArgs({}).rejects({message: 'Error'});
 ```
 
 Aqui utilizamos o *stub* para rejeitar a *Promise* e simular uma consulta ao banco que retornou uma falha.
