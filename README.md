@@ -3,7 +3,7 @@
 
 Esse é o repositório oficial do livro: ***Construindo APIs testáveis com Node.js***, o qual está sendo escrito.
 
-O livro será grátis e publicado no ***Leanpub***. A primeira release acontecerá em Março de 2017.
+O livro será grátis e publicado no [***Leanpub***](https://leanpub.com/construindo-apis-testaveis-com-nodejs/read). A primeira release acontecerá em Março de 2017.
 
 <img src="https://github.com/waldemarnt/building-testable-apis-with-nodejs/blob/master/manuscript/images/cover01.jpg" width="400">
 
