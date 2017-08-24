@@ -1,0 +1,107 @@
+# Behaviour Driven Development - BDD
+
+Como vimos até agora, o ponto forte do *TDD* é garantir que o código possuirá testes automatizados e também guiar o desenvolvimento para um código desacoplado e legível.
+
+Quando desenvolvemos guiados por testes utilizando *TDD* praticamos o chamado *inside-out* (em português, de dentro para fora) ou seja, começamos a testar pelas unidades e módulos internos e deixamos para fazer a integração dessas partes depois.
+Começar de dentro para fora leva a dúvidas, como: Como saber quando acabou? Será que está testado o suficiente? Será que isso deve ser testado? Ok, Está testado! mas será que quando integrar vai funcionar?
+Assim é muito fácil perder de vista o objetivo do que  está sendo desenvolvido. 
+
+A fraqueza do *TDD* é induzir os desenvolvedores a testarem o código da maneira que eles entendem ao invés de testar se o código cumpre o que foi requerido pelo negócio.
+
+Para contornar esse problema nasceu o *BDD*, *Behaviour Driven Development* (desenvolvimento guiado por comportamento).  O lançamento do livro [*"The RSpec Book: Behaviour Driven Development with RSpec, Cucumber, and Friends"*](https://pragprog.com/book/achbd/the-rspec-book) escrito por David Chelimsky com o apoio do Dan North, que também ajudou na escrita de ferramentas como *Rspec*, framework de testes para *Ruby*, e o *Cucumber*, uma ferramenta de automatização de testes, foi um dos responsáveis pela disseminação do *BDD*.
+
+## Como o *BDD* funciona
+
+Quando um analista de negócio (também conhecido como *BA* que vem de *Business Analyst*) escreve um caso de uso ele detalha como o sistema deve se comportar. Quando ele escreve [estórias de usuário](http://www.agilemodeling.com/artifacts/userStory.htm) ele descreve critérios de aceitação que definem os comportamentos esperados do sistema.
+
+O exemplo abaixo demonstra uma estória escrita por um *BA* para a criação de produtos em uma pagina de *admin*:
+
+```sh
+Feature: Product management
+Scenario: User adds a new product
+  Given I go to the new products page
+  When I fill the form
+  And I press submit
+  Then I should be redirected to a page showing the created product
+```
+A principal ideia no exemplo acima é quebrar o cenário em três partes:
+
+***GIVEN*** (dado): Descreve o estado inicial, antes de começar o comportamento que está sendo especificado.
+
+***WHEN*** (quando): Descreve o comportamento esperado.
+ 
+***THEN*** (então): Descreve as mudanças esperadas baseadas no comportamento.
+
+O exemplo anterior utiliza o *Cucumber* que é uma das ferramentas mais utilizadas para implementação de *BDD*. A grande vantagem do *Cucumber* é transformar especificações como a que vimos acima em casos de teste executáveis, permitindo que desenvolvimento, negócio e marketing trabalhem juntos validando se uma determinada funcionalidade está sendo implementada como esperado.
+Esse tipo de ferramenta é utilizada para [business facing tests](https://martinfowler.com/bliki/BusinessFacingTest.html), testes que não serão validados por programadores. Com uma ferramenta que disponibiliza a validação dos comportamentos é possível que clientes, usuários, *BA* ou qualquer pessoa envolvida verifique se o comportamento esperado está sendo contemplado, quebrando a barreira de comunicação entre desenvolvedores e não desenvolvedores.
+
+O [GivenWhenThen](https://martinfowler.com/bliki/GivenWhenThen.html) e o *BDD* não se prendem a uma ferramenta ou padrão de uso, pode-se utilizar os ensinamentos adotando o que for possível para melhorar a qualidade do que estamos desenvolvendo.
+Mesmo não trabalhando em um projeto ágil, onde não existam estórias de usuário nem *Cucumber*, é possível aplicar técnicas do *BDD*.
+
+## O *outside-in*
+
+O principal foco do *BDD* é garantir que o comportamento descrito está sendo contemplado no desenvolvimento e para isso ele trabalha de fora para dentro.
+
+Dan North no artigo [What's in a Story](https://dannorth.net/whats-in-a-story/) diz que:
+
+O *behaviour-driven development (BDD)*, é uma metodologia *outside-in*. Ela começa por fora, identificando as necessidades do negócio e depois parte para a definição das funcionalidades para alcançar essas necessidades. Cada funcionalidade é capturada como uma estória, na qual é definido o escopo da funcionalidade com o seu critério de aceitação.
+
+No artigo é possível entender que o *BDD* funciona de fora para dentro em nível gerencial, mas isso também se aplica ao desenvolvimento da funcionalidade.
+Quando desenvolvemos uma funcionalidade seguindo a metodologia clássica do *TDD* tendemos a começar desenvolvendo as unidades do sistema, e depois fazer a integração entre elas, essa forma de desenvolver isola camadas e ofusca a visão do objetivo principal, o que realmente é importante para o usuário. É  difícil saber se algo está sendo testado o suficiente e se vai funcionar quando integrado com as outras partes do sistema.
+
+Aplicando *BDD* e *TDD* é possível unir os benefícios do desenvolvimento guiado por testes com o valor do desenvolvimento guiado por comportamento, vamos falar sobre isso no próximo capítulo.
+
+## *BDD* com *Mocha* e *Chai*
+
+*Mocha* e *Chai* são os módulos que utilizamos no decorrer do livro, ambos baseados no *Rspec* do *Ruby*.
+No exemplo a seguir veremos como utilizar as técnicas do *BDD* para guiar o desenvolvimento.
+
+Exemplo com *Mocha*:
+
+```javascript
+describe('Products Management', () => {
+  describe('when adding products', () => {
+    it('should save a product into the database', () => {
+    });
+  });
+});
+```
+
+Como vimos no capítulo [onde configuramos os testes](#configurando-os-testes), utilizamos o *describe* do *Mocha* para criar uma suíte de testes. No exemplo acima adicionamos uma suíte principal, que descreve o cenário como um todo, a *Products Management*, essa suíte de testes vai tratar do gerenciamento de produtos da aplicação.
+
+Seguindo o *GivenWhenThen* adicionamos uma nova suíte que descreve o comportamento esperado: *when adding products*, ou seja, quando adicionar produtos então devem acontecer as mudanças esperadas.
+Para o *Then* utilizamos o *it* do *Mocha*. O *it* se refere a um caso de teste, no exemplo acima estabelecemos que: *should save a product into the database* (deve salvar um produto no banco de dados). Tanto o *Mocha* quanto o *Chai* são híbridos e permitem aplicar técnicas de *TDD* e *BDD* o *it* por exemplo é inspirado no *BDD*.
+
+Quando executarmos o teste a saída no terminal será:
+
+```sh
+  Products Management
+    when adding products
+      ✓ should save a product into the database
+
+
+  1 passing
+```
+
+Note que não é necessário nenhum código para entender a intenção desse teste, a maneira como ele foi construído descreve a intenção.
+
+O *Mocha* é um *test runner*, sua responsabilidade é executar os testes. Para fazer as verificações conhecidas no *TDD* como *asserts* (asserções), e no *BDD* como *expectations*(expectativas), o *Mocha* possibilita utilizar módulos externos, como o *Chai*.
+
+O *Chai* é uma biblioteca que tem a responsabilidade de fazer *asserts/expectations*, ele foi criado seguindo os princípios de descrição do *BDD* mas também suporta o *TDD*.
+
+O combo *Mocha/Chai* ficou conhecido pela forma como os dois se complementam e possibilitam a criação de testes legíveis.
+No exemplo abaixo adicionamos uma *expectation* utilizando o *Chai*:
+
+```javascript
+describe('Products Management', () => {
+  describe('when adding products', () => {
+    it('should save a product into the database', () => {
+
+      expect(Product.save()).to.be.equal(true);
+    });
+  });
+});
+```
+
+O *expect* faz parte da *API* do *Chai*, com ele é possível encadear expectativas. O exemplo acima dispensa explicações, basta traduzir livremente para o português e temos a descrição exata do que está sendo verificado: Espera que *Product.save()* seja igual a *true* (verdadeiro).
+
