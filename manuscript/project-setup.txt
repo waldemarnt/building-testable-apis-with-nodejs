@@ -120,70 +120,232 @@ $ npm start
 Agora a aplicação estará disponível em **http://localhost:3000/**.
 O código dessa etapa está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step2).
 
-## Express Middlewares 
+## Entendendo o Middleware pattern
 
-  *Middlewares* são funções que tem acesso aos objetos: requisição (*request*), resposta (*response*), e o próximo *middleware* que será chamado, normalmente nomeado como *next*.
-  Essas funções são executadas em ordem de chamada, dessa maneira é possível transformar os objetos de requisição e resposta, realizar validações, autenticações e até mesmo terminar a requisição antes que ela execute e lógica escrita na rota. 
-  O exemplo a seguir mostra uma aplicação *express* simples com uma rota que devolve um *"Hello world"* quando chamada, nessa rota será adicionado um *middleware*.
+O padrão de *Middleware* implementado pelo *express* já é bem conhecido e tem sido usado por desenvolvedores em outras linguagens há muitos anos. Podemos dizer que se trata de uma implementação do padrão [*intercepting filter pattern*](http://www.oracle.com/technetwork/java/interceptingfilter-142169.html) do [*chain of responsibility*](http://java.dzone.com/articles/design-patterns-uncovered-chain-of-responsibility).
 
-```javascript
-const express = require('express');
-const app = express();
+A implementação representa um *pipeline* de processamento onde *handlers*, *units* e *filters* são funções. Essa funções são conectadas criando uma sequência de processamento assíncrona que permite pré-processamento, processamento e pós-processamento de qualquer tipo de dado.
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-});
+Uma das principais vantagens desse pattern é a facilidade de adicionar plugins de maneira não intrusiva.
 
-app.listen(3000);
-```
+O diagrama abaixo representa a implementação do *Middleware pattern*:
 
-*Middlewares* são apenas funções que recebem os parâmetros requisição (*req*), resposta (*res*) e próximo (*next*), executam alguma lógica e chamam o próximo *middleware*, caso não exista um próximo o *middleware* chama a função da rota.
-No exemplo abaixo é criado um *middleware* que vai escrever *"LOGGED"* no terminal.
+![](images/middleware-manager-final.png)
 
-```javascript
-const myLogger = function (req, res, next) {
-  console.log('LOGGED');
-  next();
-};
-```
+O primeiro componente que devemos observar no diagrama acima é o ***Middleware Manager***, ele é responsável por organizar e executar as funções. Alguns dos detalhes mais importantes dessa implementação são:
 
-Para que o *express* use essa função é necessário passá-la por parâmetro para a função **use**:
+* Novos middlewares podem ser invocados usando a função use() (o nome não precisa ser estritamente use, aqui estamos usando o express como base). Geralmente novos middlewares são adicionados ao final do pipeline, mas essa não é uma regra obrigatória.
+* Quando um novo dado é recebido para processamento, o middleware registrado é invocado em um fluxo de execução assíncrono. Cada unidade no pipeline recebe o resultado da anterior como input.
+* Cada pedaço do middleware pode decidir parar o processamento simplesmente não chamando o callback, ou em caso de erro, passando o erro por callback. Normalmente erros disparam um fluxo diferente de processamento que é dedicado ao tratamento de erros.
 
-```javascript
-const express = require('express');
-const app = express();
+O exemplo abaixo mostra um caminho de erro:
 
-const myLogger = function (req, res, next) {
-  console.log('LOGGED');
-  next();
-};
+![](images/middleware-manager-final-full.png)
 
-app.use(myLogger);
+No *express*, por exemplo, o caminho padrão espera os parâmetros *request*, *response* e *next*, caso receba um quarto parâmetro, que normalmente é nomeado como *error*, ele vai buscar um caminho diferente.
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-});
+Não há restrições de como os dados são processados ou propagados no pipeline. Algumas estratégias são:
 
-app.listen(3000);
-```
+* Incrementar os dados com propriedades ou funções.
+* Substituir os dados com o resultado de algum tipo de processamento.
+* Manter a imutabilidade dos dados sempre retornando uma cópia como resultado do processamento.
 
-Dessa maneira a cada requisição para qualquer rota o *middleware* será invocado e irá escrever *"LOGGED"* no terminal.
-*Middlewares* também podem ser invocados em uma rota específica:
+A implementação correta depende de como o *Middleware Manager* é implementado e do tipo de dados que serão processados no próprio *middleware*. Para saber mais sobre o *pattern* sugiro a leitura do livro [*Node.js Design Patterns*](https://www.packtpub.com/web-development/nodejs-design-patterns-second-edition).
+
+## *Middlewares* no *Express*
+
+O exemplo a seguir mostra uma aplicação *express* simples, com uma rota que devolve um ***“Hello world”*** quando chamada:
 
 ```javascript
 const express = require('express');
+
 const app = express();
 
-const myLogger = function (req, res, next) {
-  console.log('LOGGED');
-  next();
-};
-
-app.get('/', myLogger, function (req, res) {
+app.get('/', function(req, res, next) {
+	console.log('route / called');
   res.send('Hello World!');
 });
 
-app.listen(3000);
+app.listen(3000, () => {
+	console.log('app is running');
+});
+```
+Agora vamos adicionar uma mensagem no console que deve aparecer antes da mensagem da rota:
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.use((req, res, next) => {
+  console.log('will run before any route');
+  next();
+});
+
+app.get('/', function(req, res, next) {
+	console.log('route / called');
+  res.send('Hello World!');
+});
+
+app.listen(3000, () => {
+	console.log('app is running');
+});
 ```
 
-Esse comportamento é muito útil e colabora com a não duplicação de código, vamos ver mais sobre os *middlewares* no decorrer do livro quando aplicarmos na nossa API.
+*Middlewares* são apenas funções que recebem os parâmetros requisição (*req*), resposta (*res*) e próximo (*next*), executam alguma lógica e chamam o próximo *middleware* chamando *next*. No exemplo acima chamamos o use passando uma função que será o *middleware*, ela mostra a mensagem no *console* e depois chama o *next()*.
+
+Se executarmos esse código e acessarmos a rota / a saída no terminal será:
+
+```sh
+app is running
+will run before any route
+route / called
+```
+
+Ok! Mas como eu sabia que iria executar antes? Como vimos anteriormente no *middleware pattern*, o *middleware manager* executa uma sequência de *middlewares*, então a ordem do use interfere na execução, por exemplo, se invertermos a ordem, como no código abaixo:
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+
+app.get('/', function(req, res, next) {
+	console.log('route / called');
+  res.send('Hello World!');
+});
+
+app.use((req, res, next) => {
+	console.log('will run before any route');
+	next();
+});
+
+app.listen(3000, () => {
+	console.log('app is running');
+});
+```
+
+A saida será:
+
+```shell
+app is running
+route / called
+```
+
+Dessa vez o nosso *middleware* não foi chamado, isso acontece porque a rota chama a função *res.send()* invés de *next()*, ou seja, ela quebra a sequência de *middlewares*.
+
+Também é possível usar *middlewares* em rotas específicas, como abaixo:
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.use('/users', (req, res, next) => {
+	console.log('will run before users route');
+	next();
+});
+
+app.get('/', function(req, res, next) {
+	console.log('route / called');
+  res.send('Hello World!');
+});
+
+app.get('/users', function(req, res, next) {
+	console.log('route /users called');
+	res.send('Hello World!');
+});
+
+app.listen(3000, () => {
+	console.log('app is running');
+});
+```
+
+Caso seja feita uma chamada para / a saída sera:
+
+```shell
+app is running
+route / called
+```
+
+Já para ***/users*** veremos a seguinte saída no terminal:
+
+```shell
+app is running
+will run before users route
+route /users called
+```
+
+O *express* também possibilita ter caminhos diferentes em caso de erro:
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.use((req, res, next) => {
+	console.log('will run before any route');
+	next();
+});
+
+app.use((err, req, res, next) => {
+	console.log('something goes wrong');
+	res.status(500).send(err.message);
+});
+
+app.get('/', function(req, res, next) {
+	console.log('route / called');
+  res.send('Hello World!');
+});
+
+
+app.listen(3000, () => {
+	console.log('app is running');
+});
+```
+
+Não mudamos nada no código de exemplo, apenas adicionamos mais um *middleware* que recebe o parâmetro ***err***. Executando o código teremos a seguinte saída:
+
+```shell
+app is running
+will run before any route
+route / called
+```
+
+Apenas o primeiro *middleware* foi chamado, o *middleware* de erro não. Vamos ver o que acontece quando passamos um erro para o *next* do primeiro *middleware*.
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.use((req, res, next) => {
+	console.log('will run before any route');
+	next(new Error('failed!'));
+});
+
+app.use((err, req, res, next) => {
+	console.log('something goes wrong');
+	res.status(500).send(err.message);
+});
+
+app.get('/', function(req, res, next) {
+	console.log('route / called');
+  res.send('Hello World!');
+});
+
+
+app.listen(3000, () => {
+	console.log('app is running');
+});
+```
+
+A saída será:
+
+```shell
+app is running
+will run before any route
+something goes wrong
+```
+
+Essas são as formas mais comuns de utilizar middlewares, mas suas combinações são infinitas. Ao decorrer do livro utilizaremos *middlewares* para casos distintos.
