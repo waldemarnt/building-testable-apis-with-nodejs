@@ -124,9 +124,9 @@ O código dessa etapa está disponivel [neste link](https://github.com/waldemarn
 
 O padrão de *Middleware* implementado pelo *express* já é bem conhecido e tem sido usado por desenvolvedores em outras linguagens há muitos anos. Podemos dizer que se trata de uma implementação do padrão [*intercepting filter pattern*](http://www.oracle.com/technetwork/java/interceptingfilter-142169.html) do [*chain of responsibility*](http://java.dzone.com/articles/design-patterns-uncovered-chain-of-responsibility).
 
-A implementação representa um *pipeline* de processamento onde *handlers*, *units* e *filters* são funções. Essa funções são conectadas criando uma sequência de processamento assíncrona que permite pré-processamento, processamento e pós-processamento de qualquer tipo de dado.
+A implementação representa um *pipeline* de processamento onde *handlers*, *units* e *filters* são funções. Essas funções são conectadas criando uma sequência de processamento assíncrona que permite pré-processamento, processamento e pós-processamento de qualquer tipo de dado.
 
-Uma das principais vantagens desse pattern é a facilidade de adicionar plugins de maneira não intrusiva.
+Uma das principais vantagens desse *pattern* é a facilidade de adicionar *plugins* de maneira não intrusiva.
 
 O diagrama abaixo representa a implementação do *Middleware pattern*:
 
@@ -134,9 +134,9 @@ O diagrama abaixo representa a implementação do *Middleware pattern*:
 
 O primeiro componente que devemos observar no diagrama acima é o ***Middleware Manager***, ele é responsável por organizar e executar as funções. Alguns dos detalhes mais importantes dessa implementação são:
 
-* Novos middlewares podem ser invocados usando a função use() (o nome não precisa ser estritamente use, aqui estamos usando o express como base). Geralmente novos middlewares são adicionados ao final do pipeline, mas essa não é uma regra obrigatória.
-* Quando um novo dado é recebido para processamento, o middleware registrado é invocado em um fluxo de execução assíncrono. Cada unidade no pipeline recebe o resultado da anterior como input.
-* Cada pedaço do middleware pode decidir parar o processamento simplesmente não chamando o callback, ou em caso de erro, passando o erro por callback. Normalmente erros disparam um fluxo diferente de processamento que é dedicado ao tratamento de erros.
+* Novos *middlewares* podem ser invocados usando a função *use()* (o nome não precisa ser estritamente use, aqui estamos usando o *express* como base). Geralmente novos *middlewares* são adicionados ao final do *pipeline*, mas essa não é uma regra obrigatória.
+* Quando um novo dado é recebido para processamento, o *middleware* registrado é invocado em um fluxo de execução assíncrono. Cada unidade no *pipeline* recebe o resultado da anterior como *input*.
+* Cada pedaço do *middleware* pode decidir parar o processamento simplesmente não chamando o *callback*, ou em caso de erro, passando o erro por *callback*. Normalmente erros disparam um fluxo diferente de processamento que é dedicado ao tratamento de erros.
 
 O exemplo abaixo mostra um caminho de erro:
 
