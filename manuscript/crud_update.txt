@@ -1,0 +1,414 @@
+## Atualizando um recurso
+
+Já é possível criar e listar produtos na nossa *API*, o próximo passo é a edição. Como de costume, vamos começar pelo teste *end 2 end* descrevendo o comportamento esperado dessa funcionalidade.
+
+Adicione o seguinte cenário contendo um caso de teste no arquivo **test/integration/routes/products_spec.js**
+
+```javascript
+  describe('PUT /products/:id', () => {
+    context('when editing a product', () => {
+      it('should update the product and return 200 as status code', done => {
+        const customProduct = {
+          name: 'Custom name'
+        };
+        const updatedProduct = Object.assign({}, customProduct, defaultProduct)
+
+        request
+          .put(`/products/${defaultId}`)
+          .send(updatedProduct)
+          .end((err, res) => {
+            expect(res.status).to.eql(200);
+            done(err);
+          });
+      });
+    });
+  });
+```
+
+Esse teste é muito similar ao teste de criação de produto, a única alteração é o verbo e a rota para a qual a requisição é feita, conforme o seguinte trecho de código:
+
+```javascript
+      .put(`/products/${defaultId}`)
+```
+
+Segundo o [Rest](http://restcookbook.com/HTTP%20Methods/put-vs-post/), para a criação de um novo recurso utilizamos o verbo *POST* e para a atualização de um recurso devemos utilizar *PUT*.
+
+O produto que será atualizado é o *defaultProduct*, este produto é criado antes de cada teste pelo *beforeEach*. Para não atualizar o *defaultProduct* diretamente vamos criar um objeto a partir dele usando *Object.assign*:
+
+```javascript
+ const updatedProduct = Object.assign({}, customProduct, defaultProduct)
+```
+
+Executando os testes de integração:
+
+```shell
+$ npm run test:integration
+```
+
+A saída deve ser:
+
+```shell
+   Routes: Products
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        ✓ should return 200 with one product
+    POST /products
+      when posting a product
+        ✓ should return a new product with status code 201
+    PUT /products/:id
+      when editing a product
+        1) should update the product and return 200 as status code
+
+
+  3 passing (403ms)
+  1 failing
+
+  1) Routes: Products PUT /products/:id when editing a product should update the product and return 200 as status code:
+
+      Uncaught AssertionError: expected 404 to deeply equal 200
+      + expected - actual
+
+      -404
+      +200
+```
+
+O teste retornar que esperava 200 (sucesso) mas recebeu 404 (não encontrado), como já esperávamos. 
+Vamos alterar o arquivo **src/routes/products.js** e adicionar a seguinte rota:
+
+```diff
++ router.put('/:id', (req, res) => productsController.update(req, res)); 
+```
+
+Executando os testes novamente a saída deve ser:
+
+```shell
+  1) Routes: Products PUT /products/:id when editing a product should update the product and return 200 as status code:
+
+      Uncaught AssertionError: expected 500 to deeply equal 200
+      + expected - actual
+
+      -500
+      +200
+```
+
+É hora de descer para o nível de unidade para fazer a implementação no controller.
+Vamos adicionar o seguinte cenário de teste unitário em **test/unit/controllers/products_spec.js**
+
+```javascript
+  describe('update() product', () => {
+    it('should respond with 200 when the product is updated', () => {
+      const fakeId = 'a-fake-id';
+      const updatedProduct = {
+        _id: fakeId,
+        name: 'Updated product',
+        description: 'Updated description',
+        price: 150
+      };
+      const request = {
+        params: {
+          id: fakeId
+        },
+        body: updatedProduct
+      };
+      const response = {
+        sendStatus: sinon.spy()
+      };
+
+      class fakeProduct {
+        static findOneAndUpdate() {}
+      }
+
+      const findOneAndUpdateStub = sinon.stub(fakeProduct, 'findOneAndUpdate');
+      findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).resolves(updatedProduct);
+
+      const productsController = new ProductsController(fakeProduct);
+
+      return productsController.update(request, response)
+        .then(() => {
+          sinon.assert.calledWith(response.sendStatus, 200);
+        });
+    });
+  });
+```
+
+Este teste é maior, mas não há nada que já não tenhamos feito em outros testes. A chave para o update de um recurso é o *id* dele. Criamos uma *constant* chamada *fakeId* para poder reutilizá-lo em outras partes do teste, em seguida criamos um objeto chamado *updatedProduct* que representa o produto que será atualizado pelo *Mongoose*.
+
+Para simular a requisição que será feita pelo *express* criamos um objeto com as mesmas chaves que o *express* envia na requisição, como podemos ver aqui:
+
+```javascript
+      const request = {
+        params: {
+          id: fakeId
+        },
+        body: updatedProduct
+      };
+```
+
+O método do *Mongoose* que utilizaremos para atualizar o recurso é o [*findOneAndUpdate*](http://mongoosejs.com/docs/api.html#query_Query-findOneAndUpdate), segundo a documentação é necessário passar o *_id* e o objeto que queremos atualizar.
+Para testar isoladamente criamos um *model fake*, o *fakeProduct*, que possui o método a seguir:
+
+```javascript
+      class fakeProduct {
+        static findOneAndUpdate() {}
+      }
+```
+
+Para adicionar o comportamento esperado no método *findOneAndUpdate* vamos transformá-lo em um *stub*:
+
+```javascript
+      const findOneAndUpdateStub = sinon.stub(fakeProduct, 'findOneAndUpdate');
+```
+
+Depois, definimos que quando o *stub* for chamado com um objeto que contenha uma chave *_id* e um objeto igual ao *updatedProduct*, ele deve resolver uma *Promise*:
+
+```javascript
+findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).resolves(updatedProduct);
+```
+
+Segundo a documentação do mongoose, o método *findOneAndUpdate* não retorna valor, por isso a *Promise* não irá retornar nada, somente será resolvida para dar sucesso.
+
+Executando os testes de unidade:
+
+```shell
+$ npm run test:unit 
+```
+
+Vamos ter a seguinte saída:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      1) should respond with 200 when the product is updated
+
+
+  5 passing (38ms)
+  1 failing
+
+  1) Controller: Products update() product should respond with 200 when the product is updated:
+     TypeError: productsController.update is not a function
+      at Context.it (test/unit/controllers/products_spec.js:154:
+```
+
+O teste retorna que o método *update* não existe, então vamos adicioná-lo com lógica suficiente apenas para que ele passe:
+
+```javascript
+	update(req, res) {
+		res.sendStatus(200);
+		return Promise.resolve();
+	}
+```
+
+No teste acima esperamos que o objeto *response* do *express* seja chamado com 200, o que garante que o produto foi atualizado. Essa é a implementação mínima para fazer o teste passar.
+
+Executando os testes de unidade:
+
+```shell
+$ npm run test:unit
+```
+
+Devemos ter a seguinte saída:
+
+```shell
+ Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+
+
+  6 passing (37ms)
+```
+
+Vamos à refatoração, o código do método *update* deve ficar assim:
+
+```javascript
+ update(req, res) {
+    return this.Product.findOneAndUpdate({ _id: req.params.id}, req.body)
+      .then(() => res.sendStatus(200));
+  }
+```
+
+Vamos executar os testes de unidade:
+
+```shell
+$ npm run test:unit
+```
+
+A saida deve ser:
+
+```shell
+   Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+
+
+  6 passing (27ms)
+```
+
+Também vamos executar os testes de integração *end 2 end*:
+
+```shell
+$ npm run test:integration
+```
+
+A saída deve ser:
+
+```shell
+
+  Routes: Products
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        ✓ should return 200 with one product
+    POST /products
+      when posting a product
+        ✓ should return a new product with status code 201
+    PUT /products/:id
+      when editing a product
+        ✓ should update the product and return 200 as status code
+
+
+  4 passing (184ms)
+```
+
+Todos os testes estão passando e a atualização de produtos está funcionando. O próximo passo é adicionar um teste para o caso de algum erro acontecer, similar ao que já foi feito na criação de produtos.
+
+Vamos atualizar o teste **test/unit/controllers/products_spec.js** adicionando o seguinte caso de teste dentro do cenário *update*:
+
+```javascript
+    context('when an error occurs', () => {
+      it('should return 422', () => {
+        const fakeId = 'a-fake-id';
+        const updatedProduct = {
+          _id: fakeId,
+          name: 'Updated product',
+          description: 'Updated description',
+          price: 150
+        };
+        const request = {
+          params: {
+            id: fakeId
+          },
+          body: updatedProduct
+        };
+        const response = {
+          send: sinon.spy(),
+          status: sinon.stub()
+        };
+
+        class fakeProduct {
+          static findOneAndUpdate() {}
+        }
+
+        const findOneAndUpdateStub = sinon.stub(fakeProduct, 'findOneAndUpdate');
+        findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).rejects({ message: 'Error' });
+        response.status.withArgs(422).returns(response);
+
+        const productsController = new ProductsController(fakeProduct);
+
+        return productsController.update(request, response)
+          .then(() => {
+            sinon.assert.calledWith(response.send, 'Error');
+          });
+      });
+
+    });
+```
+
+Não há nada de novo comparado a o que foi feito no create,  foi utilizada a mesma técnica de *stub* como podemos ver aqui:
+
+```javascript
+findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).rejects({ message: 'Error' });
+```
+
+Ao executar os testes de unidade:
+
+```shell
+$ npm run test:unit
+```
+
+Devemos ter a seguinte saída:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+      when an error occurs
+        1) should return 422
+
+
+  6 passing (26ms)
+  1 failing
+
+  1) Controller: Products update() product when an error occurs should return 422:
+     Error
+```
+
+Como já esperávamos, o teste está falhando. Vamos atualizar método *update* do *productsController* adicionando o método método *catch*:
+
+```diff
+	update(req, res) {
+		return this.Product.findOneAndUpdate({ _id: req.params.id}, req.body)
++			.then(() => res.sendStatus(200))
++			.catch(err => res.status(422).send(err.message));
+	}
+```
+
+Executando os testes novamente, a saída deve ser:
+
+```shell
+   Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+      when an error occurs
+        ✓ should return 422
+
+
+  7 passing (46ms)
+```
+
+Note que não fizemos o processo *Green*, isso porque a implementação era clara e simples. Não é necessário escrever código por obrigação, o estágio de *Green* serve para ajudar e validar o teste.
