@@ -16,3 +16,4 @@ what-is-bdd.txt
 crud_and_id.txt
 crud_create.txt
 crud_update.txt
+crud_delete.txt

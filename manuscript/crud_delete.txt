@@ -1,0 +1,306 @@
+Deletando um recurso
+
+Já temos o *C.R.U* do *CRUD*, o último passo é o *DELETE* que vai permitir a remoção de recursos da *API*.
+
+Como sempre, começamos pelo teste de integração *end 2 end* em **test/integration/routes/products_spec.js**
+
+```javascript
+  describe('DELETE /products/:id', () => {
+    context('when deleting a product', () => {
+      it('should delete a product and return 204 as status code', done => {
+
+        request
+          .delete(`/products/${defaultId}`)
+          .end((err, res) => {
+            expect(res.status).to.eql(204);
+            done(err);
+          });
+      });
+    });
+  });
+```
+
+Dessa vez enviamos uma requisição do tipo *DELETE*:
+
+```javascript
+      .delete(`/products/${defaultId}`)
+```
+
+Passando um *id* de produto. Segundo a especificação do [*HTTP/1.1*](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html) o método *delete* serve para deletar um recurso do servidor com base na url enviada. A documentação também diz que as respostas podem ser: 200 - a resposta contém um corpo, 202 se a ação não vai ser realizada  agora (vai ocorrer em *background*) ou 204 quando não há retorno, somente a notificação de sucesso.
+Na maioria das *APIs Rest* é comum o uso do código 204. Ele é um código de sucesso utilizado para momentos onde é necessário notificar o sucesso, mas a resposta não vai ter dados.
+
+Após adicionar o teste, vamos executar os testes:
+
+```shell
+$ npm run test:integration
+```
+
+A saída deve ser a seguinte:
+
+```shell
+    Routes: Products
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        ✓ should return 200 with one product
+    POST /products
+      when posting a product
+        ✓ should return a new product with status code 201
+    PUT /products/:id
+      when editing a product
+        ✓ should update the product and return 200 as status code
+    DELETE /products/:id
+      when deleting a product
+        1) should delete a product and return 204 as status code
+
+
+  4 passing (221ms)
+  1 failing
+
+  1) Routes: Products DELETE /products/:id when deleting a product should delete a product and return 204 as status code:
+
+      Uncaught AssertionError: expected 404 to deeply equal 204
+      + expected - actual
+
+      -404
+      +204
+```
+
+Como esperado, temos como retorno o código 404 (Not Found). Vamos adicionar a rota no arquivo **src/routes/products.js**.
+
+```diff
++ router.delete('/:id', (req, res) => productsController.remove(req, res));
+```
+Executando os testes novamente o retorno deve ser:
+
+```shell
+ 1) Routes: Products DELETE /products/:id when deleting a product should delete a product and return 204 as status code:
+
+      Uncaught AssertionError: expected 500 to deeply equal 204
+      + expected - actual
+
+      -500
+      +204
+```
+
+Agora é hora de adicionar os testes de unidade para o *controller*. No arquivo **test/unit/controllers/products_spec.js** adicione o seguinte cenário de teste com o caso de teste a seguir:
+
+```javascript
+   describe('delete() product', () => {
+    it('should respond with 204 when the product is deleted', () => {
+      const fakeId = 'a-fake-id';
+      const request = {
+        params: {
+          id: fakeId
+        }
+      };
+      const response = {
+        sendStatus: sinon.spy()
+      };
+
+      class fakeProduct {
+        static remove() {}
+      }
+
+      const removeStub = sinon.stub(fakeProduct, 'remove');
+
+      removeStub.withArgs({ _id: fakeId }).resolves([1]);
+
+      const productsController = new ProductsController(fakeProduct);
+
+      return productsController.remove(request, response)
+        .then(() => {
+          sinon.assert.calledWith(response.sendStatus, 204);
+        });
+    });
+  });
+```
+
+O método utilizado para remover um produto é o *remove*, segundo a [documentação do *Mongoose*](http://mongoosejs.com/docs/api.html#schema_Schema-remove) ele recebe uma ou mais condições para serem removidas e retorna um número inteiro referente a quantos itens foram deletados do banco de dados.
+Para simular esse cenário vamos criar o seguinte *stub* no código acima:
+
+```javascript
+      removeStub.withArgs({ _id: fakeId }).resolves([1]);
+```
+
+Aqui informamos que quando o método *remove* for chamado com um *_id* igual ao *fakeId* deve resolver uma *Promise* devolvendo um *array* com 1 elemento.
+
+Executando os testes de unidade devemos ter a seguinte saída:
+
+```shell
+   Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+      when an error occurs
+        ✓ should return 422
+    delete() product
+      1) should respond with 204 when the product is deleted
+
+
+  7 passing (46ms)
+  1 failing
+
+  1) Controller: Products delete() product should respond with 204 when the product is deleted:
+     TypeError: productsController.remove is not a function
+      at Context.it (test/unit/controllers/products_spec.js:220:33)
+```
+
+O método *remove* não foi encontrado, então vamos criá-lo no *ProductsController*, o código deve ficar assim:
+
+```javascript
+	remove(req, res) {
+		res.sendStatus(204);
+		return Promise.resolve();
+	}
+```
+
+Executando os testes de unidade, devemos ter a seguinte saída:
+
+```shell
+    Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+      when an error occurs
+        ✓ should return 422
+    delete() product
+      ✓ should respond with 204 when the product is deleted
+
+
+  8 passing (32ms)
+```
+
+Agora no passo de refatoração adicionaremos a lógica real do método:
+
+```javascript
+  remove(req, res) {
+    return this.Product.remove({ _id: req.params.id})
+      .then(() => res.sendStatus(204));
+  }
+```
+
+Ambos os testes devem seguir passando com sucesso.
+
+O último passo é o tratamento dos possíveis erros.
+Nos testes de unidade vamos adicionar o seguinte teste dentro do cenário do método *remove*:
+
+```javascript
+       context('when an error occurs', () => {
+      it('should return 400', () => {
+        const fakeId = 'a-fake-id';
+        const request = {
+          params: {
+            id: fakeId
+          }
+        };
+        const response = {
+          send: sinon.spy(),
+          status: sinon.stub()
+        };
+
+        class fakeProduct {
+          static remove() {}
+        }
+
+        const removeStub = sinon.stub(fakeProduct, 'remove');
+
+        removeStub.withArgs({ _id: fakeId }).rejects({message: 'Error'});
+        response.status.withArgs(400).returns(response);
+
+        const productsController = new ProductsController(fakeProduct);
+
+        return productsController.remove(request, response)
+          .then(() => {
+            sinon.assert.calledWith(response.send, 'Error');
+          });
+      });
+
+    });
+```
+
+Executando os testes de unidade devemos ter a seguinte saída:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+      when an error occurs
+        ✓ should return 422
+    delete() product
+      ✓ should respond with 204 when the product is deleted
+      when an error occurs
+        1) should return 400
+
+
+  8 passing (35ms)
+  1 failing
+
+  1) Controller: Products delete() product when an error occurs should return 400:
+     Error
+```
+
+A implementação ficará da seguinte maneira:
+
+```javascript
+	remove(req, res) {
+		return this.Product.remove({ _id: req.params.id})
+			.then(() => res.sendStatus(204))
+			.catch(err => res.status(400).send(err.message));
+	}
+```
+
+Note que agora retornamos 400 e não mais 422, 400 significa *Bad Request* e é um erro genérico, como o *delete* não recebe e nem valida dados não caberia utilizar o código 422.
+
+Executando os testes de unidade agora a saída deve ser:
+
+```shell
+   Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product is updated
+      when an error occurs
+        ✓ should return 422
+    delete() product
+      ✓ should respond with 204 when the product is deleted
+      when an error occurs
+        ✓ should return 400
+
+
+  9 passing (50ms)
+```
+
+Pronto! As operações de CRUD para o recurso de produtos estão prontas. O código dessa parte pode ser encontrado [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step8).
