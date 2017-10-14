@@ -1,4 +1,4 @@
-Deletando um recurso
+## Deletando um recurso
 
 Já temos o *C.R.U* do *CRUD*, o último passo é o *DELETE* que vai permitir a remoção de recursos da *API*.
 
