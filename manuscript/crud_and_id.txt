@@ -6,7 +6,7 @@ Serão aplicadas as técnicas de *BDD* que foram vistas anteriormente, aqui cham
 ## Busca por id
 
 Um padrão bastante comum em *APIs* *REST* é a busca de um recurso pelo identificador (*id*), por exemplo **http://minha_api/products/56cb91bdc3464f14678934ca** deve retornar  o produto correspondente ao *id* informado na rota.
-Nossa API ainda não suporta essa funcionalidade, então vamos implementá-la.
+Nossa *API* ainda não suporta essa funcionalidade, então vamos implementá-la.
 Como esse será um novo *endpoint* precisamos começar pelo teste de integração *end 2 end* que fica no arquivo: **test/integration/routes/products_spec.js**
 
 Iniciaremos permitindo o reuso de código, tornando-o mais genérico, permitindo assim a reutilização:
@@ -19,11 +19,11 @@ Iniciaremos permitindo o reuso de código, tornando-o mais genérico, permitindo
       price: 100
     };
     const expectedProduct = {
-      __v: 0,
- -    _id: '56cb91bdc3464f14678934ca',
- +    _id: defaultId,
-      name: 'Default product',
-      description: '
+     __v: 0,
+-    _id: '56cb91bdc3464f14678934ca',
++    _id: defaultId,
+     name: 'Default product',
+     description: '
 ```
 
 O ***_id*** foi extraido do *expectedProduct* para uma *constant* isso será útil para testar a rota a seguir.
@@ -78,7 +78,7 @@ Quebrou! Agora já temos por onde começar. Era esperado 200, código *http* de 
 
 Vamos alterar o arquivo de rotas de produtos: **src/routes/products.js**, adicionando a seguinte rota:
 
-```javascript
+```diff
  router.get('/', (req, res) => productsController.get(req, res));
  +router.get('/:id', (req, res) => productsController.getById(req, res));
 ```
@@ -105,7 +105,7 @@ O teste de ponta a ponta é o teste de aceitação, além de guiar o desenvolvim
 
 Dentro desse grande teste de aceitação serão incluídos inúmeros outros testes, que podem ser de integração, de unidade e etc; esses testes sim seguirão o ciclo do *TDD*.
 
-Os métodos que serão criados no controller seguirão o *TDD* como já vimos no livro.
+Os métodos que serão criados no *controller* seguirão o *TDD* como já vimos no livro.
 Vamos começar melhorando o reaproveitamento de código alterando o teste de unidade **test/unit/controllers/products_spec.js**:
 
 ```diff
@@ -113,15 +113,15 @@ Vamos começar melhorando o reaproveitamento de código alterando o teste de uni
 +    params: {}
 +  };
   
-    describe('get() products', () => {
-      it('should call send with a list of products', () => {
- -      const request = {};
-        const response = {
-          send: sinon.spy()
-        };
+   describe('get() products', () => {
+     it('should call send with a list of products', () => {
+-      const request = {};
+       const response = {
+         send: sinon.spy()
+      };
 ```
 
-O objeto *request* foi movido para fora do teste e foi renomeado para *defaultRequest* para permitir sua reutilização por todos os casos de teste. Também adicionamos um objeto params dentro do *defaultRequest* para que fique similar ao objeto enviado pelo *express*.
+O objeto *request* foi movido para fora do teste e foi renomeado para *defaultRequest* para permitir sua reutilização por todos os casos de teste. Também adicionamos um objeto *params* dentro do *defaultRequest* para que fique similar ao objeto enviado pelo *express*.
 
 A próxima alteração a ser feita é a requisição para o *controller*, como alteramos o nome de *request* para *defaultRequest* será necessário alterar a seguinte linha:
 
@@ -197,8 +197,8 @@ describe('getById()', () => {
   });
 ```
 
-O nome *"should call send with one product"* reflete o cenário que esperamos, ou seja, é esperado que o método send seja chamado com apenas um produto. Dentro do teste é criado uma constant chamada *fakeId* referente ao *id* do produto que será buscado.
-Logo após é criado um objeto *request* igual ao enviado pelo *express* nas requisições, quando um parâmetro é enviado o express adiciona ele dentro do objeto *params*, como no código acima onde adicionamos o *id* como parâmetro.
+O nome *"should call send with one product"* reflete o cenário que esperamos, ou seja, é esperado que o método *send* seja chamado com apenas um produto. Dentro do teste é criado uma *constant* chamada *fakeId* referente ao *id* do produto que será buscado.
+Logo após é criado um objeto *request* igual ao enviado pelo *express* nas requisições, quando um parâmetro é enviado o *express* adiciona ele dentro do objeto *params*, como no código acima onde adicionamos o *id* como parâmetro.
 
 A Próxima parte do código do teste que devemos dar atenção é esta:
 
@@ -336,4 +336,4 @@ A saida deve ser:
   2 passing (152ms)
 ```
 
-O teste passou! Ou seja, nossa funcionalidade está implementada. Não se preocupe se ainda está meio confuso. Vamos aplicar esse conceito no decorrer do livro para a criação dos outros endpoints da *API*, aqui o objetivo é mostrar como o *BDD* e o *TDD* trabalham juntos e como a combinação dos dois ajuda no desenvolvimento criando um visão do que deve ser desenvolvido.
+O teste passou! Ou seja, nossa funcionalidade está implementada. Não se preocupe se ainda está meio confuso. Vamos aplicar esse conceito no decorrer do livro para a criação dos outros *endpoints* da *API*, aqui o objetivo é mostrar como o *BDD* e o *TDD* trabalham juntos e como a combinação dos dois ajuda no desenvolvimento criando um visão do que deve ser desenvolvido.
