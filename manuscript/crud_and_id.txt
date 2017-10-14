@@ -1,0 +1,339 @@
+#CRUD operations
+
+Neste capítulo serão adicionadas as operações de *CRUD* (*Create*, *Read*, *Update*, *Delete*) possibilitando a alteração do recurso *product*.
+Serão aplicadas as técnicas de *BDD* que foram vistas anteriormente, aqui chamaremos os testes de alto nível de teste de integração *end 2 end* (de ponta a ponta) ou teste de aceitação. Estes testes irão validar se a funcionalidade foi implementada como esperado.
+
+## Busca por id
+
+Um padrão bastante comum em *APIs* *REST* é a busca de um recurso pelo identificador (*id*), por exemplo **http://minha_api/products/56cb91bdc3464f14678934ca** deve retornar  o produto correspondente ao *id* informado na rota.
+Nossa API ainda não suporta essa funcionalidade, então vamos implementá-la.
+Como esse será um novo *endpoint* precisamos começar pelo teste de integração *end 2 end* que fica no arquivo: **test/integration/routes/products_spec.js**
+
+Iniciaremos permitindo o reuso de código, tornando-o mais genérico, permitindo assim a reutilização:
+
+```diff
++  const defaultId = '56cb91bdc3464f14678934ca';
+    const defaultProduct = {
+      name: 'Default product',
+      description: 'product description',
+      price: 100
+    };
+    const expectedProduct = {
+      __v: 0,
+ -    _id: '56cb91bdc3464f14678934ca',
+ +    _id: defaultId,
+      name: 'Default product',
+      description: '
+```
+
+O ***_id*** foi extraido do *expectedProduct* para uma *constant* isso será útil para testar a rota a seguir.
+
+Dentro do cenário de testes: ***GET /products*** adicionaremos o seguinte teste:
+
+```javascript
+ context('when an id is specified', done => {
+      it('should return 200 with one product', done => {
+
+        request
+          .get(`/products/${defaultId}`)
+          .end((err, res) => {
+            expect(res.statusCode).to.eql(200);
+            expect(res.body).to.eql([expectedProduct]);
+            done(err);
+          });
+      });
+    });
+```
+
+Note que esse caso de teste é similar ao *"should return a list of products"*, que está dentro do mesmo cenário. Adicionamos um ***context***, pois mesmo sendo no */products* agora o foco será o contexto de busca por *id* onde é feito um *GET* para **products/56cb91bdc3464f14678934ca**, ou seja filtrando somente um produto.
+
+Adicionado o teste, vamos executá-lo:
+
+```shell
+$ npm run test:integration
+```
+
+A saida deve ser a seguinte:
+
+```shell
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        1) should return 200 with one product
+
+
+  1 passing (141ms)
+  1 failing
+
+  1) Routes: Products GET /products when an id is specified should return 200 with one product:
+
+      Uncaught AssertionError: expected 404 to deeply equal 200
+      + expected - actual
+
+      -404
+      +200
+```
+
+Quebrou! Agora já temos por onde começar. Era esperado 200, código *http* de sucesso, e recebemos 404, código *http* de não encontrado (*NOT_FOUND*), o que significa que ainda não existe a rota que está sendo requisitada, esse deve ser o primeiro passo a ser implementado.
+
+Vamos alterar o arquivo de rotas de produtos: **src/routes/products.js**, adicionando a seguinte rota:
+
+```javascript
+ router.get('/', (req, res) => productsController.get(req, res));
+ +router.get('/:id', (req, res) => productsController.getById(req, res));
+```
+
+Executando os testes novamente o erro deve ser outro, como o seguinte:
+
+```shell
+1) Routes: Products GET /products when an id is specified should return 200 with one product:
+
+      Uncaught AssertionError: expected 500 to deeply equal 200
+      + expected - actual
+
+      -500
+      +200
+```
+
+500, *Internal Server Error*: Isso significa que a rota foi encontrada mas houve outro erro ao seguir a requisição, pois não temos mais nada implementado. O próximo passo é adicionar lógica para termos uma resposta.
+
+O erro 500 aconteceu pois o método para buscar por *id* não existe no *productsController*, agora é o momento de criá-lo. Note que o teste *end 2 end* serve como um guia para garantir que estamos no caminho certo. Quando a rota foi criada não havia necessidade de testes pois a lógica era simples, já no *controller* o teste será necessário pois ele vai conter certa lógica. Nesse momento seguimos o ciclo do *TDD*. Algo como a imagem abaixo:
+
+![bdd end 2 end](images/bdd-end2end.png)
+
+O teste de ponta a ponta é o teste de aceitação, além de guiar o desenvolvimento ele também é responsável por validar se a funcionalidade que estamos desenvolvendo está ou não completa. Esse teste não segue o fluxo do *TDD*, pois ele será executado inúmeras vezes até que passe, quando ele passar significa que tudo que é necessário para a funcionalidade estar completa foi desenvolvido.
+
+Dentro desse grande teste de aceitação serão incluídos inúmeros outros testes, que podem ser de integração, de unidade e etc; esses testes sim seguirão o ciclo do *TDD*.
+
+Os métodos que serão criados no controller seguirão o *TDD* como já vimos no livro.
+Vamos começar melhorando o reaproveitamento de código alterando o teste de unidade **test/unit/controllers/products_spec.js**:
+
+```diff
++  const defaultRequest = {
++    params: {}
++  };
+  
+    describe('get() products', () => {
+      it('should call send with a list of products', () => {
+ -      const request = {};
+        const response = {
+          send: sinon.spy()
+        };
+```
+
+O objeto *request* foi movido para fora do teste e foi renomeado para *defaultRequest* para permitir sua reutilização por todos os casos de teste. Também adicionamos um objeto params dentro do *defaultRequest* para que fique similar ao objeto enviado pelo *express*.
+
+A próxima alteração a ser feita é a requisição para o *controller*, como alteramos o nome de *request* para *defaultRequest* será necessário alterar a seguinte linha:
+
+```diff
++      return productsController.get(defaultRequest, response)
+```
+
+Pronto, o teste deve estar assim:
+
+```javascript
+ const defaultRequest = {
+    params: {}
+  };
+
+  describe('get() products', () => {
+    it('should call send with a list of products', () => {
+      const response = {
+        send: sinon.spy()
+      };
+
+      Product.find = sinon.stub();
+      Product.find.withArgs({}).resolves(defaultProduct);
+
+      const productsController = new ProductsController(Product);
+
+      return productsController.get(defaultRequest, response)
+        .then(() => {
+          sinon.assert.calledWith(response.send, defaultProduct);
+        });
+    });
+```
+
+Execute os testes de unidade, eles devem estar passando.
+
+```shell
+$ npm run test:unit
+
+
+  Controllers: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+
+
+  2 passing
+```
+
+Testes verdes! Vamos criar o caso de teste para a busca por *id*, o teste ficará assim:
+
+```javascript
+describe('getById()', () => {
+    it('should call send with one product', () => {
+      const fakeId = 'a-fake-id';
+      const request = {
+        params: {
+          id: fakeId
+        }
+      };
+      const response = {
+        send: sinon.spy()
+      };
+
+      Product.find = sinon.stub();
+      Product.find.withArgs({ _id: fakeId }).resolves(defaultProduct);
+
+      const productsController = new ProductsController(Product);
+
+      return productsController.getById(request, response)
+        .then(() => {
+          sinon.assert.calledWith(response.send, defaultProduct);
+        });
+    });
+  });
+```
+
+O nome *"should call send with one product"* reflete o cenário que esperamos, ou seja, é esperado que o método send seja chamado com apenas um produto. Dentro do teste é criado uma constant chamada *fakeId* referente ao *id* do produto que será buscado.
+Logo após é criado um objeto *request* igual ao enviado pelo *express* nas requisições, quando um parâmetro é enviado o express adiciona ele dentro do objeto *params*, como no código acima onde adicionamos o *id* como parâmetro.
+
+A Próxima parte do código do teste que devemos dar atenção é esta:
+
+```javascript
+Product.find.withArgs({ _id: fakeId }).resolves(defaultProduct);
+```
+
+Aqui é utilizado o *stub* do método *find* para adicionar um comportamento sempre que ele for chamado recebendo o parâmetro *_id* com o valor do *fakeId*. O *_id* é a chave primária do *Mongo* então para fazer o filtro por *id* precisamos fazer uma busca pela chave *_id*.
+O método *withArgs* do *stub* do *Sinon* serve para adicionar um comportamento baseado em uma condição, no nosso caso quando o método *find* for chamado com o parâmetro *_id* com o valor do *fakeId* ele deve resolver uma *Promise* retornando o *defaultProduct*, simulando assim uma chamada ao banco de dados.
+
+O método que será chamado é o *getById*, como no trecho abaixo:
+
+```javascript
+return productsController.getById(request, response)
+```
+
+Vamos executar os testes de unidade:
+
+```shell
+$ npm run test:unit
+```
+
+Devemos receber o seguinte erro:
+
+```shell
+Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      1) should call send with one product
+
+
+  2 passing (22ms)
+  1 failing
+
+  1) Controller: Products getById() should call send with one product:
+     TypeError: productsController.getById is not a function
+```
+
+O erro diz que o método *getById* não é uma função, isso porque ainda não foi implementada a lógica, o *stub* que criamos não foi chamado e não retornou uma *Promise*. 
+Vamos mudar o teste de unidade para o passo *Green* implementando o necessário para que o mesmo passe.
+
+Devemos criar o método *getById* no *controller* de *products* que fica em: **src/controllers/products.js**.
+O código suficiente para o teste passar contém:
+
+```javascript
+    getById(req, res) {
+
+    return Promise.resolve([{
+      __v: 0,
+      _id: '56cb91bdc3464f14678934ca',
+      name: 'Default product',
+      description: 'product description',
+      price: 100
+    }])
+      .then(products => res.send(products))
+  }
+```
+
+O trecho acima  retorna uma *Promise* resolvida com um *array* contendo um produto *fake*, igual o que esperamos no caso de teste, e após o método *send* é chamado com esse produto.
+
+Executando os testes de unidade:
+
+```shell
+$ npm run test:unit
+```
+
+A resposta deve ser:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+
+
+  3 passing (20ms)
+```
+
+Teste unitário passando! Agora ele está no passo *Green* do *TDD*. Podemos partir para o *Refactor*.
+
+Vamos alterar o método *getById* em **src/controllers/products.js** para ficar similar a este:
+
+```javascript
+  getById(req, res) {
+    const { params: { id } } = req;
+
+    return this.Product.find({ _id:id })
+      .then(products => res.send(products))
+      .catch(err => res.status(400).send(err.message));
+  }
+```
+
+Na primeira linha extraímos o *id* do objeto params dentro de *req* e no método *find* do *mongoose* adicionamos um filtro por *id*.
+
+Realizada a alteração basta executar os testes novamente, começando pelo teste de unidade:
+
+```shell
+$ npm run test:unit
+```
+A saida deve ser:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+
+
+  3 passing (17ms)
+
+```
+
+Após os testes de unidade, devemos executar nosso teste *end 2 end* para validar:
+
+```shell
+$ npm run test:integration
+```
+
+A saida deve ser:
+
+```shell
+  Routes: Products
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        ✓ should return 200 with one product
+
+
+  2 passing (152ms)
+```
+
+O teste passou! Ou seja, nossa funcionalidade está implementada. Não se preocupe se ainda está meio confuso. Vamos aplicar esse conceito no decorrer do livro para a criação dos outros endpoints da *API*, aqui o objetivo é mostrar como o *BDD* e o *TDD* trabalham juntos e como a combinação dos dois ajuda no desenvolvimento criando um visão do que deve ser desenvolvido.
