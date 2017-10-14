@@ -102,7 +102,7 @@ Executando os testes novamente a saída deve ser:
 
 Erro interno! É hora de implementar o *controller*.
 
-Abra o teste de unidade em **test/unit/controllers/products_spec.js* e adicione o seguinte teste:
+Abra o teste de unidade em **test/unit/controllers/products_spec.js** e adicione o seguinte teste:
 
 ```javascript
   describe('create() product', () => {
