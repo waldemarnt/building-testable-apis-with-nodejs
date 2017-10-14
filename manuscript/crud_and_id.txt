@@ -79,8 +79,8 @@ Quebrou! Agora já temos por onde começar. Era esperado 200, código *http* de 
 Vamos alterar o arquivo de rotas de produtos: **src/routes/products.js**, adicionando a seguinte rota:
 
 ```diff
- router.get('/', (req, res) => productsController.get(req, res));
- +router.get('/:id', (req, res) => productsController.getById(req, res));
+router.get('/', (req, res) => productsController.get(req, res));
++ router.get('/:id', (req, res) => productsController.getById(req, res));
 ```
 
 Executando os testes novamente o erro deve ser outro, como o seguinte:
