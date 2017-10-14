@@ -1,0 +1,337 @@
+## Criando um recurso
+
+Nos passos anteriores trabalhamos nas buscas para listar todos os produtos e também filtrar por apenas um produto.
+Nesta etapa vamos trabalhar na criação de produtos na *API*.
+
+Começaremos adicionando um teste de integração *end 2 end* no arquivo **test/integration/routes/products_spec.js** com o seguinte código:
+
+```javascript
+   describe('POST /products', () => {
+    context('when posting a product', () => {
+
+      it('should return a new product with status code 201', done => {
+        const customId = '56cb91bdc3464f14678934ba';
+        const newProduct = Object.assign({},{ _id: customId, __v:0 }, defaultProduct);
+        const expectedSavedProduct = {
+          __v: 0,
+          _id: customId,
+          name: 'Default product',
+          description: 'product description',
+          price: 100
+        };
+
+        request
+          .post('/products')
+          .send(newProduct)
+          .end((err, res) => {
+            expect(res.statusCode).to.eql(201);
+            expect(res.body).to.eql(expectedSavedProduct);
+            done(err);
+          });
+      });
+    });
+  });
+```
+
+Usamos um novo *describe* pois separamos os cenários de testes por recursos da *API*, isso facilita a legibilidade e entendimento dos testes.
+O nosso teste deve criar um produto e retornar 201, com o produto criado.
+Note que é criado um *customId* e logo após sobrescrevemos o *id* do *defaultProduct* pelo *customId* usando *Object.assign*, para copiar o objeto e atribuir um novo valor ao *id*. Isso é necessário porque um novo produto será criado e ele precisa ter um *id* diferente do defaultProduct que já foi criado no *beforeEach*.
+
+Em seguida criamos o *expectedSavedProduct*. Este é o objeto referente ao que esperamos que a rota de criação de produtos devolva no teste.
+
+Na sequência, utilizamos o *supertest* para realizar um *HTTP POST* para a rota */products* da *API*, enviando o objeto *newProduct*, anteriormente criado.
+
+Quando a requisição terminar a resposta será validada:
+
+```javascript
+expect(res.statusCode).to.eql(201);
+expect(res.body).to.eql(expectedSavedProduct);
+```
+
+O teste vai verificar se a resposta da requisição é igual ao *expectedSavedProduct*, e o código *http* é igual a 201. Se sim, nosso produto foi criado com sucesso.
+
+Executando os testes de integração, conforme:
+
+```shell
+$ npm run test:integration
+```
+
+Teremos a seguinte resposta:
+
+```shell
+ Routes: Products
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        ✓ should return 200 with one product
+    POST /products
+      when posting a product
+        1) should return a new product with status code 201
+
+
+  2 passing (179ms)
+  1 failing
+
+  1) Routes: Products POST /products when posting a product should return a new product with status code 201:
+
+      Uncaught AssertionError: expected 404 to deeply equal 201
+      + expected - actual
+
+      -404
+      +201
+```
+
+Já vimos esse cenário antes: esperávamos 200 e recebemos 404, ou seja, a rota não foi encontrada.
+Vamos adicioná-la no arquivo **src/routes/products.js**
+
+```diff
+router.get('/', (req, res) => productsController.get(req, res));
+router.get('/:id', (req, res) => productsController.getById(req, res));
++ router.post('/', (req, res) => productsController.create(req, res));
+``` 
+
+Executando os testes novamente a saída deve ser:
+
+```shell
+      Uncaught AssertionError: expected 500 to deeply equal 201
+      + expected - actual
+
+      -500
+      +201
+```
+
+Erro interno! É hora de implementar o *controller*.
+
+Abra o teste de unidade em **test/unit/controllers/products_spec.js* e adicione o seguinte teste:
+
+```javascript
+  describe('create() product', () => {
+    it('should call send with a new product', () => {
+      const requestWithBody = Object.assign({}, { body: defaultProduct[0] }, defaultRequest);
+      const response = {
+        send: sinon.spy(),
+        status: sinon.stub()
+      };
+      class fakeProduct {
+        save() {}
+      }
+
+      response.status.withArgs(201).returns(response);
+      sinon.stub(fakeProduct.prototype, 'save').withArgs().resolves();
+
+      const productsController = new ProductsController(fakeProduct);
+
+      return productsController.create(requestWithBody, response)
+        .then(() => {
+          sinon.assert.calledWith(response.send);
+        });
+    });
+  });
+```
+
+Para simular um objeto de *request* do *express* precisamos de um objeto que possua além das propriedades do *defaultRequest* também um *body* que contenha os dados enviados por *post*. Para isso é criado o *requestWithBody*, um novo objeto criado a partir dos dados padrão de *request* que usamos nos testes anteriores e adicionado um *body* com o *defaultProduct*.
+Dessa maneira possuímos uma requisição de *post* idêntica a enviada pelo *express*.
+
+Os objetos response e *fakeProduct* seguem o mesmo padrão dos outros casos de teste. A única mudança é:
+
+```javascript
+response.status.withArgs(201).returns(response);
+```
+
+Aqui definimos que *response.status* deve ser chamado com 201, ou seja, que o recurso foi [criado com sucesso](https://github.com/waldemarnt/http-status-codes#success-2xx);
+Para simular a ação de *save* no banco pelo *model* do *mongoose* adicionamos o seguinte *stub*:
+
+```javascript
+sinon.stub(fakeProduct.prototype, 'save').withArgs().resolves();
+```
+
+Quando o método save do *fakeProduct* for chamado com qualquer argumento, ele vai retornar uma *Promise* resolvida.
+
+Já temos os testes necessários e podemos rodar os testes de unidade:
+
+```shell
+$ npm run test:unit
+```
+
+A saída será:
+
+```shell
+    Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      1) should call send with a new product
+
+
+  3 passing (22ms)
+  1 failing
+
+  1) Controller: Products create() product should call send with a new product:
+     TypeError: productsController.create is not a function
+```
+
+Ainda não criamos o método *create* no *controller*, esse será o nosso próximo passo.
+Vamos criar um método *create* no *productsController*:
+
+```javascript
+  create(req, res) {
+
+    res.send(req.body);
+    return Promise.resolve();
+
+  }
+```
+
+No teste verificamos se o *response.send* está sendo chamado com um produto criado, e esperamos por uma *Promise*. Essa é a menor implementação possível para atender ao teste. Ao executar os testes de unidade novamente devemos ter a seguinte resposta:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+
+
+  4 passing (26ms)
+```
+
+Estamos no estado *Green* dos testes de unidade. Vamos partir para o *Refactor* alterando o *productsController*, adicionando o seguinte:
+
+```javascript
+  create(req, res) {
+    const product = new this.Product(req.body);
+
+    return product.save()
+      .then(() => res.status(201).send(product));
+  }
+```
+
+Após a alteração o teste deve estar passando com sucesso. Agora é necessário testar o caso de erro que é muito importante na hora de criar algum recurso.
+
+Para testar um caso de erro precisamos que o método de criação de produto do *ProductsController* retorne um erro. Podemos criar este cenário tanto no teste de integração *end 2 end* quanto no teste de unidade. Como o teste de integração cobre a rota que recebe a resposta do *controller* e envia para o usuário, é indiferente a resposta que ele vai receber, independente de ser sucesso ou erro ela apenas será repassada.
+Para testarmos esse cenário com mais assertividade e mais controle dos componentes envolvidos vamos testar somente de forma unitária.
+Nos próximos capítulos vamos ver algumas maneiras de trabalhar com erros em testes de integração, mas neste momento vamos focar no nível unitário.
+
+Adicione o seguinte teste no arquivo **test/unit/controllers/products_spec.js**:
+
+```javascript
+	context('when an error occurs', () => {
+      it('should return 422', () => {
+        const response = {
+          send: sinon.spy(),
+          status: sinon.stub()
+        };
+
+        class fakeProduct {
+          save() {}
+        }
+
+        response.status.withArgs(422).returns(response);
+        sinon.stub(fakeProduct.prototype, 'save').withArgs().rejects({ message: 'Error' });
+
+        const productsController = new ProductsController(fakeProduct);
+
+        return productsController.create(defaultRequest, response)
+          .then(() => {
+            sinon.assert.calledWith(response.status, 422);
+          });
+      });
+    });
+```
+
+Imagino que vocês já estejam treinados em escrever testes usando o *Sinon*. O caso de teste acima informa que esse teste deve retornar o código 422 quando acontecer um erro na criação de um novo produto.
+
+Segundo a especificação do [*HTTP 1.1*](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html) o código 422 faz parte dos grupos de erro 4xx e significa *Unprocessable Entity* ou seja, a entidade não pode ser processada. Esse código de erro é utilizado para cenários onde a requisição foi recebida pelo servidor mas os dados não puderam ser validados.
+Um exemplo clássico é o caso do email, o usuário pode ter enviado os dados corretamente, mas o email é inválido. O servidor deve responder com 422, informando que recebeu os dados mas não conseguiu validar.
+
+Para simular um caso de erro precisamos fazer com que o método de *save* do *Mongoose* retorne um erro. Como ele é uma *Promise* basta rejeitarmos o *stub*, como é feito aqui:
+
+```javascript
+sinon.stub(fakeProduct.prototype, 'save').withArgs().rejects({ message: 'Error' });
+```
+
+Executando os testes de unidade:
+
+```shell
+$ npm run test:unit
+```
+
+A saida será:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        1) should return 422
+
+
+  4 passing (26ms)
+  1 failing
+
+  1) Controller: Products create() product when an error occurs should return 422:
+     Error
+```
+
+
+Como já era esperado recebemos um erro, pois ainda não implementamos essa lógica.
+Vamos atualizar o método create no *ProductsController* e adicionar um *catch* para pegar o erro quando caso ele ocorra:
+
+```diff
+  create(req, res) {
+    const product = new this.Product(req.body);
+
+		return product.save()
+			.then(() => res.status(201).send(product))
++			.catch(err => res.status(412).send(err.message));
+  }
+```
+
+Executando os testes novamente, a saída deve ser:
+
+```shell
+  Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+
+
+  5 passing (28ms)
+```
+
+Perfeito! Nossa rota de criação de produtos está pronta.
+Vamos nos certificar de que a implementação da funcionalidade está correta executando o teste *end 2 end*:
+
+```shell
+$ npm run test:integration
+
+Routes: Products
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        ✓ should return 200 with one product
+    POST /products
+      when posting a product
+        ✓ should return a new product with status code 201
+
+
+  3 passing (169ms)
+```
+
