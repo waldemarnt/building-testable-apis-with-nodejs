@@ -1,6 +1,6 @@
 # Introdução
 
-*Javascript* é a uma das linguagens atuais mais populares entre os desenvolvedores [(segundo o *Stack Overflow Survey* de 2017)](http://stackoverflow.com/insights/survey/2017#technology). Sorte de quem pode trabalhar com *Javascript* ou está entrando em um projeto onde terá a oportunidade de aprender essa linguagem. 
+*Javascript* é uma das linguagens atuais mais populares entre os desenvolvedores [(segundo o *Stack Overflow Survey* de 2017)](http://stackoverflow.com/insights/survey/2017#technology). Sorte de quem pode trabalhar com *Javascript* ou está entrando em um projeto onde terá a oportunidade de aprender essa linguagem. 
 *Javascript* é dona de uma fatia ainda única no mercado, pois é uma linguagem criada para *browsers*, para atualizar conteúdo dinamicamente, para ser não bloqueante, permitindo que ações sejam realizadas enquanto outras ainda estão sendo processadas.
 O contexto dos *browsers* contribuiu para que *Javascript* evoluísse de uma forma diferente das demais linguagens, focando em performance e em possibilitar a criação de interfaces com uma melhor experiência para o usuário.
 
