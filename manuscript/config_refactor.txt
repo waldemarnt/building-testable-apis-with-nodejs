@@ -2,7 +2,9 @@
 
 Antes de seguir adicionando funcionalidades a nossa API vamos fazer algumas melhorias. Como temos testes que nos garantem confiança no código, podemos melhorar o design do nosso código sempre que preciso, buscando sempre evoluir a arquitetura.
 Vamos começar pelo simples (sempre!), evitando complexidades antes que elas sejam realmente necessárias, e vamos evoluindo a arquitetura conforme a demanda.
-Nos próximos capítulos vamos adicionar autenticação e migrações de banco de dados, também teremos algumas configurações que precisarão ser feitas. Essas modificações tornam necessário mover o nosso diretório de config para fora de src, assim será possível o reuso das configurações do ambiente; essa parte ficará mais clara durante a implementação.
+Nos próximos capítulos vamos adicionar autenticação e migrações de banco de dados, também teremos algumas configurações que precisarão ser feitas.
+
+Essas modificações tornam necessário mover o nosso diretório de *config* para fora de *src*, assim será possível o reuso das configurações do ambiente; essa parte ficará mais clara durante a implementação.
 
 ## Alterando a arquitetura
 
@@ -49,8 +51,8 @@ Para nos ajudar nessa missão utilizaremos o módulo [*node-config*](https://git
 
 ## Utilizando o módulo node-config
  
-O módulo config suporta múltiplos ambientes, variáveis de ambiente e muitas outras formas de configuração, o que é  muito útil na hora de criar aplicações que irão rodar na nuvem ou até mesmo em diferentes servidores.
-Para começar, vamos instalar o módulo config com o seguinte comando:
+O módulo *config* suporta múltiplos ambientes, variáveis de ambiente e muitas outras formas de configuração, o que é  muito útil na hora de criar aplicações que irão rodar na nuvem ou até mesmo em diferentes servidores.
+Para começar, vamos instalar o módulo *config* com o seguinte comando:
 
 ```shell
 $ npm install config@1.29.4
@@ -59,7 +61,8 @@ $ npm install config@1.29.4
 Após a instalação precisamos fazer a configuração. No próprio repositorio no github [https://github.com/lorenwest/node-config](https://github.com/lorenwest/node-config) temos uma vasta documentação de como configurar. Resumindo: será necessário criar um arquivo *json* para cada ambiente e neste arquivo adicionar as propriedades que queremos. Por padrão ele espera que os arquivos de configuração estejam dentro do diretório ***config***, na raiz do projeto, por isso  a mudança na arquitetura foi necessária.
 
 Vamos começar criando uma configuração padrão para a nossa API, caso não tenha um arquivo específico para o ambiente o diretório *config* será utilizado.
-Vamos criar o arquivo *default.json* no diretório *config/*. Neste arquivo eremos a seguinte instrução:
+Vamos criar o arquivo *default.json* no diretório *config/*.
+Neste arquivo teremos a seguinte instrução:
 
 ```json
 {
@@ -69,7 +72,7 @@ Vamos criar o arquivo *default.json* no diretório *config/*. Neste arquivo erem
 }
 ```
 
-Essa é nossa configuração padrão, agora vamos criar uma configuração para teste, crie um arquivo *test.json* no diretório config com a seguinte instrução:
+Essa é nossa configuração padrão, agora vamos criar uma configuração para teste, crie um arquivo *test.json* no diretório *config* com a seguinte instrução:
 
 ```json
 {
@@ -79,7 +82,7 @@ Essa é nossa configuração padrão, agora vamos criar uma configuração para 
 }
 ```
 Nesse caso o mongo vai utilizar um banco de teste. O próximo passo é alterar a aplicação para fazer uso dessas configurações.
-Começamos importando o módulo config no *config/database.js*, como no trecho de código abaixo:
+Começamos importando o módulo *config* no *config/database.js*, como no trecho de código abaixo:
 
 ```diff
  import mongoose from 'mongoose';
@@ -95,7 +98,7 @@ Em seguida, vamos alterar a linha onde definimos a constante *mongodbUrl* para q
 
 Dessa maneira quem irá cuidar da configuração é o *config*, ele que vai ter a responsabilidade de entregar o *mongoUrl* baseado no ambiente em que a aplicação está sendo executada.
 
-O módulo config utiliza a variável de ambiente NODE_ENV para saber qual arquivo carregar, como definimos no package.json o NODE_ENV=test para nossos testes, ele vai carregar o arquivo test.json.
+O módulo config utiliza a variável de ambiente **NODE_ENV** para saber qual arquivo carregar, como definimos no package.json o *NODE_ENV=test* para nossos testes, ele vai carregar o arquivo *test.json*.
 
 ```json
  "test:integration": "NODE_ENV=test mocha --opts test/integration/mocha.opts test/integration/**/*_spec.js",
@@ -120,4 +123,4 @@ $ npm test
 Os testes de unidade e em seguida os testes de integração serão executados.
 
 O código deste capitulo esta disponível em:
-[https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step-9](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step-9)
+[passo 9](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step-9)
