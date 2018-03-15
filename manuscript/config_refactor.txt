@@ -1,0 +1,123 @@
+# Configuração por ambiente
+
+Antes de seguir adicionando funcionalidades a nossa API vamos fazer algumas melhorias. Como temos testes que nos garantem confiança no código, podemos melhorar o design do nosso código sempre que preciso, buscando sempre evoluir a arquitetura.
+Vamos começar pelo simples (sempre!), evitando complexidades antes que elas sejam realmente necessárias, e vamos evoluindo a arquitetura conforme a demanda.
+Nos próximos capítulos vamos adicionar autenticação e migrações de banco de dados, também teremos algumas configurações que precisarão ser feitas. Essas modificações tornam necessário mover o nosso diretório de config para fora de src, assim será possível o reuso das configurações do ambiente; essa parte ficará mais clara durante a implementação.
+
+## Alterando a arquitetura
+
+Vamos começar movendo a pasta *src/config* para fora do diretório ***src***, a estrutura deve ficar como a seguir:
+
+```shell
+├── README.md
+├── config
+│   └── database.js
+├── package.json
+├── server.js
+├── src
+└── test
+```
+
+Feito isso vamos executar os testes:
+
+```shell
+$ npm run test:unit
+```
+
+Os testes de unidade devem estar passando, agora executaremos os testes de integração:
+
+```shell
+$ npm run test:integration
+```
+
+Os testes de integração vão quebrar pois o arquivo de configuração não foi encontrado. Vamos fazer as atualizações necessárias para que o código passe a utilizar a configuração a partir do diretório correto.
+
+Vamos alterar o arquivo *src/app.js* da seguinte maneira:
+
+```diff
+-import database from './config/database'
++import database from '../config/database';
+```
+
+Ao executar os testes de integração novamente eles devem passar.
+
+## Configurações por ambiente
+
+Provavelmente nossa aplicação irá rodar em vários ambientes, como desenvolvimento, homologação, produção e também teste. Muitas configurações são específicas por ambiente, como por exemplo o nome/url do banco de dados que vai ser diferente entre os ambientes, e isso deve ser fácil de ser configurado e versionado.
+Para nos ajudar nessa missão utilizaremos o módulo [*node-config*](https://github.com/lorenwest/node-config).
+
+
+## Utilizando o módulo node-config
+ 
+O módulo config suporta múltiplos ambientes, variáveis de ambiente e muitas outras formas de configuração, o que é  muito útil na hora de criar aplicações que irão rodar na nuvem ou até mesmo em diferentes servidores.
+Para começar, vamos instalar o módulo config com o seguinte comando:
+
+```shell
+$ npm install config@1.29.4
+```
+
+Após a instalação precisamos fazer a configuração. No próprio repositorio no github [https://github.com/lorenwest/node-config](https://github.com/lorenwest/node-config) temos uma vasta documentação de como configurar. Resumindo: será necessário criar um arquivo *json* para cada ambiente e neste arquivo adicionar as propriedades que queremos. Por padrão ele espera que os arquivos de configuração estejam dentro do diretório ***config***, na raiz do projeto, por isso  a mudança na arquitetura foi necessária.
+
+Vamos começar criando uma configuração padrão para a nossa API, caso não tenha um arquivo específico para o ambiente o diretório *config* será utilizado.
+Vamos criar o arquivo *default.json* no diretório *config/*. Neste arquivo eremos a seguinte instrução:
+
+```json
+{
+  "database": {
+    "mongoUrl": "mongodb://localhost:27017/shop"
+  }
+}
+```
+
+Essa é nossa configuração padrão, agora vamos criar uma configuração para teste, crie um arquivo *test.json* no diretório config com a seguinte instrução:
+
+```json
+{
+  "database": {
+    "mongoUrl": "mongodb://localhost:27017/test"
+  }
+}
+```
+Nesse caso o mongo vai utilizar um banco de teste. O próximo passo é alterar a aplicação para fazer uso dessas configurações.
+Começamos importando o módulo config no *config/database.js*, como no trecho de código abaixo:
+
+```diff
+ import mongoose from 'mongoose';
++import config from 'config';
+```
+
+Em seguida, vamos alterar a linha onde definimos a constante *mongodbUrl* para que ela utilize o valor que vem do *config*:
+
+```diff
+-const mongodbUrl = process.env.MONGODB_URL || 'mongodb://localhost:27017/test';
++const mongodbUrl = config.get('database.mongoUrl');
+```
+
+Dessa maneira quem irá cuidar da configuração é o *config*, ele que vai ter a responsabilidade de entregar o *mongoUrl* baseado no ambiente em que a aplicação está sendo executada.
+
+O módulo config utiliza a variável de ambiente NODE_ENV para saber qual arquivo carregar, como definimos no package.json o NODE_ENV=test para nossos testes, ele vai carregar o arquivo test.json.
+
+```json
+ "test:integration": "NODE_ENV=test mocha --opts test/integration/mocha.opts test/integration/**/*_spec.js",
+ "test:unit": "NODE_ENV=test mocha --opts test/unit/mocha.opts test/unit/**/*_spec.js"
+```
+
+O módulo config trabalha de forma hierárquica sobrescrevendo os arquivos de ambiente, não é necessário colocar todas as variáveis em um novo *json*, somente as que serão alteradas para determinado ambiente, dessa forma ele usará o valor *default* para as que não foram alteradas.
+
+Para finalizar vamos alterar o *package.json* adicionando o comando de *test*, para que seja possível executarmos ambos os testes de unidade e integração com apenas um comando:
+
+```diff
+-    "test": "echo \"Error: no test specified\" && exit 1",
++    "test": "npm run test:unit && npm run test:integration",
+```
+
+Para testar basta executar o seguinte comando:
+
+```shell
+$ npm test
+```
+
+Os testes de unidade e em seguida os testes de integração serão executados.
+
+O código deste capitulo esta disponível em:
+[https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step-9](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step-9)
