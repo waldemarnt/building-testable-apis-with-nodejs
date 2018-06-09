@@ -18,3 +18,4 @@ crud_create.txt
 crud_update.txt
 crud_delete.txt
 config_refactor.txt
+bcrypt-password.txt
