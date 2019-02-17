@@ -1,0 +1,339 @@
+# Autenticação  e  controle de acesso com Access Control List - ACL
+
+ACL ou *Access Control List*, é o termo utilizado na engenharia de software para falar de Controle de Acesso a Sistemas. A maioria das implementações de ACL seguem um padrão estruturado, onde se define as ações que usuários podem executar no sistema, como por exemplo: 
+
+```json
+{
+	John: read, 
+	Meg:admin
+}
+```
+
+Assim  o sistema checa as permissões do usuário e decide se permite ou não que ele execute determinada ação.
+No Exemplo acima o usuário John tem permissão de leitura e Meg tem permissão de  administrador.
+
+O padrão de ACL pode ser aplicado a quase todo tipo de sistema onde é necessário controlar ações de usuários, incluindo APIs. 
+
+Como nossa API utiliza express, vamos usar o módulo express-acl para implementar o ACL em nossa aplicação.
+
+## Express ACL
+
+O [express-acl](https://nyambati.github.io/express-acl/) é um módulo feito para o express que realiza checagem de acesso em runtime e pode ser configurado via JSON ou YAML (aqui vamos optar por JSON). Vamos começar instalando o módulo:
+
+```sh
+$ npm install express-acl@2.0.2
+```
+
+Vamos criar um arquivo chamado `nacl.json` no diretório de configuração *config/nacl.json* e adicione o seguinte trecho de código:
+
+```json
+[
+    {
+        "group": "admin",
+        "permissions": [
+            {
+                "resource": "*",
+                "methods": "*",
+                "action": "allow"
+            }
+        ]
+    },
+    {
+        "group": "user",
+        "permissions": [
+            {
+                "resource": "products",
+                "methods": [
+                    "GET"
+                ],
+                "action": "allow"
+            }
+        ]
+    }
+]
+```
+Ainda não temos todas as configurações necessárias mas já vamos deixar pronta a parte do acl. O express acl funciona por grupos: permitindo ou não ações para um determinado grupo a um determinado recurso da API.
+Por exemplo, o primeiro grupo será o de administrador: admin, os administradores terão acesso a todos os recursos da API, sem limitação alguma, para isso é utilizado * com a *"action":"allow"*, isso significa que a ação será de "permitir" em todos os recursos (resource) e metodos (methods).
+
+O segundo grupo é o de usuário (user), usuários somente terão acesso para leitura dos produtos da API.Como já vimos,a leitura é feita pelo verbo http GET, então para usuários precisamos permitir acesso ao método GET do recurso products. Como feito neste bloco:
+
+```json
+        "group": "user",
+        "permissions": [
+            {
+                "resource": "products",
+                "methods": [
+                    "GET"
+                ],
+                "action": "allow"
+            }
+```
+
+Agora vamos atualizar o arquivo *src/app.js* para adicionar a chamada ao acl.
+
+```diff
++ import acl from 'express-acl';
+
+const app = express();
+
++acl.config({
++  baseUrl: '/',
++  path: 'config'
++});
+
+const configureExpress = () => {
+  app.use(bodyParser.json());
++  app.use(acl.authorize.unless({path:['/users/authenticate']}));
+  app.use('/', routes);
+  
+  return app;
+};
+```
+
+Note que no `app.use(acl.authorize.unless({path:['/users/authenticate']}));` estamos passando o express-acl como um middleware para o express,  além disso adicionamos a configuração `authorize.unless` que diz para o express acl validar todos os recursos da API unless (a não ser que) seja /users/authenticate, essa rota será pública e utilizada para gerar o token de autenticação.
+
+## Autenticação com JSON Web Token
+
+Primeiro falamos de autorização com express ACL e agora vamos trabalhar na autenticação. A diferença entre autenticação e autorização é que na autenticação verificamos a identidade de um usuário e na autorização verificamos se o usuário autenticado tem privilégios para executar determinada ação.
+Autenticação pode ser feita de várias maneiras, a mais utilizada é o login com usuário e senha que cria uma sessão. Como APIs devem ser stateless, ou seja, não devem armazenar estado, não é possível ter sessão, dado que para isso ela teria que ser armazenada no servidor.
+
+Quando nada é armazenado no servidor fica mais fácil escalar a aplicação pois ela não tem estado em lugar algum, o usuário que controla o estado. Para resolver esse problema foram criados os tokens (também é comum utilizar cookies para autenticação). Utilizando tokens o usuário que faz a requisição autêntica uma vez com as credenciais, (no nosso caso email e senha) e recebe um token que será usado para fazer requisições para a API.
+
+Existem várias maneiras de fazer autenticação baseada em token, como JSON Web Token e  OAuth. Aqui utilizamos JSON Web Token.
+
+[JSON Web Token](https://jwt.io/), [JWT](https://tools.ietf.org/html/rfc7519), é um padrão aberto RFC 7519 que define uma maneira compacta de transportar objetos JSON seguramente entre partes. A confiança e segurança é alcançada por meio de assinatura digital utilizando algoritmos como HMAC ou chave pública/privada RSA ou ECDSA.
+Utilizaremos um modulo npm chamado jsonwebtoken que implementa a spec oficial do JWT e nos permite gerar e validar tokens no Node.js. Vamos começar pela instalação do módulo:
+
+```sh
+$ npm install jsonwebtoken@8.3.0
+```
+
+Adicionaremos duas propriedades necessárias para a configuração em *config/default.json*, primeiro a propriedade key dentro do objeto auth, essa será a chave secreta utilizada para assinar o token, e a propriedade tokenExpiresIn que se refere ao tempo de expiração do token. Na configuração abaixo definimos 7 dias, após esse prazo o usuário precisa gerar um novo token.
+
+```diff
+{
+  "database": {
+    "mongoUrl": "mongodb://localhost:27017/shop"
+  },
++   "auth": {
++    "key": "thisisaverysecurekey",
++    "tokenExpiresIn": "7d"
++  }
+}
+```
+
+## Criando Middlewares
+
+Como será necessário validar o token do usuário em todas requisições vamos criar um middleware responsável por validar se a requisição possui um token, se sim, vamos decodificar o token e transformá-lo em um objeto que será adicionado na requisição para ser utilizado posteriormente pelo express-acl. Antes de tudo vamos começar pelo teste de unidade do middleware criando um arquivo em *test/unit/middlewares/auth_spec.js*.
+
+```javascript
+import authMiddleware from '../../../src/middlewares/auth';
+import jwt from 'jsonwebtoken';
+import config from 'config';
+
+describe('AuthMiddleware', () => {
+  it('should verify a JWT token and call the next middleware', done => {
+    const jwtToken = jwt.sign({ data: 'fake' }, config.get('auth.key'));
+    const reqFake = {
+      headers: {
+        'x-access-token': jwtToken
+      }
+    };
+    const resFake = {};
+    authMiddleware(reqFake, resFake, done);
+  });
+});
+```
+
+Aqui começamos pelo primeiro happy path, o middleware deve receber uma requisição, verificar o token e chamar o próximo middleware. Note que aqui `jwt.sign({ data: 'fake' }, config.get('auth.key'));` geramos um token fake para ser utilizado no teste, esse token segue a mesma lógica que a aplicação utiliza.
+Para validar o teste chamamos `authMiddleware(reqFake, resFake, done);` passamos o reqFake,  que simula uma requisição contendo o header com o JWT, e um resFake vazio simulando o objeto de response que o middleware espera. Passamos também o callback done do Mocha como o next do middleware, dessa maneira quando o authMiddleware chamar o próximo middleware ele vai estar chamando o done do Mocha finalizando o teste.
+
+Executando os testes de unidade agora teremos um erro
+
+```sh
+$ npm run test:unit
+
+Error: Cannot find module '../../../src/middlewares/auth'
+    at Function.Module._resolveFilename (internal/modules/cjs/loader.js:548:15)
+    at Function.Module._load (internal/modules/cjs/loader.js:475:25)
+``` 
+O arquivo não foi encontrado, crie o arquivo em */src/middlewares/auth.js* com o seguinte código:
+
+```javascript
+export default (req, res, next) => {
+  next()
+};
+```
+
+Aqui adicionamos lógica somente para o teste passar, passo green do TDD (espero que ainda lembrem!). 
+
+Executando os testes novamente a saída será:
+
+```sh
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+```
+
+Agora é hora de aplicar a lógica de verdade. Altere o arquivo auth.js como abaixo:
+
+```diff
++import jwt from 'jsonwebtoken';
++import config from 'config';
+
+export default (req, res, next) => {
++  const token = req.headers['x-access-token'];
++
++  jwt.verify(token, config.get('auth.key'), (err, decoded) => {
++    req.decoded = decoded;
++    next(err);
++  });
+};
+```
+
+Primeiro passo pegamos o token x-access-token do header da requisição que e depois o verificamos utilizando o módulo jsonwebtoken. O primeiro parâmetro é o token, o segundo é a chave secreta da nossa aplicação para poder decodificar o token e o terceiro parâmetro é o callback que o jsonwebtoken espera.
+Em seguida adicionamos o token decodificado ao objeto req referente a requisição req.decoded = decoded e chamamos o próximo middleware com next. Note que o err é passado como parâmetro para o próximo middleware, isso significa que se ocorrer algum erro na hora de decodificar o token o jsonwebtoken vai passar esse erro para nós e nós vamos passá-lo adiante para o próximo middleware, no futuro teremos um middleware somente para tratar erros.
+
+Executando os testes de unidade novamente:
+
+```sh
+$ npm run test:unit
+
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+```
+
+E um pouco confuso passar o *err* para o próximo middleware, certo? Isso significa que nosso código possui dois caminhos, um de sucesso e um de falha, então devemos testar ambos. Vamos escrever um teste que simula um caso de erro adicionando o seguinte caso de teste em *test/unit/middlewares/auth_spec.js*.
+
+```diff
+import authMiddleware from '../../../src/middlewares/auth';
+import jwt from 'jsonwebtoken';
+import config from 'config';
+
+describe('AuthMiddleware', () => {
+
+    it('should verify a JWT token and call the next middleware', done => {
+        const jwtToken = jwt.sign({ data: 'fake' }, config.get('auth.key'));
+        const reqFake = {
+            headers: {
+                'x-access-token': jwtToken
+            }
+        };
+        const resFake = {};
+        authMiddleware(reqFake, resFake, done);
+    });
+
+    +it('should call the next middleware passing an error when the token validation fails', done => {
++        const reqFake = {
++           headers: {
++                'x-access-token': 'invalid token'
++            }
++        };
++        const resFake = {};
++       authMiddleware(reqFake, resFake, err => {
++            expect(err.message).to.eq('jwt malformed');
++            done();
++        });
++    });
+});
+```
+
+Passando um valor qualquer no header x-access-token fará com que o jsonwebtoken falhe e o nosso código var chamar o next passando o erro recebido pelo jsonwebtoken. No teste basta checarmos a mensagem:
+expect(err.message).to.eq('jwt malformed'); 
+“jwt malformed’ é a mensagem lançada pelo jsonwebtoken quando ele recebe um token que não segue o padrão do JWT.
+
+Executando os testes, a saída será:
+
+```sh
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+    ✓ should call the next middleware passing an error when the token validation fails
+```
+
+Ainda temos um caso para testar: na implementação atual o código espera que toda a requisição envie um token, mas a requisição para gerar o token não tem como passar um token!. Sendo assim, nosso código precisa verificar se existe token na requisição e chamar o próximo middleware sem executar a lógica de decodificação do jsonwebtoken.
+Vamos para o teste:
+
+```javascript
+ it('should call next middleware if theres no token', done => {
+        const reqFake = {
+            headers: {}
+        };
+        const resFake = {};
+        authMiddleware(reqFake, resFake, done);
+    });
+```
+
+Adicione o teste acima no teste unitário do auth middleware. Nele não var ser passado o header x-access-token, executando o teste:
+
+```sh
+$npm run test:unit
+
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+    ✓ should call the next middleware passing an error when the token validation fails
+    1) should call next middleware if theres no token
+
+
+  2 passing (16ms)
+  1 failing
+
+  1) AuthMiddleware should call next middleware if theres no token:
+     JsonWebTokenError: jwt must be provided
+      at Object.module.exports [as verify] (node_modules/jsonwebtoken/verify.js:39:17)
+      at exports.default (src/middlewares/auth.js:8:7)
+      at Context.done (test/unit/middlewares/auth_spec.js:36:9)
+```
+
+O teste vai quebrar. A mensagem é jwt must be provided o que significa que o código tentou verificar o token, vamos alterar o código para não verificar o token quando ele não estiver na requisição. Altere o middleware auth.js:
+
+```diff
+import jwt from 'jsonwebtoken';
+import config from 'config';
+
+export default (req, res, next) => {
+  const token = req.headers['x-access-token'];
++  if (!token) {
++    return next();
++  };
+  jwt.verify(token, config.get('auth.key'), (err, decoded) => {
+    req.decoded = decoded;
+    next(err);
+  });
+};
+```
+
+Simples! Se não tiver token chamamos o próximo middleware. Os testes agora devem estar passando
+
+```sh
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+    ✓ should call the next middleware passing an error when the token validation fails
+    ✓ should call next middleware if theres no token
+```
+
+Nosso middleware esta pronto.
+
+O próximo passo é alterar o *app.js* adicionando o auth middleware ao express.
+
+```diff
+import express from 'express';
+import bodyParser from 'body-parser';
+import acl from 'express-acl';
+import routes from './routes';
+import database from '../config/database';
++import authMiddleware from './middlewares/auth.js';
+ 
+ const app = express();
+ 
+acl.config({
+  baseUrl:'/',
+  path: 'config'
+});
+
+ const configureExpress = () => {
+   app.use(bodyParser.json());
++  app.use(authMiddleware);
+   app.use(acl.authorize.unless({path:['/users/authenticate']}));
+   app.use('/', routes);
+ 
+   return app;
+```
