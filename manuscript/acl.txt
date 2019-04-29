@@ -337,3 +337,235 @@ acl.config({
  
    return app;
 ```
+
+Os testes de integração não estão passando pois ainda não implementamos a autenticação. Vamos começar a implementação da autenticação pelo teste da rota em *test/integration/users_spec.js*
+
+```diff
++describe('POST /users/authenticate', () => {
++    context('when authenticating an user', () => {
++      it('should generate a valid token', done => {
++
++       request
++         .post(`/users/authenticate`)
++         .send({
++           email: 'jhon@mail.com',
++           password: '123password'
++         })
++         .end((err, res) => {
++           expect(res.body).to.have.key('token');
++           expect(res.status).to.eql(200);
++           done(err);
++         });
++     });
+
++     it('should return unauthorized when the password does not match', done => {
+
++       request
++         .post(`/users/authenticate`)
++         .send({
++           email: 'jhon@mail.com',
++           password: 'wrongpassword'
++         })
++         .end((err, res) => {
++           expect(res.status).to.eql(401);
++           done(err);
++         });
++     });
++   });
++ });
+```
+
+Adicionamos 2 testes de integração, um para o caso de sucesso, onde espera-se que o usuário seja autenticado, e um para o caso de falha, onde não foi possível autenticar o usuário.
+Vamos executar os testes de integração:
+
+```shell
+$ npm run test:integration
+```
+
+Ignore os outros testes nesse momento, vamos focar apenas nos novos testes:
+
+```shell
+9) Routes: Users POST /users/authenticate when authenticating a user should generate a valid token:
+
+      Uncaught AssertionError: expected {} to have key 'token'
+      + expected - actual
+
+      -[]
+      +[
+      +  "token"
+      +]
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:120:38)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+
+  10) Routes: Users POST /users/authenticate when authenticating an user should return unauthorized when the password does not match:
+
+      Uncaught AssertionError: expected 404 to deeply equal 401
+      + expected - actual
+
+      -404
+      +401
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:135:35)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+```
+
+Estamos recebendo 404 por que a rota não existe, vamos criá-la em *src/users/routes/users.js* adicionando o seguinte código:
+
+```diff
+import express from 'express';
+import UsersController from '../controllers/users';
+import User from '../models/user';
+
+const router = express.Router();
+const usersController = new UsersController(User);
+
+router.get('/', (req, res) => usersController.get(req, res));
+router.get('/:id', (req, res) => usersController.getById(req, res));
+router.post('/', (req, res) => usersController.create(req, res));
+router.put('/:id', (req, res) => usersController.update(req, res));
+router.delete('/:id', (req, res) => usersController.remove(req, res));
++router.post('/authenticate', (req, res) => usersController.authenticate(req, res));
+
+export default router;
+```
+
+Se executarmos os testes novamente a saída será:
+
+
+```shell
+9) Routes: Users POST /users/authenticate when authenticating an user should generate a valid token:
+
+      Uncaught AssertionError: expected {} to have key 'token'
+      + expected - actual
+
+      -[]
+      +[
+      +  "token"
+      +]
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:120:38)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+
+  10) Routes: Users POST /users/authenticate when authenticating a user should return unauthorized when the password does not match:
+
+      Uncaught AssertionError: expected 500 to deeply equal 401
+      + expected - actual
+
+      -500
+      +401
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:135:35)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+```
+
+Executando os testes de integração novamente a saída será um erro 500, pois não temos o método authenticate no controller de users, vamos criá-lo começando com um teste unitário em *test/unit/controllers/users_spec.js*.
+O método authenticate recebe os parâmetros req e res. Esperamos que método chame o objeto res do express passando o token como resposta. Abaixo vamos ver como testar esse cenário:
+
+```javascript
+  describe('authenticate', () => {
+       it('should authenticate a user', done => {
+      const fakeReq = {
+        body: {}
+      };
+      const fakeRes = {
+        send: token => {
+          expect(token).to.eql({ token: 'fake-token' });
+          done();
+        }
+      };
+      const usersController = new UsersController({});
+      usersController
+        .authenticate(fakeReq, fakeRes);
+    });
+  });
+```
+
+O teste é conciso pois neste momento não sabemos como nosso futuro código será, apenas sabemos que a saída deve ser um token. Aqui seguiremos o TDD de forma evolutiva para entender como o design do código muda durante o desenvolvimento.
+É importante atentar no código acima para o fakeRes ele possui um método send que imita o objeto real do express e dentro desse método adicionamos o expect do teste. Esse método é um callback então quando ele for chamado no final do fluxo o expect será executado e saberemos se o teste passou.
+
+Agora vamos implementar o metodo authenticate em *src/controllers/users*
+
+```javascript
+  authenticate(req, res) {
+    return res.send({ token: 'fake-token' });
+  }
+```
+
+Aqui estamos no passo GREEN do TDD: o suficiente para o teste passar. Nosso código ainda não está gerando o token, vamos para o REFACTOR para aplicar a lógica necessária.
+Nesse caso eu já fiz alguns testes e imagino como a implementação vai ser, por isso posso escrever o teste:
+
+Obs: É importante notar que em um cenário real vamos testar várias implementações antes de pensar em como escrever o teste. Quando falamos sobre TDD falamos sobre escrever o teste antes e isso causa confusão. Antes de escrever o teste é necessário experimentar com o código, uma vez que tivermos uma ideia de como será o código podemos começar o teste.
+
+Primeiramente vamos adicionar os seguintes imports:
+
+```diff
+import UsersController from '../../../src/controllers/users';
+import sinon from 'sinon';
++ import jwt from 'jsonwebtoken';
++import config from 'config';
+import User from '../../../src/models/user';
+
+
+
+it('should authenticate a user', done => {
+      const fakeUserModel = {
+        findOne: sinon.stub()
+      };
+      const user = {
+        name: 'Jhon Doe',
+        email: 'jhondoe@mail.com',
+        password: '12345',
+        role: 'admin'
+      };
+      fakeUserModel.findOne.withArgs({ email: user.email }).resolves({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        toJSON: () => ({ email: user.email })
+      });
+      
+      const jwtToken = jwt.sign(user, config.get('auth.key'), {
+        expiresIn: config.get('auth.tokenExpiresIn')
+      });
+      const fakeReq = {
+        body: user
+      };
+      const fakeRes = {
+        send: token => {
+          expect(token).to.eql({ token: jwtToken });
+          done();
+        }
+      };
+      const usersController = new UsersController(fakeUserModel);
+      usersController.authenticate(fakeReq, fakeRes);
+    });
+```
+
+Quando enviados usuário e senha um json web token é gerado, este é o cenário que o teste acima representa. Se o teste não estiver fazendo sentido, não se preocupe, essa parte será mais fácil de entender quando chegarmos na implementação. 
+Dois pontos são importantes no teste acima:
+
+```javascript
+fakeUserModel.findOne.withArgs({ email: user.email }).resolves({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        toJSON: () => ({ email: user.email })
+      });
+```
+
+Aqui geramos um hash da senha para poder simular um usuário do banco de dados, e na sequência,  usando o stub no método findOne do fakeUserModel o usuário é retornado com o password. O método toJSON é necessário para simular o model do Mongoose onde é necessário usar toJSON para acessar os dados como json.
