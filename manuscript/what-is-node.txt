@@ -50,7 +50,7 @@ const text = `The sum is ${ someMath }`;
 console.log(text);
 ```
 
-Nesse exemplo, a última linha de código com o ***console.log*** precisa esperar a função ***readFileSync*** do módulo de *file system* executar, mesmo não possuindo ligação alguma com o resultado da leitura do arquivo. 
+A linha 14 do exemplo acima, com o ***console.log***, imprimirá o resultado de *1+1* somente após a função ***readFileSync*** do módulo de _file system_ executar, mesmo não possuindo ligação alguma com o resultado da leitura do arquivo. 
 
 Esse é o problema que o *Node.js* se propôs a resolver, possibilitar que ações não dependentes entre sí sejam desbloqueadas. Para solucionar esse problema o *Node.js* depende de uma funcionalidade chamada *high order functions*. As *high order functions* possibilitam passar uma função por parâmetro para outra função, as funções passadas como parâmetro serão executadas posteriormente, como no exemplo a seguir:
 
