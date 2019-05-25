@@ -1,10 +1,10 @@
-# Rotas com o *express router*
+# Rotas com o express router
 
-O *express* possui um *middleware* nativo para lidar com rotas, o ***Router***.  O *Router* é responsável por administrar as rotas da aplicação e pode ser passado como parâmetro para o *app.use()*. Utilizando o *Router* é possível desacoplar as rotas e remover a necessidade de usar o *app* (instância do *express*) em outros lugares da aplicação.
+O express possui um middleware nativo para lidar com rotas, o Router.  O Router é responsável por administrar as rotas da aplicação e pode ser passado como parâmetro para o `app.use()`. Utilizando o Router é possível desacoplar as rotas e remover a necessidade de usar o app (instância do express) em outros lugares da aplicação.
 
 ## Separando as rotas
 
-Vamos alterar nossa aplicação para separar as rotas do *app*. Para isso devemos criar um diretório chamado ***routes*** dentro de *src*. Os diretórios devem ficar assim:
+Vamos alterar nossa aplicação para separar as rotas do app. Para isso devemos criar um diretório chamado *routes* dentro de *src*. Os diretórios devem ficar assim:
 
 ```shell
 ├── package.json
@@ -24,7 +24,7 @@ const router = express.Router();
 export default router;
 ```
 
-No código acima importamos o *express*, acessamos o *Router* dentro dele e depois o exportamos.
+No código acima importamos o express, acessamos o Router dentro dele e depois o exportamos.
 Agora que temos um arquivo para administrar as rotas podemos mover a lógica de administração das rotas que estão no *app.js* para o nosso *index.js*. Primeiro movemos a rota padrão. O arquivo de rotas deverá ficar assim:
 
 ```javascript
@@ -39,11 +39,11 @@ export default router;
 
 ## Rotas por recurso
 
-No código anterior não movemos a rota *products* porque ela não ficará no *index.js*. Cada recurso da *api* terá seu próprio arquivo de rotas e o *index.js* será responsável por carregar todos eles.
+No código anterior não movemos a rota products porque ela não ficará no *index.js*. Cada recurso da api terá seu próprio arquivo de rotas e o *index.js* será responsável por carregar todos eles.
 
-Agora, vamos criar um arquivo para as rotas do recurso *products* da nossa *api*.
+Agora, vamos criar um arquivo para as rotas do recurso products da nossa api.
 
-Para isso será necessário criar um arquivo chamado ***products.js*** dentro do diretório *routes*, ele terá o seguinte código:
+Para isso será necessário criar um arquivo chamado *products.js* dentro do diretório *routes*, ele terá o seguinte código:
 
 ```javascript
 import express from 'express';
@@ -53,7 +53,7 @@ const router = express.Router();
 export default router;
 ```
 
-Agora podemos mover a rota *products* do *app.js* para o *products.js*. Ele deve ficar assim:
+Agora podemos mover a rota products do *app.js* para o *products.js*. Ele deve ficar assim:
 
 ```javascript
 import express from 'express';
@@ -69,7 +69,7 @@ router.get('/', (req, res) => res.send([{
 export default router;
 ```
 
-Note que agora o padrão da rota não é mais ***/products*** e somente **/** , isso é uma boa prática para separar recursos da *api*. Como nosso arquivo é *products.js* as rotas dentro dele serão referentes ao recurso *products* da *api*, assim internamente não precisamos repetir esse prefixo, deixaremos para o index carregar essa rota e dar o prefixo pra ela.
+Note que agora o padrão da rota não é mais /products e somente / , isso é uma boa prática para separar recursos da api. Como nosso arquivo é *products.js* as rotas dentro dele serão referentes ao recurso products da api, assim internamente não precisamos repetir esse prefixo, deixaremos para o index carregar essa rota e dar o prefixo pra ela.
 Vamos alterar o *index.js* para carregar a nossa nova rota, ele deve ficar assim:
 
 ```javascript
@@ -83,7 +83,7 @@ router.get('/', (req, res) => res.send('Hello World!'));
 
 export default router;
 ```
-Primeiro importamos a rota que foi criada anteriormente e damos o nome de ***productsRoute***. Depois, para carregar a rota, chamamos a função *use* do *router* passando o prefixo da rota que será */products* e o *productsRoute* que importamos.
+Primeiro importamos a rota que foi criada anteriormente e damos o nome de `productsRoute`. Depois, para carregar a rota, chamamos a função `use` do router passando o prefixo da rota que será /products e o `productsRoute` que importamos.
 
 Com as rotas configuradas, o último passo é alterar o *app.js* para carregar nosso arquivo de rotas, ele deve ficar assim:
 
@@ -99,13 +99,13 @@ app.use('/', routes);
 export default app;
 ```
 
-As rotas que estavam no *app.js* foram movidas para seus respectivos arquivos e agora importamos apenas o *routes*. Como foi criado um *index.js* dentro de *routes* não é necessário especificar o nome do arquivo, apenas importar o diretório */routes* e automaticamente o módulo do *Node.js* procurará primeiro por um arquivo *index.js* e o importará. Em seguida o *routes* é passado como parâmetro para a função *use* junto com o */*, significa que toda requisição vai ser administrada pelo *routes*.
+As rotas que estavam no *app.js* foram movidas para seus respectivos arquivos e agora importamos apenas o routes. Como foi criado um *index.js* dentro de *routes* não é necessário especificar o nome do arquivo, apenas importar o diretório */routes* e automaticamente o módulo do Node.js procurará primeiro por um arquivo *index.js* e o importará. Em seguida o routes é passado como parâmetro para a função `use` junto com o /, significa que toda requisição vai ser administrada pelo routes.
 
-## *Router paths* 
+## Router paths 
 
-Nos passos anteriores foram criadas algumas rotas que simbolizam caminhos na aplicação combinando um padrão e um método *HTTP*, por exemplo, uma requisição do tipo *get* na rota */* irá retornar *Hello World*, já em */products* irá retornar um produto *fake*. Essa é a maneira de definir *endpoints* em *APIs* com o *express router*.
+Nos passos anteriores foram criadas algumas rotas que simbolizam caminhos na aplicação combinando um padrão e um método HTTP, por exemplo, uma requisição do tipo get na rota / irá retornar "Hello World", já em /products irá retornar um produto fake. Essa é a maneira de definir endpoints em APIs com o express router.
 
-O caminho passado por parâmetro para o método *HTTP* é chamado de *path*, por exemplo *router.get("/products")*. *Paths* podem ser *strings*, *patterns* ou expressões regulares. Caso precise testar rotas complexas o *express* possui um testador de rotas *online* onde é possível adicionar o caminho e verificar como ele será interpretado pelo *express router*.
+O caminho passado por parâmetro para o método HTTP é chamado de path, por exemplo `router.get("/products")`. Paths podem ser strings, patterns ou expressões regulares. Caso precise testar rotas complexas o express possui um testador de rotas online onde é possível adicionar o caminho e verificar como ele será interpretado pelo express router.
 
 ## Executando os testes
 

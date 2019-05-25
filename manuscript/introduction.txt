@@ -1,34 +1,34 @@
 # Introdução
 
-*Javascript* é uma das linguagens atuais mais populares entre os desenvolvedores [(segundo o *Stack Overflow Survey* de 2017)](http://stackoverflow.com/insights/survey/2017#technology). Sorte de quem pode trabalhar com *Javascript* ou está entrando em um projeto onde terá a oportunidade de aprender essa linguagem. 
-*Javascript* é dona de uma fatia ainda única no mercado, pois é uma linguagem criada para *browsers*, para atualizar conteúdo dinamicamente, para ser não bloqueante, permitindo que ações sejam realizadas enquanto outras ainda estão sendo processadas.
-O contexto dos *browsers* contribuiu para que *Javascript* evoluísse de uma forma diferente das demais linguagens, focando em performance e em possibilitar a criação de interfaces com uma melhor experiência para o usuário.
+Javascript é uma das linguagens atuais mais populares entre os desenvolvedores [(segundo o Stack Overflow Survey de 2017)](http://stackoverflow.com/insights/survey/2017#technology). Sorte de quem pode trabalhar com Javascript ou está entrando em um projeto onde terá a oportunidade de aprender essa linguagem. 
+Javascript é dona de uma fatia ainda única no mercado, pois é uma linguagem criada para browsers, para atualizar conteúdo dinamicamente, para ser não bloqueante, permitindo que ações sejam realizadas enquanto outras ainda estão sendo processadas.
+O contexto dos browsers contribuiu para que Javascript evoluísse de uma forma diferente das demais linguagens, focando em performance e em possibilitar a criação de interfaces com uma melhor experiência para o usuário.
 
-Conforme os *browsers* evoluem, a linguagem *Javascript* também precisa evoluir. Uma prova desse processo de crescimento foi a criação do *AJAX*. Um dos pioneiros nesse paradigma foi a *Google*, com o intuito de melhorar a experiência de uso do *Gmail* e evitar que cada e-mail aberto gerasse uma nova atualização da página; esse tipo de cenário propiciou o começo dos trabalhos para habilitar chamadas *HTTP* usando *Javascript* e assim evitar a necessidade de atualizar a página para receber conteúdo de um servidor e mostrar na tela. Em 18 de Fevereiro de 2005 *Jesse James Garreth* publicou o artigo [*Ajax new approach web applications*](http://adaptivepath.org/ideas/ajax-new-approach-web-applications/) disseminando o termo *AJAX* na comunidade, termo esse que revolucionou a maneira de comunicar com servidores até então conhecida.
+Conforme os browsers evoluem, a linguagem Javascript também precisa evoluir. Uma prova desse processo de crescimento foi a criação do AJAX. Um dos pioneiros nesse paradigma foi a Google, com o intuito de melhorar a experiência de uso do Gmail e evitar que cada e-mail aberto gerasse uma nova atualização da página; esse tipo de cenário propiciou o começo dos trabalhos para habilitar chamadas HTTP usando Javascript e assim evitar a necessidade de atualizar a página para receber conteúdo de um servidor e mostrar na tela. Em 18 de Fevereiro de 2005 Jesse James Garreth publicou o artigo [Ajax new approach web applications](http://adaptivepath.org/ideas/ajax-new-approach-web-applications/) disseminando o termo AJAX na comunidade, termo esse que revolucionou a maneira de comunicar com servidores até então conhecida.
 
-Com o surgimento da “nuvem”, as aplicações precisavam se tornar escaláveis. A arquitetura de *software* teve que se atualizar, as aplicações precisavam tirar o maior proveito de uma única máquina e utilizar o mínimo de recurso possível. Quando surge a necessidade de aumentar recursos, ao invés de fazer upgrade em uma máquina física, uma nova máquina virtual com uma nova instância da aplicação seria inicializada, permitindo a divisão da carga e dando origem a termos como micro-serviços. Nessa mesma época, *Javascript* chegou ao *server side* com o aparecimento do *Node.js*, novamente revolucionando a maneira de desenvolver *software*.
+Com o surgimento da “nuvem”, as aplicações precisavam se tornar escaláveis. A arquitetura de software teve que se atualizar, as aplicações precisavam tirar o maior proveito de uma única máquina e utilizar o mínimo de recurso possível. Quando surge a necessidade de aumentar recursos, ao invés de fazer upgrade em uma máquina física, uma nova máquina virtual com uma nova instância da aplicação seria inicializada, permitindo a divisão da carga e dando origem a termos como micro-serviços. Nessa mesma época, Javascript chegou ao server side com o aparecimento do Node.js, novamente revolucionando a maneira de desenvolver software.
 
-O *Node.js* trouxe todo o poder de *Javascript* para o *server side*, tornando-se o principal aliado de grandes empresas como *Uber* e *Netflix*, as quais lidam com milhares de requisições diariamente. A característica de trabalhar de forma assíncrona e ser guiado por eventos possibilitou a criação de aplicações que precisam de conexão em tempo real.
+O Node.js trouxe todo o poder de Javascript para o server side, tornando-se o principal aliado de grandes empresas como Uber e Netflix, as quais lidam com milhares de requisições diariamente. A característica de trabalhar de forma assíncrona e ser guiado por eventos possibilitou a criação de aplicações que precisam de conexão em tempo real.
 
-A comunidade *Javascript* é vasta e muito colaborativa, diariamente circulam centenas de novas bibliotecas e *frameworks*, tanto para *front-end* quando para *back-end*. Esse dinamismo confunde os desenvolvedores *Node.js*, pois diferente de outras linguagens consolidadas no *server-side* como *Java*, que possui *frameworks* como *SpringMVC* para desenvolvimento *web* e *Ruby*, com o *framework* *Ruby on Rails*, o *Node.js* possui uma gama gigantesca de *frameworks web* e a maioria deles não mantém uma convenção.
-A falta de convenções estabelecidas dificulta o caminho dos novos desenvolvedores, pois cada projeto possui uma arquitetura única o que torna complexa a escolha de um padrão e a comparação das vantagens de cada um. Além disso, *Javascript* e *Node.js* não possuem uma bateria de ferramentas de teste completa como os pacotes *xUnit*, comuns em outras linguagens. Cada projeto possui a sua combinação de ferramentas de testes para os mais determinados cenários, o que contribui com a confusão quando se está começando.
+A comunidade Javascript é vasta e muito colaborativa, diariamente circulam centenas de novas bibliotecas e frameworks, tanto para front-end quando para back-end. Esse dinamismo confunde os desenvolvedores Node.js, pois diferente de outras linguagens consolidadas no server-side como Java, que possui frameworks como SpringMVC para desenvolvimento web e Ruby, com o framework Ruby on Rails, o Node.js possui uma gama gigantesca de frameworks web e a maioria deles não mantém uma convenção.
+A falta de convenções estabelecidas dificulta o caminho dos novos desenvolvedores, pois cada projeto possui uma arquitetura única o que torna complexa a escolha de um padrão e a comparação das vantagens de cada um. Além disso, Javascript e Node.js não possuem uma bateria de ferramentas de teste completa como os pacotes xUnit, comuns em outras linguagens. Cada projeto possui a sua combinação de ferramentas de testes para os mais determinados cenários, o que contribui com a confusão quando se está começando.
 
-Esse livro tem como objetivo ajudar você a criar aplicações em *Node.js* utilizando os padrões mais reconhecidos da comunidade e seguindo os mais atuais padrões de qualidade para o desenvolvimento de *software*.
+Esse livro tem como objetivo ajudar você a criar aplicações em Node.js utilizando os padrões mais reconhecidos da comunidade e seguindo os mais atuais padrões de qualidade para o desenvolvimento de software.
 
 O livro guiará você para entender:
 
-* Qual o diferencial do *Node.js* quando comparado a outras linguagens
-* Como desenvolver aplicações com *Node.js* utilizando as últimas funcionalidades do *Ecmascript*
+* Qual o diferencial do Node.js quando comparado a outras linguagens
+* Como desenvolver aplicações com Node.js utilizando as últimas funcionalidades do Ecmascript
 * Como construir aplicações modularizadas e desacopladas
-* Como integrar com banco de dados *NoSQL* utilizando *MongoDB*
-* Como desenvolver guiado por testes com *TDD*
+* Como integrar com banco de dados NoSQL utilizando MongoDB
+* Como desenvolver guiado por testes com TDD
 * Por que testes facilitam o desenvolvimento
-* Como testar aplicações em *Javascript*
-* Como desenhar *APIs* seguindo o padrão *REST*
-* Como prover autenticação e segurança de *APIs*
+* Como testar aplicações em Javascript
+* Como desenhar APIs seguindo o padrão REST
+* Como prover autenticação e segurança de APIs
 
-Para que seja possível reproduzir cenários comuns do dia a dia do desenvolvimento, será criada no decorrer do livro, uma *API* que servirá como guia para a introdução dos mais diferentes tópicos. A *API* terá o domínio de uma loja virtual, pois é um caso no qual é possível cobrir os mais diversos cenários do desenvolvimento de aplicações com *Node.js*.
-Todo o desenvolvimento será guiado por testes, seguindo o padrão conhecido como *TDD* (*Test Driven Development*), introduzindo as mais diferentes e complexas necessidades de testes.
+Para que seja possível reproduzir cenários comuns do dia a dia do desenvolvimento, será criada no decorrer do livro, uma API que servirá como guia para a introdução dos mais diferentes tópicos. A API terá o domínio de uma loja virtual, pois é um caso no qual é possível cobrir os mais diversos cenários do desenvolvimento de aplicações com Node.js.
+Todo o desenvolvimento será guiado por testes, seguindo o padrão conhecido como TDD (Test Driven Development), introduzindo as mais diferentes e complexas necessidades de testes.
 
-No final desse livro você terá desenvolvido uma aplicação resiliente, seguindo as melhores práticas do desenvolvimento de *software* e com cobertura de testes. Você estará pronto para desenvolver aplicações utilizando *Node.js* e seguindo os princípios do *TDD*.
+No final desse livro você terá desenvolvido uma aplicação resiliente, seguindo as melhores práticas do desenvolvimento de software e com cobertura de testes. Você estará pronto para desenvolver aplicações utilizando Node.js e seguindo os princípios do TDD.
  

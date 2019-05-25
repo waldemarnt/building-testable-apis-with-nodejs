@@ -1,8 +1,8 @@
 ## Atualizando um recurso
 
-Já é possível criar e listar produtos na nossa *API*, o próximo passo é a edição. Como de costume, vamos começar pelo teste *end 2 end* descrevendo o comportamento esperado dessa funcionalidade.
+Já é possível criar e listar produtos na nossa API, o próximo passo é a edição. Como de costume, vamos começar pelo teste end 2 end descrevendo o comportamento esperado dessa funcionalidade.
 
-Adicione o seguinte cenário contendo um caso de teste no arquivo **test/integration/routes/products_spec.js**
+Adicione o seguinte cenário contendo um caso de teste no arquivo *test/integration/routes/products_spec.js*
 
 ```javascript
   describe('PUT /products/:id', () => {
@@ -31,9 +31,9 @@ Esse teste é muito similar ao teste de criação de produto, a única alteraç�
       .put(`/products/${defaultId}`)
 ```
 
-Segundo o [Rest](http://restcookbook.com/HTTP%20Methods/put-vs-post/), para a criação de um novo recurso utilizamos o verbo *POST* e para a atualização de um recurso devemos utilizar *PUT*.
+Segundo o [Rest](http://restcookbook.com/HTTP%20Methods/put-vs-post/), para a criação de um novo recurso utilizamos o verbo POST e para a atualização de um recurso devemos utilizar PUT.
 
-O produto que será atualizado é o *defaultProduct*, este produto é criado antes de cada teste pelo *beforeEach*. Para não atualizar o *defaultProduct* diretamente vamos criar um objeto a partir dele usando *Object.assign*:
+O produto que será atualizado é o `defaultProduct`, este produto é criado antes de cada teste pelo `beforeEach`. Para não atualizar o `defaultProduct` diretamente vamos criar um objeto a partir dele usando `Object.assign`:
 
 ```javascript
  const updatedProduct = Object.assign({}, customProduct, defaultProduct)
@@ -74,7 +74,7 @@ A saída deve ser:
 ```
 
 O teste retornar que esperava 200 (sucesso) mas recebeu 404 (não encontrado), como já esperávamos. 
-Vamos alterar o arquivo **src/routes/products.js** e adicionar a seguinte rota:
+Vamos alterar o arquivo *src/routes/products.js* e adicionar a seguinte rota:
 
 ```diff
 + router.put('/:id', (req, res) => productsController.update(req, res)); 
@@ -93,7 +93,7 @@ Executando os testes novamente a saída deve ser:
 ```
 
 É hora de descer para o nível de unidade para fazer a implementação no controller.
-Vamos adicionar o seguinte cenário de teste unitário em **test/unit/controllers/products_spec.js**
+Vamos adicionar o seguinte cenário de teste unitário em *test/unit/controllers/products_spec.js*
 
 ```javascript
   describe('update() product', () => {
@@ -132,9 +132,9 @@ Vamos adicionar o seguinte cenário de teste unitário em **test/unit/controller
   });
 ```
 
-Este teste é maior, mas não há nada que já não tenhamos feito em outros testes. A chave para o update de um recurso é o *id* dele. Criamos uma *constant* chamada *fakeId* para poder reutilizá-lo em outras partes do teste, em seguida criamos um objeto chamado *updatedProduct* que representa o produto que será atualizado pelo *Mongoose*.
+Este teste é maior, mas não há nada que já não tenhamos feito em outros testes. A chave para o update de um recurso é o `id` dele. Criamos uma constant chamada `fakeId` para poder reutilizá-lo em outras partes do teste, em seguida criamos um objeto chamado `updatedProduct` que representa o produto que será atualizado pelo Mongoose.
 
-Para simular a requisição que será feita pelo *express* criamos um objeto com as mesmas chaves que o *express* envia na requisição, como podemos ver aqui:
+Para simular a requisição que será feita pelo express criamos um objeto com as mesmas chaves que o express envia na requisição, como podemos ver aqui:
 
 ```javascript
       const request = {
@@ -145,8 +145,8 @@ Para simular a requisição que será feita pelo *express* criamos um objeto com
       };
 ```
 
-O método do *Mongoose* que utilizaremos para atualizar o recurso é o [*findOneAndUpdate*](http://mongoosejs.com/docs/api.html#query_Query-findOneAndUpdate), segundo a documentação é necessário passar o *_id* e o objeto que queremos atualizar.
-Para testar isoladamente criamos um *model fake*, o *fakeProduct*, que possui o método a seguir:
+O método do Mongoose que utilizaremos para atualizar o recurso é o [findOneAndUpdate](http://mongoosejs.com/docs/api.html#query_Query-findOneAndUpdate), segundo a documentação é necessário passar o `_id` e o objeto que queremos atualizar.
+Para testar isoladamente criamos um model fake, o `fakeProduct`, que possui o método a seguir:
 
 ```javascript
       class fakeProduct {
@@ -154,19 +154,19 @@ Para testar isoladamente criamos um *model fake*, o *fakeProduct*, que possui o 
       }
 ```
 
-Para adicionar o comportamento esperado no método *findOneAndUpdate* vamos transformá-lo em um *stub*:
+Para adicionar o comportamento esperado no método `findOneAndUpdate` vamos transformá-lo em um stub:
 
 ```javascript
       const findOneAndUpdateStub = sinon.stub(fakeProduct, 'findOneAndUpdate');
 ```
 
-Depois, definimos que quando o *stub* for chamado com um objeto que contenha uma chave *_id* e um objeto igual ao *updatedProduct*, ele deve resolver uma *Promise*:
+Depois, definimos que quando o stub for chamado com um objeto que contenha uma chave `_id` e um objeto igual ao `updatedProduct`, ele deve resolver uma Promise:
 
 ```javascript
 findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).resolves(updatedProduct);
 ```
 
-Segundo a documentação do *Mongoose*, o método *findOneAndUpdate* não retorna valor, por isso a *Promise* não irá retornar nada, somente será resolvida para dar sucesso.
+Segundo a documentação do Mongoose, o método `findOneAndUpdate` não retorna valor, por isso a Promise não irá retornar nada, somente será resolvida para dar sucesso.
 
 Executando os testes de unidade:
 
@@ -199,7 +199,7 @@ Vamos ter a seguinte saída:
       at Context.it (test/unit/controllers/products_spec.js:154:
 ```
 
-O teste retorna que o método *update* não existe, então vamos adicioná-lo com lógica suficiente apenas para que ele passe:
+O teste retorna que o método `update` não existe, então vamos adicioná-lo com lógica suficiente apenas para que ele passe:
 
 ```javascript
 	update(req, res) {
@@ -208,7 +208,7 @@ O teste retorna que o método *update* não existe, então vamos adicioná-lo co
 	}
 ```
 
-No teste acima esperamos que o objeto *response* do *express* seja chamado com 200, o que garante que o produto foi atualizado. Essa é a implementação mínima para fazer o teste passar.
+No teste acima esperamos que o objeto `response` do express seja chamado com 200, o que garante que o produto foi atualizado. Essa é a implementação mínima para fazer o teste passar.
 
 Executando os testes de unidade:
 
@@ -236,7 +236,7 @@ Devemos ter a seguinte saída:
   6 passing (37ms)
 ```
 
-Vamos à refatoração, o código do método *update* deve ficar assim:
+Vamos à refatoração, o código do método `update` deve ficar assim:
 
 ```javascript
  update(req, res) {
@@ -271,7 +271,7 @@ A saida deve ser:
   6 passing (27ms)
 ```
 
-Também vamos executar os testes de integração *end 2 end*:
+Também vamos executar os testes de integração end 2 end:
 
 ```shell
 $ npm run test:integration
@@ -299,7 +299,7 @@ A saída deve ser:
 
 Todos os testes estão passando e a atualização de produtos está funcionando. O próximo passo é adicionar um teste para o caso de algum erro acontecer, similar ao que já foi feito na criação de produtos.
 
-Vamos atualizar o teste **test/unit/controllers/products_spec.js** adicionando o seguinte caso de teste dentro do cenário *update*:
+Vamos atualizar o teste *test/unit/controllers/products_spec.js* adicionando o seguinte caso de teste dentro do cenário update:
 
 ```javascript
     context('when an error occurs', () => {
@@ -341,7 +341,7 @@ Vamos atualizar o teste **test/unit/controllers/products_spec.js** adicionando o
     });
 ```
 
-Não há nada de novo comparado a o que foi feito no *create*,  foi utilizada a mesma técnica de *stub* como podemos ver aqui:
+Não há nada de novo comparado a o que foi feito no `create`,  foi utilizada a mesma técnica de stub como podemos ver aqui:
 
 ```javascript
 findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).rejects({ message: 'Error' });
@@ -379,7 +379,7 @@ Devemos ter a seguinte saída:
      Error
 ```
 
-Como já esperávamos, o teste está falhando. Vamos atualizar método *update* do *productsController* adicionando o método método *catch*:
+Como já esperávamos, o teste está falhando. Vamos atualizar método `update` do productsController adicionando o método método `catch`:
 
 ```diff
 	update(req, res) {
@@ -411,4 +411,4 @@ Executando os testes novamente, a saída deve ser:
   7 passing (46ms)
 ```
 
-Note que não fizemos o processo *Green*, isso porque a implementação era clara e simples. Não é necessário escrever código por obrigação, o estágio de *Green* serve para ajudar e validar o teste.
+Note que não fizemos o processo Green, isso porque a implementação era clara e simples. Não é necessário escrever código por obrigação, o estágio de Green serve para ajudar e validar o teste.
