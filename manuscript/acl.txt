@@ -1,11 +1,11 @@
 # Autenticação  e  controle de acesso com Access Control List - ACL
 
-ACL ou *Access Control List*, é o termo utilizado na engenharia de software para falar de Controle de Acesso a Sistemas. A maioria das implementações de ACL seguem um padrão estruturado, onde se define as ações que usuários podem executar no sistema, como por exemplo: 
+ACL ou Access Control List, é o termo utilizado na engenharia de software para falar de Controle de Acesso a Sistemas. A maioria das implementações de ACL seguem um padrão estruturado, onde se define as ações que usuários podem executar no sistema, como por exemplo: 
 
 ```json
 {
 	John: read,
-	Meg:admin
+	Meg: admin
 }
 ```
 
@@ -24,7 +24,7 @@ O [express-acl](https://nyambati.github.io/express-acl/) é um módulo feito par
 $ npm install express-acl@2.0.2
 ```
 
-Vamos criar um arquivo chamado `nacl.json` no diretório de configuração *config/nacl.json* e adicione o seguinte trecho de código:
+Vamos criar um arquivo chamado *nacl.json* no diretório de configuração *config/nacl.json* e adicione o seguinte trecho de código:
 
 ```json
 [
@@ -53,7 +53,7 @@ Vamos criar um arquivo chamado `nacl.json` no diretório de configuração *conf
 ]
 ```
 Ainda não temos todas as configurações necessárias mas já vamos deixar pronta a parte do acl. O express acl funciona por grupos: permitindo ou não ações para um determinado grupo a um determinado recurso da API.
-Por exemplo, o primeiro grupo será o de administrador: admin, os administradores terão acesso a todos os recursos da API, sem limitação alguma, para isso é utilizado * com a *"action":"allow"*, isso significa que a ação será de "permitir" em todos os recursos (resource) e metodos (methods).
+Por exemplo, o primeiro grupo será o de administrador: admin, os administradores terão acesso a todos os recursos da API, sem limitação alguma, para isso é utilizado `*` com a `"action":"allow"`, isso significa que a ação será de "permitir" em todos os recursos (resource) e metodos (methods).
 
 O segundo grupo é o de usuário (user), usuários somente terão acesso para leitura dos produtos da API.Como já vimos,a leitura é feita pelo verbo http GET, então para usuários precisamos permitir acesso ao método GET do recurso products. Como feito neste bloco:
 
@@ -90,7 +90,7 @@ const configureExpress = () => {
 };
 ```
 
-Note que no `app.use(acl.authorize.unless({path:['/users/authenticate']}));` estamos passando o express-acl como um middleware para o express,  além disso adicionamos a configuração `authorize.unless` que diz para o express acl validar todos os recursos da API unless (a não ser que) seja /users/authenticate, essa rota será pública e utilizada para gerar o token de autenticação.
+Note que no `app.use(acl.authorize.unless({path:['/users/authenticate']}));` estamos passando o express-acl como um middleware para o express,  além disso adicionamos a configuração `authorize.unless` que diz para o express acl validar todos os recursos da API unless (a não ser que) seja `/users/authenticate`, essa rota será pública e utilizada para gerar o token de autenticação.
 
 ## Autenticação com JSON Web Token
 
@@ -174,7 +174,7 @@ Executando os testes novamente a saída será:
     ✓ should verify a JWT token and call the next middleware
 ```
 
-Agora é hora de aplicar a lógica de verdade. Altere o arquivo auth.js como abaixo:
+Agora é hora de aplicar a lógica de verdade. Altere o arquivo *auth.js* como abaixo:
 
 ```diff
 +import jwt from 'jsonwebtoken';
@@ -191,7 +191,7 @@ export default (req, res, next) => {
 ```
 
 Primeiro passo pegamos o token x-access-token do header da requisição que e depois o verificamos utilizando o módulo jsonwebtoken. O primeiro parâmetro é o token, o segundo é a chave secreta da nossa aplicação para poder decodificar o token e o terceiro parâmetro é o callback que o jsonwebtoken espera.
-Em seguida adicionamos o token decodificado ao objeto req referente a requisição req.decoded = decoded e chamamos o próximo middleware com next. Note que o err é passado como parâmetro para o próximo middleware, isso significa que se ocorrer algum erro na hora de decodificar o token o jsonwebtoken vai passar esse erro para nós e nós vamos passá-lo adiante para o próximo middleware, no futuro teremos um middleware somente para tratar erros.
+Em seguida adicionamos o token decodificado ao objeto req referente a requisição `req.decoded = decoded` e chamamos o próximo middleware com next. Note que o err é passado como parâmetro para o próximo middleware, isso significa que se ocorrer algum erro na hora de decodificar o token o jsonwebtoken vai passar esse erro para nós e nós vamos passá-lo adiante para o próximo middleware, no futuro teremos um middleware somente para tratar erros.
 
 Executando os testes de unidade novamente:
 
@@ -202,7 +202,7 @@ $ npm run test:unit
     ✓ should verify a JWT token and call the next middleware
 ```
 
-E um pouco confuso passar o *err* para o próximo middleware, certo? Isso significa que nosso código possui dois caminhos, um de sucesso e um de falha, então devemos testar ambos. Vamos escrever um teste que simula um caso de erro adicionando o seguinte caso de teste em *test/unit/middlewares/auth_spec.js*.
+É um pouco confuso passar o *err* para o próximo middleware, certo? Isso significa que nosso código possui dois caminhos, um de sucesso e um de falha, então devemos testar ambos. Vamos escrever um teste que simula um caso de erro adicionando o seguinte caso de teste em *test/unit/middlewares/auth_spec.js*.
 
 ```diff
 import authMiddleware from '../../../src/middlewares/auth';
@@ -222,7 +222,7 @@ describe('AuthMiddleware', () => {
         authMiddleware(reqFake, resFake, done);
     });
 
-    +it('should call the next middleware passing an error when the token validation fails', done => {
++    it('should call the next middleware passing an error when the token validation fails', done => {
 +        const reqFake = {
 +           headers: {
 +                'x-access-token': 'invalid token'
@@ -238,7 +238,7 @@ describe('AuthMiddleware', () => {
 ```
 
 Passando um valor qualquer no header x-access-token fará com que o jsonwebtoken falhe e o nosso código var chamar o next passando o erro recebido pelo jsonwebtoken. No teste basta checarmos a mensagem:
-expect(err.message).to.eq('jwt malformed');
+`expect(err.message).to.eq('jwt malformed')`
 “jwt malformed’ é a mensagem lançada pelo jsonwebtoken quando ele recebe um token que não segue o padrão do JWT.
 
 Executando os testes, a saída será:
@@ -283,7 +283,7 @@ $npm run test:unit
       at Context.done (test/unit/middlewares/auth_spec.js:36:9)
 ```
 
-O teste vai quebrar. A mensagem é jwt must be provided o que significa que o código tentou verificar o token, vamos alterar o código para não verificar o token quando ele não estiver na requisição. Altere o middleware auth.js:
+O teste vai quebrar. A mensagem é jwt must be provided o que significa que o código tentou verificar o token, vamos alterar o código para não verificar o token quando ele não estiver na requisição. Altere o middleware *auth.js*:
 
 ```diff
 import jwt from 'jsonwebtoken';
@@ -471,7 +471,7 @@ Se executarmos os testes novamente a saída será:
       at process._tickCallback (internal/process/next_tick.js:178:19)
 ```
 
-Executando os testes de integração novamente a saída será um erro 500, pois não temos o método authenticate no controller de users, vamos criá-lo começando com um teste unitário em test/unit/controllers/users_spec.js.
+Executando os testes de integração novamente a saída será um erro 500, pois não temos o método authenticate no controller de users, vamos criá-lo começando com um teste unitário em *test/unit/controllers/users_spec.js*.
 O método authenticate recebe os parâmetros req e res. Esperamos que método chame o objeto res do express passando o token como resposta. Abaixo vamos ver como testar esse cenário:
 
 ```javascript
@@ -507,7 +507,7 @@ Agora vamos implementar o metodo authenticate em *src/controllers/users*
 Aqui estamos no passo GREEN do TDD: o suficiente para o teste passar. Nosso código ainda não está gerando o token, vamos para o REFACTOR para aplicar a lógica necessária.
 Nesse caso eu já fiz alguns testes e imagino como a implementação vai ser, por isso posso escrever o teste:
 
-*Obs: É importante notar que em um cenário real vamos testar várias implementações antes de pensar em como escrever o teste. Quando falamos sobre TDD falamos sobre escrever o teste antes e isso causa confusão. Antes de escrever o teste é necessário experimentar com o código, uma vez que tivermos uma ideia de como será o código podemos começar o teste.*
+I> É importante notar que em um cenário real vamos testar várias implementações antes de pensar em como escrever o teste. Quando falamos sobre TDD falamos sobre escrever o teste antes e isso causa confusão. Antes de escrever o teste é necessário experimentar com o código, uma vez que tivermos uma ideia de como será o código podemos começar o teste.
 
 
 Primeiramente vamos adicionar os seguintes imports:
@@ -515,7 +515,7 @@ Primeiramente vamos adicionar os seguintes imports:
 ```diff
 import UsersController from '../../../src/controllers/users';
 import sinon from 'sinon';
-+ import jwt from 'jsonwebtoken';
++import jwt from 'jsonwebtoken';
 +import config from 'config';
 import User from '../../../src/models/user';
 
@@ -710,7 +710,7 @@ Vamos à implementação:
   }
 ```
 
-Não estamos passando pelo passo **GREEN** do **TDD**, estamos fazendo a implementação direta pois, neste caso, é bem simples.
+Não estamos passando pelo passo GREEN do TDD, estamos fazendo a implementação direta pois, neste caso, é bem simples.
 Aqui verificamos se o usuário existe, se não existir retornamos um erro 401.
 
 Os testes devem estar passando agora, podemos seguir em frente e testar o comportamento da senha:
@@ -778,7 +778,7 @@ Começando pela importação do bcrypt no início do arquivo
   }
 ```
 
-Ao executar os testes, a parte *“should return 401 when the password does not match”* deve estar passando, porém a alteração causou um efeito inesperado quebrando o teste "should authenticate a user". Vamos alterar o caso de teste para fixar esse problema:
+Ao executar os testes, a parte “should return 401 when the password does not match” deve estar passando, porém a alteração causou um efeito inesperado quebrando o teste "should authenticate a user". Vamos alterar o caso de teste para fixar esse problema:
 Começando pela importação do bcrypt:
 
 ```diff
@@ -824,7 +824,7 @@ Agora utilizamos o bcrypt no teste para gerar um hash de verdade e fazer o teste
 
 Neste momento os testes devem estar passando.
 
-O próximo passo será extrair a lógica de autenticação para um serviço separado, para isso vamos começar pelo teste unitário em ***test/unit/services/auth_spec.js***:
+O próximo passo será extrair a lógica de autenticação para um serviço separado, para isso vamos começar pelo teste unitário em *test/unit/services/auth_spec.js*:
 
 ```javascript
 import AuthService from '../../../src/services/auth';
@@ -1174,7 +1174,7 @@ describe('authenticate', () => {
     });
 ```
 
-O caso de teste *should return 401 when the password does not match* precisa ser removido pois ele nao está ciente da adição do AuthService, no mundo do TDD para fazer esse tipo de alteração precisamos estar seguros. Em nosso caso a maneira mais simples de ficarmos seguros é testar a lógica que compara as senhas no AuthService. Vamos adicionar o seguinte caso de teste logo abaixo do should authenticate a user
+O caso de teste "should return 401 when the password does not match" precisa ser removido pois ele nao está ciente da adição do AuthService, no mundo do TDD para fazer esse tipo de alteração precisamos estar seguros. Em nosso caso a maneira mais simples de ficarmos seguros é testar a lógica que compara as senhas no AuthService. Vamos adicionar o seguinte caso de teste logo abaixo do should authenticate a user
 
 ```javascript
     it('should return false when the password does not match', () => {
