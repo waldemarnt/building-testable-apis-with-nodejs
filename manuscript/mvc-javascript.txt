@@ -1,68 +1,68 @@
-# O padrão *MVC*
+# O padrão MVC
 
-*MVC* é um *design pattern* de arquitetura que foca na separação de responsabilidades. O *MVC* separa os dados de negócio (*Models*) da interface do usuário (*Views*) e usa um componente para ligá-los (*Controllers*), normalmente os *controllers* são responsáveis por receber a entrada do usuário e coordenar *Models* e *Views*.
+MVC é um design pattern de arquitetura que foca na separação de responsabilidades. O MVC separa os dados de negócio (Models) da interface do usuário (Views) e usa um componente para ligá-los (Controllers), normalmente os controllers são responsáveis por receber a entrada do usuário e coordenar Models e Views.
 
-## Voltando ao tempo do *Smalltalk*
+## Voltando ao tempo do Smalltalk
 
-Para entender o padrão *MVC* é necessário voltar alguns anos no tempo, aos anos 70 para ser mais preciso, fase da emergência das interfaces gráficas de usuário. Na década de 70, [*Trygve Reenskaug*](https://en.wikipedia.org/wiki/Trygve_Reenskaug) trabalhava em uma linguagem de programação chamada [*Smalltalk*](https://en.wikipedia.org/wiki/Smalltalk), com a qual ele desenvolveu e aplicou o padrão *MVC* com objetivo de separar a interface do usuário da lógica da aplicação, conceito conhecido como [*Separated Presentation*](https://martinfowler.com/eaaDev/uiArchs.html).
+Para entender o padrão MVC é necessário voltar alguns anos no tempo, aos anos 70 para ser mais preciso, fase da emergência das interfaces gráficas de usuário. Na década de 70, [Trygve Reenskaug](https://en.wikipedia.org/wiki/Trygve_Reenskaug) trabalhava em uma linguagem de programação chamada [Smalltalk](https://en.wikipedia.org/wiki/Smalltalk), com a qual ele desenvolveu e aplicou o padrão MVC com objetivo de separar a interface do usuário da lógica da aplicação, conceito conhecido como [Separated Presentation](https://martinfowler.com/eaaDev/uiArchs.html).
 Essa arquitetura consistia em:
 
-* Um elemento de domínio denominado *Model* que não deveria ter conhecimento da interface e interação do usuário (*Views* e *Controllers*).
+ Um elemento de domínio denominado Model que não deveria ter conhecimento da interface e interação do usuário (Views e Controllers).
 
-* A camada de apresentação e interação seria feita pelas *views* e *controllers*, com um *controller* e uma *view* para cada elemento que seria mostrado na tela.
+ A camada de apresentação e interação seria feita pelas views e controllers, com um controller e uma view para cada elemento que seria mostrado na tela.
 
-* A responsabilidade do *controller* era receber entradas das *views*, como por exemplo: teclas pressionadas, formularios ou eventos de *click*. 
+ A responsabilidade do controller era receber entradas das views, como por exemplo: teclas pressionadas, formularios ou eventos de click. 
 
-* Para atualizar a *view* era utilizado um padrão conhecido como *Observer*. Cada vez que o *model* mudava, essa mudança era refletida na *view*.
+ Para atualizar a view era utilizado um padrão conhecido como Observer. Cada vez que o model mudava, essa mudança era refletida na view.
 
 
-É impressionante ver que um padrão utilizando até hoje como o [*Observer*](https://addyosmani.com/resources/essentialjsdesignpatterns/book/#observerpatternjavascript) (também implementado como *pub/sub* hoje em dia) era parte crucial do *MVC*. No *Smalltak MVC* ambos *views* e *controllers* observavam o *model*, para que qualquer mudança conseguisse ser refletida na *view*. Para quem deseja se aprofundar mais nas origens do padrão *MVC* indico o artigo [*GUI Architectures*](https://martinfowler.com/eaaDev/uiArchs.html), do *Martin Fowler*, que conta a história do *MVC* ao longo dos anos.
+É impressionante ver que um padrão utilizando até hoje como o [Observer](https://addyosmani.com/resources/essentialjsdesignpatterns/book/#observerpatternjavascript) (também implementado como pub/sub hoje em dia) era parte crucial do MVC. No Smalltak MVC ambos views e controllers observavam o model, para que qualquer mudança conseguisse ser refletida na view. Para quem deseja se aprofundar mais nas origens do padrão MVC indico o artigo [GUI Architectures](https://martinfowler.com/eaaDev/uiArchs.html), do Martin Fowler, que conta a história do MVC ao longo dos anos.
 
-## *MVC* no *javascript*
+## MVC no javascript
 
-Nos anos de hoje o *MVC* é base para a maioria dos *frameworks* e arquiteturas de projetos em diversas linguagens. *Frameworks* como *SpringMVC* do *Java*, *Symfony* do PHP e *Ruby on Rails* do *Ruby* utilizam esse padrão para o desenvolvimento.
+Nos anos de hoje o MVC é base para a maioria dos frameworks e arquiteturas de projetos em diversas linguagens. Frameworks como SpringMVC do Java, Symfony do PHP e Ruby on Rails do Ruby utilizam esse padrão para o desenvolvimento.
 
-No *javascript* o *MVC* começou no contexto dos *browsers*, quando as aplicações começaram a ter mais responsabilidades no *front-end* com as *single page apps* o *javascript* passou pela mesma necessidade do *Smalltalk* nos anos 70: separar a interface da lógica de negócio.
-Uma gama de *frameworks* para o *front-end* apareceram aplicando *MVC* com diversas variações, como por exemplo o *Backbone* e o *Ember.js*.
-A chegada do *javascript* no *server side* com o *Node.js* trouxe a mesma necessidade, *frameworks* como *Express.js* e *Sails.js* utilizam *MVC* como base de arquitetura para criação de aplicações.
+No javascript o MVC começou no contexto dos browsers, quando as aplicações começaram a ter mais responsabilidades no front-end com as single page apps o javascript passou pela mesma necessidade do Smalltalk nos anos 70: separar a interface da lógica de negócio.
+Uma gama de frameworks para o front-end apareceram aplicando MVC com diversas variações, como por exemplo o Backbone e o Ember.js.
+A chegada do javascript no server side com o Node.js trouxe a mesma necessidade, frameworks como Express.js e Sails.js utilizam MVC como base de arquitetura para criação de aplicações.
 
-Conforme mencionado, o *MVC* é composto por três componentes:
+Conforme mencionado, o MVC é composto por três componentes:
 
-## *Models*
+## Models
 
-Os *Models* são responsáveis por administrar os dados da aplicação. Os *models* variam muito de aplicações e *frameworks* mas normalmente eles são responsáveis por validar os dados e também persistir sincronizando com um *localStorage* ou banco de dados.
-*Models* podem ser observados por mais de uma *view*; *Views* podem precisar de partes diferentes dos dados de um *model*. Por exemplo, um *model* de usuário pode ser utilizado em uma *view* para mostrar nome e *email*, e em outra para mudar a senha.
+Os Models são responsáveis por administrar os dados da aplicação. Os models variam muito de aplicações e frameworks mas normalmente eles são responsáveis por validar os dados e também persistir sincronizando com um localStorage ou banco de dados.
+Models podem ser observados por mais de uma view; Views podem precisar de partes diferentes dos dados de um model. Por exemplo, um model de usuário pode ser utilizado em uma view para mostrar nome e email, e em outra para mudar a senha.
 
-## *Views* 
+## Views 
 
-*Views* são uma forma visual de representar os *models* e apresentar a informaçao para o usuario. *Views* normalmente observam os *models* para refletirem suas mudanças na tela. A maioria dos livros de *design patterns* se referem à *views* como "burras", pois sua única responsabilidade é mostrar o estado do *model*.
+Views são uma forma visual de representar os models e apresentar a informaçao para o usuario. Views normalmente observam os models para refletirem suas mudanças na tela. A maioria dos livros de design patterns se referem à views como "burras", pois sua única responsabilidade é mostrar o estado do model.
 
-## *Controllers*
+## Controllers
 
-*Controllers* agem como mediadores entre *views* e *models*. Resumidamente, sua responsabilidade é atualizar o *model* quando a *view* muda e atualizar a *view* quando o *model* muda.
+Controllers agem como mediadores entre views e models. Resumidamente, sua responsabilidade é atualizar o model quando a view muda e atualizar a view quando o model muda.
 
-Para os desenvolvedores vindos do *javascript* no *front-end* há uma [variação enorme](https://www.quora.com/What-are-the-main-differences-between-MVC-MVP-and-MVVM-design-patterns-for-the-JavaScript-developer) em como o *MVC* é implementado, muitas vezes omitindo o C, ou seja, não utilizando *controllers*, isso pois as necessidades no *front-end* são diferentes.
-Um exemplo de implementação de *controller* no *front-end* que sempre deu muita discussão é a do *Angular.js* versão 1.x, que é totalmente acoplado a *view* utilizando um padrão chamado de [*2 way data binding*](https://www.quora.com/What-is-two-way-data-binding-in-Angular) que faz com que as alterações na tela sejam enviadas para o *controller* e as alterações no *controller* enviadas para a *view*.
-Além de ser responsável por escutar e emitir eventos, o que atribui muita responsabilidade para os *controllers*, assim quebrando o [princípio de responsabilidade única](http://www.oodesign.com/single-responsibility-principle.html).
+Para os desenvolvedores vindos do javascript no front-end há uma [variação enorme](https://www.quora.com/What-are-the-main-differences-between-MVC-MVP-and-MVVM-design-patterns-for-the-JavaScript-developer) em como o MVC é implementado, muitas vezes omitindo o C, ou seja, não utilizando controllers, isso pois as necessidades no front-end são diferentes.
+Um exemplo de implementação de controller no front-end que sempre deu muita discussão é a do Angular.js versão 1.x, que é totalmente acoplado a view utilizando um padrão chamado de [2 way data binding](https://www.quora.com/What-is-two-way-data-binding-in-Angular) que faz com que as alterações na tela sejam enviadas para o controller e as alterações no controller enviadas para a view.
+Além de ser responsável por escutar e emitir eventos, o que atribui muita responsabilidade para os controllers, assim quebrando o [princípio de responsabilidade única](http://www.oodesign.com/single-responsibility-principle.html).
 
-Em 2015 com o surgimento do *React* e *frameworks* como *Flux*, o *MVC* no *front-end* [perdeu força](https://medium.freecodecamp.com/is-mvc-dead-for-the-frontend-35b4d1fe39ec#.u1yvsd5lt) pois a componentização, programação reativa e as arquiteturas unidirecionais começaram a fazer mais sentido no contexto dos *browsers*.
+Em 2015 com o surgimento do React e frameworks como Flux, o MVC no front-end [perdeu força](https://medium.freecodecamp.com/is-mvc-dead-for-the-frontend-35b4d1fe39ec#.u1yvsd5lt) pois a componentização, programação reativa e as arquiteturas unidirecionais começaram a fazer mais sentido no contexto dos browsers.
 
-Já no *server side* com *Node.js* esse padrão ainda é muito utilizado e útil. No [*Sails.js*](http://sailsjs.com/) a implementação de um *controller* para administrar as requisições e conversar com o *model* é obrigatório. Já no [*Express.js*](https://expressjs.com/) essa conversão não é obrigatória, mas é sugerida. O próprio gerador de código do *Express* já cria o diretório para *controllers* separadamente.
+Já no server side com Node.js esse padrão ainda é muito utilizado e útil. No [Sails.js](http://sailsjs.com/) a implementação de um controller para administrar as requisições e conversar com o model é obrigatório. Já no [Express.js](https://expressjs.com/) essa conversão não é obrigatória, mas é sugerida. O próprio gerador de código do Express já cria o diretório para controllers separadamente.
 
-## As vantagens de utilizar *MVC*
+## As vantagens de utilizar MVC
 
 A separação de responsabilidades facilita a modularização das funcionalidades da aplicação e possibilita:
 
 * Manutenibilidade: Quando uma modificação precisa ser feita é mais fácil de descobrir onde é e também onde vai causar impacto.
 
-* Desacoplar *models* e *views* facilita os testes em ambos isoladamente. Testando a lógica de negócio em *models* e a usabilidade em *views*.
+* Desacoplar models e views facilita os testes em ambos isoladamente. Testando a lógica de negócio em models e a usabilidade em views.
 
 * Reutilização de código
 
-## *MVC* em *API*
+## MVC em API
 
-Para *APIs*, a parte da *view* não é aplicada. No decorrer do livro será aplicado o padrão *MVC*, adaptado para o contexto da *API* que será desenvolvida, com *Controllers* e *Models*.
-Em *APIs* o *controller* recebe a requisição da rota, faz a chamada para o *model* realizar a lógica de negócio e retorna a resposta para o usuário.
+Para APIs, a parte da view não é aplicada. No decorrer do livro será aplicado o padrão MVC, adaptado para o contexto da API que será desenvolvida, com Controllers e Models.
+Em APIs o controller recebe a requisição da rota, faz a chamada para o model realizar a lógica de negócio e retorna a resposta para o usuário.
 
 
 

@@ -1,22 +1,22 @@
-# Configurando o *MongoDB* como banco de dados
+# Configurando o MongoDB como banco de dados
  
  /todo
 
-## Introdução ao *MongoDB*
+## Introdução ao MongoDB
 
 /todo
 
-## Configurando o banco de dados com *Mongoose*
+## Configurando o banco de dados com Mongoose
 
-Para integrar nossa aplicação com o *MongoDB* vamos utilizar o [*Mongoose*](http://mongoosejs.com/) que é um *ODM (Object Document Mapper)*. O *Mongoose* irá abstrair o acesso ao banco de dados e ainda irá se responsabilizar por transformar os dados do banco em *Models*, facilitando a estruturação de nossa aplicação com o padrão *MVC*.
+Para integrar nossa aplicação com o MongoDB vamos utilizar o [Mongoose](http://mongoosejs.com/) que é um ODM (Object Document Mapper). O Mongoose irá abstrair o acesso ao banco de dados e ainda irá se responsabilizar por transformar os dados do banco em Models, facilitando a estruturação de nossa aplicação com o padrão MVC.
 
-Para instalar o *Mongoose* basta executar o seguinte comando *npm*:
+Para instalar o Mongoose basta executar o seguinte comando npm:
 
 ```sh
 $ npm install mongoose --save
 ```
 
-Após a instalação o *Mongoose* estará disponível para ser utilizado. O próximo passo será configurar a aplicação para conectar com o banco de dados. Para isso vamos criar um diretório chamado *config* dentro de *src* e dentro dele um arquivo chamado ***database.js*** que será responsável por toda configuração do banco de dados.
+Após a instalação o Mongoose estará disponível para ser utilizado. O próximo passo será configurar a aplicação para conectar com o banco de dados. Para isso vamos criar um diretório chamado *config* dentro de *src* e dentro dele um arquivo chamado *database.js* que será responsável por toda configuração do banco de dados.
 
 A estrutura de diretórios deve estar assim:
 
@@ -32,27 +32,27 @@ A estrutura de diretórios deve estar assim:
 │       └── products.js
 ```
 
-A primeira coisa que deve ser feita no *database.js* é importar o módulo do *Mongoose*, como no código abaixo:
+A primeira coisa que deve ser feita no *database.js* é importar o módulo do Mongoose, como no código abaixo:
 
 ```javascript
 import mongoose from 'mongoose';
 ```
 
-O próximo passo será informar qual biblioteca de *Promises* será utilizada. Essa é uma necessidade da versão 4 do *Mongoose*, como estamos utilizando o *Node.js* na versão 6 que já conta com *Promises* por padrão, será necessário fazer somente o seguinte:
+O próximo passo será informar qual biblioteca de Promises será utilizada. Essa é uma necessidade da versão 4 do Mongoose, como estamos utilizando o Node.js na versão 6 que já conta com Promises por padrão, será necessário fazer somente o seguinte:
 
 ```javascript
 mongoose.Promise = Promise;
 ```
 
-Aqui estamos dizendo para o *Mongoose* utilizar a *Promise* oficial do *Node.js*. 
+Aqui estamos dizendo para o Mongoose utilizar a Promise oficial do Node.js. 
 
-Seguindo a configuração do banco de dados é necessário informar  a *url* onde está o *MongoDB*. No meu caso está no meu computador então a *url* será *localhost* seguido do nome que daremos ao banco de dados:
+Seguindo a configuração do banco de dados é necessário informar  a url onde está o MongoDB. No meu caso está no meu computador então a url será "localhost" seguido do nome que daremos ao banco de dados:
 
 ```javascript
 const mongodbUrl = process.env.MONGODB_URL || 'mongodb://localhost/test';
 ```
 
-Note que primeiro verificamos se não existe uma variável de ambiente, caso não exista é usado o valor padrão que irá se referir ao *localhost* e ao banco de dados *test*. Dessa maneira, poderemos utilizar o *MongoDB* tanto para testes quanto para rodar o banco da aplicação, sem precisar alterar o código.
+Note que primeiro verificamos se não existe uma variável de ambiente, caso não exista é usado o valor padrão que irá se referir ao localhost e ao banco de dados test. Dessa maneira, poderemos utilizar o MongoDB tanto para testes quanto para rodar o banco da aplicação, sem precisar alterar o código.
 
 No próximo passo vamos criar uma função para conectar com o banco de dados:
 
@@ -60,7 +60,7 @@ No próximo passo vamos criar uma função para conectar com o banco de dados:
 const connect = () => mongoose.connect(mongodbUrl);
 ```
 
-Acima, criamos uma função que retorna uma conexão com o *MongoDB*, esse retorno é uma *Promise*, ou seja, somente quando a conexão for estabelecida a *Promise* será resolvida. Isso é importante pois precisamos garantir que nossa aplicação só vai estar disponível depois que o banco de dados estiver conectado e acessível.
+Acima, criamos uma função que retorna uma conexão com o MongoDB, esse retorno é uma Promise, ou seja, somente quando a conexão for estabelecida a Promise será resolvida. Isso é importante pois precisamos garantir que nossa aplicação só vai estar disponível depois que o banco de dados estiver conectado e acessível.
 
 O último passo é exportar o módulo de configuração do banco de dados:
 
@@ -88,10 +88,10 @@ export default {
 
 Pronto, o banco de dados está configurado. Nosso próximo passo será integrar o banco de dados com a aplicação, para que ela inicialize o banco sempre que for iniciada. 
 
-## Integrando o *Mongoose* com a aplicação
+## Integrando o Mongoose com a aplicação
 
 O módulo responsável por inicializar a aplicação é o *app.js*, então, ele que vai garantir que o banco estará disponível para que a aplicação possa consumi-lo.
-Vamos alterar o ***app.js*** para que ele integre com o banco de dados, atualmente ele está assim:
+Vamos alterar o *app.js* para que ele integre com o banco de dados, atualmente ele está assim:
 
 ```javascript
 import express from 'express';
@@ -105,7 +105,7 @@ app.use('/', routes);
 export default app;
 ```
 
-O primeiro passo é importar o módulo responsável pelo banco de dados, o *database.js*, que fica dentro do diretório *config*. Os *imports* devem ficar assim:
+O primeiro passo é importar o módulo responsável pelo banco de dados, o *database.js*, que fica dentro do diretório *config*. Os imports devem ficar assim:
 
 ```diff
  import express from 'express';
@@ -114,7 +114,7 @@ O primeiro passo é importar o módulo responsável pelo banco de dados, o *data
 + import database from './config/database';
 ```
 
-A seguir vamos alterar um pouco o código anterior que utiliza o *express* e as rotas movendo o seguinte trecho:
+A seguir vamos alterar um pouco o código anterior que utiliza o express e as rotas movendo o seguinte trecho:
 
 ```diff
 - app.use(bodyParser.json());
@@ -134,17 +134,17 @@ Os trechos em vermelho serão movidos para dentro de uma nova função, como no 
 +};
 ```
 
-Acima criamos uma função nomeada ***configureExpress*** que terá a tarefa de configurar o *express* e retornar uma nova instância de aplicação configurada.
+Acima criamos uma função nomeada `configureExpress` que terá a tarefa de configurar o express e retornar uma nova instância de aplicação configurada.
 
-A última etapa da nossa alteração é inicializar o banco antes da aplicação. Como o *moongose* retorna uma *Promise*, vamos esperar ela ser resolvida para então chamar a função que criamos anteriormente e que configura o *express*:
+A última etapa da nossa alteração é inicializar o banco antes da aplicação. Como o moongose retorna uma Promise, vamos esperar ela ser resolvida para então chamar a função que criamos anteriormente e que configura o express:
 
 ```diff
 + export default () => database.connect().then(configureExpress);
 ```
 
-No bloco acima exportamos uma função que retorna uma *Promise*. A primeira chamada é a função *connect* do *database*, que criamos na etapa anterior, assim que essa *Promise* for resolvida, significa que o banco de dados estará disponível, então é chamada a função *configureExpress* que irá configurar o *express* e retornar uma nova instância da aplicação. Esse *pattern* é conhecido como *chained promises*.
+No bloco acima exportamos uma função que retorna uma Promise. A primeira chamada é a função `connect` do database, que criamos na etapa anterior, assim que essa Promise for resolvida, significa que o banco de dados estará disponível, então é chamada a função `configureExpress` que irá configurar o express e retornar uma nova instância da aplicação. Esse pattern é conhecido como chained promises.
 
-Note que a função *configureExpress* não precisaria existir, poderíamos ter uma função diretamente dentro do *then* do *connect* e nela configurar o *express*, porém criar uma função que descreva o que está sendo feito torna o código mais claro e desacoplado. Pode se ler mais sobre o assunto [nesta *issue* do *airbnb*](https://github.com/airbnb/javascript/issues/216).
+Note que a função `configureExpress` não precisaria existir, poderíamos ter uma função diretamente dentro do `then` do `connect` e nela configurar o express, porém criar uma função que descreva o que está sendo feito torna o código mais claro e desacoplado. Pode se ler mais sobre o assunto [nesta issue do airbnb](https://github.com/airbnb/javascript/issues/216).
 
 O *app.js* depois de alterado deve estar assim:
 
@@ -166,12 +166,12 @@ const configureExpress = () => {
 export default () => database.connect().then(configureExpress);
 ```
 
-Como alteramos o *app* para retornar uma função, que por sua vez retorna uma *Promise*, será necessário alterar o *server.js* para fazer a inicialização de maneira correta.
+Como alteramos o app para retornar uma função, que por sua vez retorna uma Promise, será necessário alterar o *server.js* para fazer a inicialização de maneira correta.
 
 
 ## Alterando a inicilização
 
-O *server.js* é o arquivo responsável por inicializar a aplicação, chamando o *app*. Como alteramos algumas coisas na etapa anterior precisamos atualizá-lo.
+O *server.js* é o arquivo responsável por inicializar a aplicação, chamando o app. Como alteramos algumas coisas na etapa anterior precisamos atualizá-lo.
 Vamos começar alterando o nome do módulo na importação:
 
 ```diff
@@ -179,9 +179,9 @@ Vamos começar alterando o nome do módulo na importação:
 + import setupApp from './src/app';
 ```
 
-O módulo foi alterado de *app* para *setupApp*, por quê? Porque agora ele é uma função e esse nome reflete mais a sua responsabilidade.
+O módulo foi alterado de `app` para `setupApp`, por quê? Porque agora ele é uma função e esse nome reflete mais a sua responsabilidade.
 
-O próximo passo é alterar a maneira como o *app* é chamado:
+O próximo passo é alterar a maneira como o `app` é chamado:
 
 ```diff
 -app.listen(port, () => {
@@ -195,11 +195,11 @@ O próximo passo é alterar a maneira como o *app* é chamado:
 + });
 ```
 
-Como o código anterior devolvia uma instância da aplicação diretamente, era apenas necessário chamar o método *listen* do *express* para inicializar a aplicação. Agora temos uma função que retorna uma *promise* devemos chamá-la e ela vai inicializar o *app*, inicializando o banco, configurando o *express* e retornando uma nova instância da aplicação, só então será possível inicializar a aplicação chamando o *listen*.
+Como o código anterior devolvia uma instância da aplicação diretamente, era apenas necessário chamar o método `listen` do express para inicializar a aplicação. Agora temos uma função que retorna uma promise devemos chamá-la e ela vai inicializar o app, inicializando o banco, configurando o express e retornando uma nova instância da aplicação, só então será possível inicializar a aplicação chamando o `listen`.
 
-Até esse momento espero que vocês já tenham lido a especificação de *Promises* mais de 10 vezes e já sejam mestres na implementação. Quando um problema ocorre a *Promise* é rejeitada. Esse erro pode ser tratado usando um *catch* como no código acima.
-Acima, recebemos o erro e o mostramos no *console.log*, em seguida encerramos o processo do *Node.js* com o código 1.
-Dessa maneira o processo é finalizado informando que houve um erro em sua inicialização. Informar o código de saída, é uma boa prática finalizar o processo com código de erro e conhecido como *graceful shutdowns* e faz parte da lista do [*12 factor app*](https://12factor.net/) de boas práticas para desenvolvimento de *software* moderno.
+Até esse momento espero que vocês já tenham lido a especificação de Promises mais de 10 vezes e já sejam mestres na implementação. Quando um problema ocorre a Promise é rejeitada. Esse erro pode ser tratado usando um `catch` como no código acima.
+Acima, recebemos o erro e o mostramos no `console.log`, em seguida encerramos o processo do Node.js com o código 1.
+Dessa maneira o processo é finalizado informando que houve um erro em sua inicialização. Informar o código de saída, é uma boa prática finalizar o processo com código de erro e conhecido como "graceful shutdowns" e faz parte da lista do [12 factor app](https://12factor.net/) de boas práticas para desenvolvimento de software moderno.
 
 As alterações necessárias para integrar com o banco de dados estão finalizadas, vamos executar os testes de integração para garantir:
 
@@ -224,9 +224,9 @@ A saida será:
 ```
 
 O teste quebrou! Calma, isso era esperado.
-Assim como o *server.js* o teste de integração inicia a aplicação usando o módulo *app*, então ele também deve ser alterado para lidar com a *Promise*.
+Assim como o *server.js* o teste de integração inicia a aplicação usando o módulo app, então ele também deve ser alterado para lidar com a Promise.
 
-Vamos começar alterando o ***helpers.js*** dos testes de integração, como no código abaixo:
+Vamos começar alterando o *helpers.js* dos testes de integração, como no código abaixo:
 
 ```diff
 -import app from '../../src/app.js';
@@ -238,9 +238,9 @@ Vamos começar alterando o ***helpers.js*** dos testes de integração, como no 
 +global.supertest = supertest;
 ```
 
-Assim como no *server.js*, alteramos o nome do módulo de *app* para *setupApp* e o exportamos globalmente. Também removemos o *request* do conceito global que era uma instância do *supertest* com o *app* configurado, deixaremos para fazer isso no próximo passo.
+Assim como no *server.js*, alteramos o nome do módulo de `app` para `setupApp` e o exportamos globalmente. Também removemos o `request` do conceito global que era uma instância do supertest com o app configurado, deixaremos para fazer isso no próximo passo.
 
-Agora é necessário alterar o ***products_spec.js*** para inicializar a aplicação antes de começar a executar os casos de teste usando o *callback* *before* do *Mocha*:
+Agora é necessário alterar o *products_spec.js* para inicializar a aplicação antes de começar a executar os casos de teste usando o callback `before` do Mocha:
 
 ```diff
 describe('Routes: Products', () => {
@@ -255,12 +255,12 @@ describe('Routes: Products', () => {
 +
 ```
 
-No bloco acima, criamos um *let* para o *request* do *supertest* e no *before* a aplicação é inicializada. Assim que o *setupApp* retornar uma instância da aplicação é possível inicializar o *supertest* e atribuir a *let request* que definimos anteriormente.
+No bloco acima, criamos um let para o `request` do *supertest* e no `before` a aplicação é inicializada. Assim que o `setupApp` retornar uma instância da aplicação é possível inicializar o supertest e atribuir a `let request` que definimos anteriormente.
 
-T> ## *let* no lugar de *const*
+T> ## let no lugar de const
 T> 
-T> *let* e *const* são novos tipos de declaração de variáveis do *Ecmascript* 6 ambas possuem comportamento similar mas com uma grande diferença, *constants* não podem ter seu valor alterado. Por isso foi utilizado *let* no código acima, pois o valor precisa ser reescrito após o *before*.
-T> Leia mais sobre *let*, *const* e *block bindings* [aqui](http://walde.co/2016/05/13/javascript-es6-let-e-const-e-block-bindings/). 
+T> let e const são novos tipos de declaração de variáveis do Ecmascript 6 ambas possuem comportamento similar mas com uma grande diferença, constants não podem ter seu valor alterado. Por isso foi utilizado let no código acima, pois o valor precisa ser reescrito após o before.
+T> Leia mais sobre let, const e block bindings [aqui](https://walde.co/2016/05/13/javascript-es6-let-e-const-e-block-bindings/). 
 
 Executando os testes novamente, a saída deve ser a seguinte:
 
@@ -273,7 +273,7 @@ Executando os testes novamente, a saída deve ser a seguinte:
   1 passing (336ms)
 ```
 
-Caso ocorra um erro como: *"MongoError: failed to connect to server [localhost:27017] on first connect"*:
+Caso ocorra um erro como: "MongoError: failed to connect to server [localhost:27017] on first connect":
 
 ```shell
   Routes: Products
@@ -293,6 +293,6 @@ Caso ocorra um erro como: *"MongoError: failed to connect to server [localhost:2
       at process._tickCallback (internal/process/next_tick.js:98:9)
 ```
 
-A mensagem de erro explica que o *MongoDB* não está executando em *localhost* na porta 7000, verifique e tente novamente.
+A mensagem de erro explica que o MongoDB não está executando em localhost na porta 7000, verifique e tente novamente.
 
 O código desta etapa esta disponível [aqui](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step6).

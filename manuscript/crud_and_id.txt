@@ -1,13 +1,13 @@
 #CRUD operations
 
-Neste capítulo serão adicionadas as operações de *CRUD* (*Create*, *Read*, *Update*, *Delete*) possibilitando a alteração do recurso *product*.
-Serão aplicadas as técnicas de *BDD* que foram vistas anteriormente, aqui chamaremos os testes de alto nível de teste de integração *end 2 end* (de ponta a ponta) ou teste de aceitação. Estes testes irão validar se a funcionalidade foi implementada como esperado.
+Neste capítulo serão adicionadas as operações de CRUD (Create, Read, Update, Delete) possibilitando a alteração do recurso product.
+Serão aplicadas as técnicas de BDD que foram vistas anteriormente, aqui chamaremos os testes de alto nível de teste de integração end 2 end (de ponta a ponta) ou teste de aceitação. Estes testes irão validar se a funcionalidade foi implementada como esperado.
 
 ## Busca por id
 
-Um padrão bastante comum em *APIs* *REST* é a busca de um recurso pelo identificador (*id*), por exemplo **http://minha_api/products/56cb91bdc3464f14678934ca** deve retornar  o produto correspondente ao *id* informado na rota.
-Nossa *API* ainda não suporta essa funcionalidade, então vamos implementá-la.
-Como esse será um novo *endpoint* precisamos começar pelo teste de integração *end 2 end* que fica no arquivo: **test/integration/routes/products_spec.js**
+Um padrão bastante comum em APIs REST é a busca de um recurso pelo identificador (id), por exemplo "http://minha_api/products/56cb91bdc3464f14678934ca" deve retornar  o produto correspondente ao id informado na rota.
+Nossa API ainda não suporta essa funcionalidade, então vamos implementá-la.
+Como esse será um novo endpoint precisamos começar pelo teste de integração end 2 end que fica no arquivo: *test/integration/routes/products_spec.js*
 
 Iniciaremos permitindo o reuso de código, tornando-o mais genérico, permitindo assim a reutilização:
 
@@ -26,9 +26,9 @@ Iniciaremos permitindo o reuso de código, tornando-o mais genérico, permitindo
      description: '
 ```
 
-O ***_id*** foi extraido do *expectedProduct* para uma *constant* isso será útil para testar a rota a seguir.
+O `_id` foi extraido do `expectedProduct` para uma constant isso será útil para testar a rota a seguir.
 
-Dentro do cenário de testes: ***GET /products*** adicionaremos o seguinte teste:
+Dentro do cenário de testes: GET /products adicionaremos o seguinte teste:
 
 ```javascript
  context('when an id is specified', done => {
@@ -45,7 +45,7 @@ Dentro do cenário de testes: ***GET /products*** adicionaremos o seguinte teste
     });
 ```
 
-Note que esse caso de teste é similar ao *"should return a list of products"*, que está dentro do mesmo cenário. Adicionamos um ***context***, pois mesmo sendo no */products* agora o foco será o contexto de busca por *id* onde é feito um *GET* para **products/56cb91bdc3464f14678934ca**, ou seja filtrando somente um produto.
+Note que esse caso de teste é similar ao "should return a list of products", que está dentro do mesmo cenário. Adicionamos um `context`, pois mesmo sendo no /products agora o foco será o contexto de busca por id onde é feito um GET para "products/56cb91bdc3464f14678934ca", ou seja filtrando somente um produto.
 
 Adicionado o teste, vamos executá-lo:
 
@@ -74,9 +74,9 @@ A saida deve ser a seguinte:
       +200
 ```
 
-Quebrou! Agora já temos por onde começar. Era esperado 200, código *http* de sucesso, e recebemos 404, código *http* de não encontrado (*NOT_FOUND*), o que significa que ainda não existe a rota que está sendo requisitada, esse deve ser o primeiro passo a ser implementado.
+Quebrou! Agora já temos por onde começar. Era esperado 200, código http de sucesso, e recebemos 404, código http de não encontrado (NOT_FOUND), o que significa que ainda não existe a rota que está sendo requisitada, esse deve ser o primeiro passo a ser implementado.
 
-Vamos alterar o arquivo de rotas de produtos: **src/routes/products.js**, adicionando a seguinte rota:
+Vamos alterar o arquivo de rotas de produtos: *src/routes/products.js*, adicionando a seguinte rota:
 
 ```diff
 router.get('/', (req, res) => productsController.get(req, res));
@@ -95,18 +95,18 @@ Executando os testes novamente o erro deve ser outro, como o seguinte:
       +200
 ```
 
-500, *Internal Server Error*: Isso significa que a rota foi encontrada mas houve outro erro ao seguir a requisição, pois não temos mais nada implementado. O próximo passo é adicionar lógica para termos uma resposta.
+500, Internal Server Error: Isso significa que a rota foi encontrada mas houve outro erro ao seguir a requisição, pois não temos mais nada implementado. O próximo passo é adicionar lógica para termos uma resposta.
 
-O erro 500 aconteceu pois o método para buscar por *id* não existe no *productsController*, agora é o momento de criá-lo. Note que o teste *end 2 end* serve como um guia para garantir que estamos no caminho certo. Quando a rota foi criada não havia necessidade de testes pois a lógica era simples, já no *controller* o teste será necessário pois ele vai conter certa lógica. Nesse momento seguimos o ciclo do *TDD*. Algo como a imagem abaixo:
+O erro 500 aconteceu pois o método para buscar por id não existe no productsController, agora é o momento de criá-lo. Note que o teste end 2 end serve como um guia para garantir que estamos no caminho certo. Quando a rota foi criada não havia necessidade de testes pois a lógica era simples, já no controller o teste será necessário pois ele vai conter certa lógica. Nesse momento seguimos o ciclo do TDD. Algo como a imagem abaixo:
 
 ![bdd end 2 end](images/bdd-end2end.png)
 
-O teste de ponta a ponta é o teste de aceitação, além de guiar o desenvolvimento ele também é responsável por validar se a funcionalidade que estamos desenvolvendo está ou não completa. Esse teste não segue o fluxo do *TDD*, pois ele será executado inúmeras vezes até que passe, quando ele passar significa que tudo que é necessário para a funcionalidade estar completa foi desenvolvido.
+O teste de ponta a ponta é o teste de aceitação, além de guiar o desenvolvimento ele também é responsável por validar se a funcionalidade que estamos desenvolvendo está ou não completa. Esse teste não segue o fluxo do TDD, pois ele será executado inúmeras vezes até que passe, quando ele passar significa que tudo que é necessário para a funcionalidade estar completa foi desenvolvido.
 
-Dentro desse grande teste de aceitação serão incluídos inúmeros outros testes, que podem ser de integração, de unidade e etc; esses testes sim seguirão o ciclo do *TDD*.
+Dentro desse grande teste de aceitação serão incluídos inúmeros outros testes, que podem ser de integração, de unidade e etc; esses testes sim seguirão o ciclo do TDD.
 
-Os métodos que serão criados no *controller* seguirão o *TDD* como já vimos no livro.
-Vamos começar melhorando o reaproveitamento de código alterando o teste de unidade **test/unit/controllers/products_spec.js**:
+Os métodos que serão criados no controller seguirão o TDD como já vimos no livro.
+Vamos começar melhorando o reaproveitamento de código alterando o teste de unidade *test/unit/controllers/products_spec.js*:
 
 ```diff
 +  const defaultRequest = {
@@ -121,9 +121,9 @@ Vamos começar melhorando o reaproveitamento de código alterando o teste de uni
       };
 ```
 
-O objeto *request* foi movido para fora do teste e foi renomeado para *defaultRequest* para permitir sua reutilização por todos os casos de teste. Também adicionamos um objeto *params* dentro do *defaultRequest* para que fique similar ao objeto enviado pelo *express*.
+O objeto `request` foi movido para fora do teste e foi renomeado para `defaultRequest` para permitir sua reutilização por todos os casos de teste. Também adicionamos um objeto `params` dentro do `defaultRequest` para que fique similar ao objeto enviado pelo express.
 
-A próxima alteração a ser feita é a requisição para o *controller*, como alteramos o nome de *request* para *defaultRequest* será necessário alterar a seguinte linha:
+A próxima alteração a ser feita é a requisição para o controller, como alteramos o nome de `request` para `defaultRequest` será necessário alterar a seguinte linha:
 
 ```diff
 +      return productsController.get(defaultRequest, response)
@@ -169,7 +169,7 @@ $ npm run test:unit
   2 passing
 ```
 
-Testes verdes! Vamos criar o caso de teste para a busca por *id*, o teste ficará assim:
+Testes verdes! Vamos criar o caso de teste para a busca por id, o teste ficará assim:
 
 ```javascript
 describe('getById()', () => {
@@ -197,19 +197,18 @@ describe('getById()', () => {
   });
 ```
 
-O nome *"should call send with one product"* reflete o cenário que esperamos, ou seja, é esperado que o método *send* seja chamado com apenas um produto. Dentro do teste é criado uma *constant* chamada *fakeId* referente ao *id* do produto que será buscado.
-Logo após é criado um objeto *request* igual ao enviado pelo *express* nas requisições, quando um parâmetro é enviado o *express* adiciona ele dentro do objeto *params*, como no código acima onde adicionamos o *id* como parâmetro.
-
+O nome "should call send with one product" reflete o cenário que esperamos, ou seja, é esperado que o método `send` seja chamado com apenas um produto. Dentro do teste é criado uma constant chamada `fakeId` referente ao id do produto que será buscado.
+Logo após é criado um objeto `request` igual ao enviado pelo express nas requisições, quando um parâmetro é enviado o express adiciona ele dentro do objeto `params`, como no código acima onde adicionamos o id como parâmetro.
 A Próxima parte do código do teste que devemos dar atenção é esta:
 
 ```javascript
 Product.find.withArgs({ _id: fakeId }).resolves(defaultProduct);
 ```
 
-Aqui é utilizado o *stub* do método *find* para adicionar um comportamento sempre que ele for chamado recebendo o parâmetro *_id* com o valor do *fakeId*. O *_id* é a chave primária do *Mongo* então para fazer o filtro por *id* precisamos fazer uma busca pela chave *_id*.
-O método *withArgs* do *stub* do *Sinon* serve para adicionar um comportamento baseado em uma condição, no nosso caso quando o método *find* for chamado com o parâmetro *_id* com o valor do *fakeId* ele deve resolver uma *Promise* retornando o *defaultProduct*, simulando assim uma chamada ao banco de dados.
+Aqui é utilizado o stub do método `find` para adicionar um comportamento sempre que ele for chamado recebendo o parâmetro `_id` com o valor do `fakeId`. O `_id` é a chave primária do MongoDB então para fazer o filtro por id precisamos fazer uma busca pela chave `_id`.
+O método `withArgs` do stub do Sinon serve para adicionar um comportamento baseado em uma condição, no nosso caso quando o método `find` for chamado com o parâmetro `_id` com o valor do `fakeId` ele deve resolver uma Promise retornando o `defaultProduct`, simulando assim uma chamada ao banco de dados.
 
-O método que será chamado é o *getById*, como no trecho abaixo:
+O método que será chamado é o `getById`, como no trecho abaixo:
 
 ```javascript
 return productsController.getById(request, response)
@@ -239,10 +238,10 @@ Controller: Products
      TypeError: productsController.getById is not a function
 ```
 
-O erro diz que o método *getById* não é uma função, isso porque ainda não foi implementada a lógica, o *stub* que criamos não foi chamado e não retornou uma *Promise*. 
-Vamos mudar o teste de unidade para o passo *Green* implementando o necessário para que o mesmo passe.
+O erro diz que o método `getById` não é uma , isso porque ainda não foi implementada a lógica, o stub que criamos não foi chamado e não retornou uma Promise. 
+Vamos mudar o teste de unidade para o passo GREEB implementando o necessário para que o mesmo passe.
 
-Devemos criar o método *getById* no *controller* de *products* que fica em: **src/controllers/products.js**.
+Devemos criar o método `getById` no controller de products que fica em: *src/controllers/products.js*.
 O código suficiente para o teste passar contém:
 
 ```javascript
@@ -254,12 +253,11 @@ O código suficiente para o teste passar contém:
       name: 'Default product',
       description: 'product description',
       price: 100
-    }])
-      .then(products => res.send(products))
+    }])      .then(products => res.send(products))
   }
 ```
 
-O trecho acima  retorna uma *Promise* resolvida com um *array* contendo um produto *fake*, igual o que esperamos no caso de teste, e após o método *send* é chamado com esse produto.
+O trecho acima  retorna uma Promise resolvida com um array contendo um produto fake, igual o que esperamos no caso de teste, e após o método `send` é chamado com esse produto.
 
 Executando os testes de unidade:
 
@@ -281,21 +279,20 @@ A resposta deve ser:
   3 passing (20ms)
 ```
 
-Teste unitário passando! Agora ele está no passo *Green* do *TDD*. Podemos partir para o *Refactor*.
+Teste unitário passando! Agora ele está no passo GREEN do TDD. Podemos partir para o REFACTOR.
 
-Vamos alterar o método *getById* em **src/controllers/products.js** para ficar similar a este:
+Vamos alterar o método `getById` em *src/controllers/products.js* para ficar similar a este:
 
 ```javascript
   getById(req, res) {
     const { params: { id } } = req;
 
-    return this.Product.find({ _id:id })
-      .then(products => res.send(products))
+    return this.Product.find({ _id:id })      .then(products => res.send(products))
       .catch(err => res.status(400).send(err.message));
   }
 ```
 
-Na primeira linha extraímos o *id* do objeto params dentro de *req* e no método *find* do *mongoose* adicionamos um filtro por *id*.
+Na primeira linha extraímos o `id` do objeto params dentro de `req` e no método `find` do mongoose adicionamos um filtro por `id`.
 
 Realizada a alteração basta executar os testes novamente, começando pelo teste de unidade:
 
@@ -317,7 +314,7 @@ A saida deve ser:
 
 ```
 
-Após os testes de unidade, devemos executar nosso teste *end 2 end* para validar:
+Após os testes de unidade, devemos executar nosso teste end 2 end para validar:
 
 ```shell
 $ npm run test:integration
@@ -336,4 +333,4 @@ A saida deve ser:
   2 passing (152ms)
 ```
 
-O teste passou! Ou seja, nossa funcionalidade está implementada. Não se preocupe se ainda está meio confuso. Vamos aplicar esse conceito no decorrer do livro para a criação dos outros *endpoints* da *API*, aqui o objetivo é mostrar como o *BDD* e o *TDD* trabalham juntos e como a combinação dos dois ajuda no desenvolvimento criando um visão do que deve ser desenvolvido.
+O teste passou! Ou seja, nossa funcionalidade está implementada. Não se preocupe se ainda está meio confuso. Vamos aplicar esse conceito no decorrer do livro para a criação dos outros endpoints da API, aqui o objetivo é mostrar como o BDD e o TDD trabalham juntos e como a combinação dos dois ajuda no desenvolvimento criando um visão do que deve ser desenvolvido.

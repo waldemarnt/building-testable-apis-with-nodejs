@@ -1,0 +1,1448 @@
+# Autenticação  e  controle de acesso com Access Control List - ACL
+
+ACL ou Access Control List, é o termo utilizado na engenharia de software para falar de Controle de Acesso a Sistemas. A maioria das implementações de ACL seguem um padrão estruturado, onde se define as ações que usuários podem executar no sistema, como por exemplo: 
+
+```json
+{
+	John: read,
+	Meg: admin
+}
+```
+
+Assim  o sistema checa as permissões do usuário e decide se permite ou não que ele execute determinada ação.
+No Exemplo acima o usuário John tem permissão de leitura e Meg tem permissão de  administrador.
+
+O padrão de ACL pode ser aplicado a quase todo tipo de sistema onde é necessário controlar ações de usuários, incluindo APIs.
+
+Como nossa API utiliza express, vamos usar o módulo express-acl para implementar o ACL em nossa aplicação.
+
+## Express ACL
+
+O [express-acl](https://nyambati.github.io/express-acl/) é um módulo feito para o express que realiza checagem de acesso em runtime e pode ser configurado via JSON ou YAML (aqui vamos optar por JSON). Vamos começar instalando o módulo:
+
+```sh
+$ npm install express-acl@2.0.2
+```
+
+Vamos criar um arquivo chamado *nacl.json* no diretório de configuração *config/nacl.json* e adicione o seguinte trecho de código:
+
+```json
+[
+    {
+        "group": "admin",
+        "permissions": [
+            {
+                "resource": "*",
+                "methods": "*",
+                "action": "allow"
+            }
+        ]
+    },
+    {
+        "group": "user",
+        "permissions": [
+            {
+                "resource": "products",
+                "methods": [
+                    "GET"
+                ],
+                "action": "allow"
+            }
+        ]
+    }
+]
+```
+Ainda não temos todas as configurações necessárias mas já vamos deixar pronta a parte do acl. O express acl funciona por grupos: permitindo ou não ações para um determinado grupo a um determinado recurso da API.
+Por exemplo, o primeiro grupo será o de administrador: admin, os administradores terão acesso a todos os recursos da API, sem limitação alguma, para isso é utilizado `*` com a `"action":"allow"`, isso significa que a ação será de "permitir" em todos os recursos (resource) e metodos (methods).
+
+O segundo grupo é o de usuário (user), usuários somente terão acesso para leitura dos produtos da API.Como já vimos,a leitura é feita pelo verbo http GET, então para usuários precisamos permitir acesso ao método GET do recurso products. Como feito neste bloco:
+
+```json
+        "group": "user",
+        "permissions": [
+            {
+                "resource": "products",
+                "methods": [
+                    "GET"
+                ],
+                "action": "allow"
+            }
+```
+
+Agora vamos atualizar o arquivo *src/app.js* para adicionar a chamada ao acl.
+
+```diff
++ import acl from 'express-acl';
+
+const app = express();
+
++acl.config({
++  baseUrl: '/',
++  path: 'config'
++});
+
+const configureExpress = () => {
+  app.use(bodyParser.json());
++  app.use(acl.authorize.unless({path:['/users/authenticate']}));
+  app.use('/', routes);
+
+  return app;
+};
+```
+
+Note que no `app.use(acl.authorize.unless({path:['/users/authenticate']}));` estamos passando o express-acl como um middleware para o express,  além disso adicionamos a configuração `authorize.unless` que diz para o express acl validar todos os recursos da API unless (a não ser que) seja `/users/authenticate`, essa rota será pública e utilizada para gerar o token de autenticação.
+
+## Autenticação com JSON Web Token
+
+Primeiro falamos de autorização com express ACL e agora vamos trabalhar na autenticação. A diferença entre autenticação e autorização é que na autenticação verificamos a identidade de um usuário e na autorização verificamos se o usuário autenticado tem privilégios para executar determinada ação.
+Autenticação pode ser feita de várias maneiras, a mais utilizada é o login com usuário e senha que cria uma sessão. Como APIs devem ser stateless, ou seja, não devem armazenar estado, não é possível ter sessão, dado que para isso ela teria que ser armazenada no servidor.
+
+Quando nada é armazenado no servidor fica mais fácil escalar a aplicação pois ela não tem estado em lugar algum, o usuário que controla o estado. Para resolver esse problema foram criados os tokens (também é comum utilizar cookies para autenticação). Utilizando tokens o usuário que faz a requisição autêntica uma vez com as credenciais, (no nosso caso email e senha) e recebe um token que será usado para fazer requisições para a API.
+
+Existem várias maneiras de fazer autenticação baseada em token, como JSON Web Token e  OAuth. Aqui utilizamos JSON Web Token.
+
+[JSON Web Token](https://jwt.io/), [JWT](https://tools.ietf.org/html/rfc7519), é um padrão aberto RFC 7519 que define uma maneira compacta de transportar objetos JSON seguramente entre partes. A confiança e segurança é alcançada por meio de assinatura digital utilizando algoritmos como HMAC ou chave pública/privada RSA ou ECDSA.
+Utilizaremos um modulo npm chamado jsonwebtoken que implementa a spec oficial do JWT e nos permite gerar e validar tokens no Node.js. Vamos começar pela instalação do módulo:
+
+```sh
+$ npm install jsonwebtoken@8.3.0
+```
+
+Adicionaremos duas propriedades necessárias para a configuração em *config/default.json*, primeiro a propriedade key dentro do objeto auth, essa será a chave secreta utilizada para assinar o token, e a propriedade tokenExpiresIn que se refere ao tempo de expiração do token. Na configuração abaixo definimos 7 dias, após esse prazo o usuário precisa gerar um novo token.
+
+```diff
+{
+  "database": {
+    "mongoUrl": "mongodb://localhost:27017/shop"
+  },
++   "auth": {
++    "key": "thisisaverysecurekey",
++    "tokenExpiresIn": "7d"
++  }
+}
+```
+
+## Criando Middlewares
+
+Como será necessário validar o token do usuário em todas requisições vamos criar um middleware responsável por validar se a requisição possui um token, se sim, vamos decodificar o token e transformá-lo em um objeto que será adicionado na requisição para ser utilizado posteriormente pelo express-acl. Antes de tudo vamos começar pelo teste de unidade do middleware criando um arquivo em *test/unit/middlewares/auth_spec.js*.
+
+```javascript
+import authMiddleware from '../../../src/middlewares/auth';
+import jwt from 'jsonwebtoken';
+import config from 'config';
+
+describe('AuthMiddleware', () => {
+  it('should verify a JWT token and call the next middleware', done => {
+    const jwtToken = jwt.sign({ data: 'fake' }, config.get('auth.key'));
+    const reqFake = {
+      headers: {
+        'x-access-token': jwtToken
+      }
+    };
+    const resFake = {};
+    authMiddleware(reqFake, resFake, done);
+  });
+});
+```
+
+Aqui começamos pelo primeiro happy path, o middleware deve receber uma requisição, verificar o token e chamar o próximo middleware. Note que aqui `jwt.sign({ data: 'fake' }, config.get('auth.key'));` geramos um token fake para ser utilizado no teste, esse token segue a mesma lógica que a aplicação utiliza.
+Para validar o teste chamamos `authMiddleware(reqFake, resFake, done);` passamos o reqFake,  que simula uma requisição contendo o header com o JWT, e um resFake vazio simulando o objeto de response que o middleware espera. Passamos também o callback done do Mocha como o next do middleware, dessa maneira quando o authMiddleware chamar o próximo middleware ele vai estar chamando o done do Mocha finalizando o teste.
+
+Executando os testes de unidade agora teremos um erro
+
+```sh
+$ npm run test:unit
+
+Error: Cannot find module '../../../src/middlewares/auth'
+    at Function.Module._resolveFilename (internal/modules/cjs/loader.js:548:15)
+    at Function.Module._load (internal/modules/cjs/loader.js:475:25)
+```
+O arquivo não foi encontrado, crie o arquivo em */src/middlewares/auth.js* com o seguinte código:
+
+```javascript
+export default (req, res, next) => {
+  next()
+};
+```
+
+Aqui adicionamos lógica somente para o teste passar, passo green do TDD (espero que ainda lembrem!).
+
+Executando os testes novamente a saída será:
+
+```sh
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+```
+
+Agora é hora de aplicar a lógica de verdade. Altere o arquivo *auth.js* como abaixo:
+
+```diff
++import jwt from 'jsonwebtoken';
++import config from 'config';
+
+export default (req, res, next) => {
++  const token = req.headers['x-access-token'];
++
++  jwt.verify(token, config.get('auth.key'), (err, decoded) => {
++    req.decoded = decoded;
++    next(err);
++  });
+};
+```
+
+Primeiro passo pegamos o token x-access-token do header da requisição que e depois o verificamos utilizando o módulo jsonwebtoken. O primeiro parâmetro é o token, o segundo é a chave secreta da nossa aplicação para poder decodificar o token e o terceiro parâmetro é o callback que o jsonwebtoken espera.
+Em seguida adicionamos o token decodificado ao objeto req referente a requisição `req.decoded = decoded` e chamamos o próximo middleware com next. Note que o err é passado como parâmetro para o próximo middleware, isso significa que se ocorrer algum erro na hora de decodificar o token o jsonwebtoken vai passar esse erro para nós e nós vamos passá-lo adiante para o próximo middleware, no futuro teremos um middleware somente para tratar erros.
+
+Executando os testes de unidade novamente:
+
+```sh
+$ npm run test:unit
+
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+```
+
+É um pouco confuso passar o *err* para o próximo middleware, certo? Isso significa que nosso código possui dois caminhos, um de sucesso e um de falha, então devemos testar ambos. Vamos escrever um teste que simula um caso de erro adicionando o seguinte caso de teste em *test/unit/middlewares/auth_spec.js*.
+
+```diff
+import authMiddleware from '../../../src/middlewares/auth';
+import jwt from 'jsonwebtoken';
+import config from 'config';
+
+describe('AuthMiddleware', () => {
+
+    it('should verify a JWT token and call the next middleware', done => {
+        const jwtToken = jwt.sign({ data: 'fake' }, config.get('auth.key'));
+        const reqFake = {
+            headers: {
+                'x-access-token': jwtToken
+            }
+        };
+        const resFake = {};
+        authMiddleware(reqFake, resFake, done);
+    });
+
++    it('should call the next middleware passing an error when the token validation fails', done => {
++        const reqFake = {
++           headers: {
++                'x-access-token': 'invalid token'
++            }
++        };
++        const resFake = {};
++       authMiddleware(reqFake, resFake, err => {
++            expect(err.message).to.eq('jwt malformed');
++            done();
++        });
++    });
+});
+```
+
+Passando um valor qualquer no header x-access-token fará com que o jsonwebtoken falhe e o nosso código var chamar o next passando o erro recebido pelo jsonwebtoken. No teste basta checarmos a mensagem:
+`expect(err.message).to.eq('jwt malformed')`
+“jwt malformed’ é a mensagem lançada pelo jsonwebtoken quando ele recebe um token que não segue o padrão do JWT.
+
+Executando os testes, a saída será:
+
+```sh
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+    ✓ should call the next middleware passing an error when the token validation fails
+```
+
+Ainda temos um caso para testar: na implementação atual o código espera que toda a requisição envie um token, mas a requisição para gerar o token não tem como passar um token!. Sendo assim, nosso código precisa verificar se existe token na requisição e chamar o próximo middleware sem executar a lógica de decodificação do jsonwebtoken.
+Vamos para o teste:
+
+```javascript
+ it('should call next middleware if theres no token', done => {
+        const reqFake = {
+            headers: {}
+        };
+        const resFake = {};
+        authMiddleware(reqFake, resFake, done);
+    });
+```
+
+Adicione o teste acima no teste unitário do auth middleware. Nele não var ser passado o header x-access-token, executando o teste:
+
+```sh
+$npm run test:unit
+
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+    ✓ should call the next middleware passing an error when the token validation fails
+    1) should call next middleware if theres no token
+
+
+  2 passing (16ms)
+  1 failing
+
+  1) AuthMiddleware should call next middleware if theres no token:
+     JsonWebTokenError: jwt must be provided
+      at Object.module.exports [as verify] (node_modules/jsonwebtoken/verify.js:39:17)
+      at exports.default (src/middlewares/auth.js:8:7)
+      at Context.done (test/unit/middlewares/auth_spec.js:36:9)
+```
+
+O teste vai quebrar. A mensagem é jwt must be provided o que significa que o código tentou verificar o token, vamos alterar o código para não verificar o token quando ele não estiver na requisição. Altere o middleware *auth.js*:
+
+```diff
+import jwt from 'jsonwebtoken';
+import config from 'config';
+
+export default (req, res, next) => {
+  const token = req.headers['x-access-token'];
++  if (!token) {
++    return next();
++  };
+  jwt.verify(token, config.get('auth.key'), (err, decoded) => {
+    req.decoded = decoded;
+    next(err);
+  });
+};
+```
+
+Simples! Se não tiver token chamamos o próximo middleware. Os testes agora devem estar passando
+
+```sh
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+    ✓ should call the next middleware passing an error when the token validation fails
+    ✓ should call next middleware if theres no token
+```
+
+Nosso middleware esta pronto.
+
+O próximo passo é alterar o *app.js* adicionando o auth middleware ao express.
+
+```diff
+import express from 'express';
+import bodyParser from 'body-parser';
+import acl from 'express-acl';
+import routes from './routes';
+import database from '../config/database';
++import authMiddleware from './middlewares/auth.js';
+
+ const app = express();
+
+acl.config({
+  baseUrl:'/',
+  path: 'config'
+});
+
+ const configureExpress = () => {
+   app.use(bodyParser.json());
++  app.use(authMiddleware);
+   app.use(acl.authorize.unless({path:['/users/authenticate']}));
+   app.use('/', routes);
+
+   return app;
+```
+
+Os testes de integração não estão passando pois ainda não implementamos a autenticação. Vamos começar a implementação da autenticação pelo teste da rota em *test/integration/users_spec.js*
+
+```diff
++describe('POST /users/authenticate', () => {
++    context('when authenticating an user', () => {
++      it('should generate a valid token', done => {
++
++       request
++         .post(`/users/authenticate`)
++         .send({
++           email: 'jhon@mail.com',
++           password: '123password'
++         })
++         .end((err, res) => {
++           expect(res.body).to.have.key('token');
++           expect(res.status).to.eql(200);
++           done(err);
++         });
++     });
+
++     it('should return unauthorized when the password does not match', done => {
+
++       request
++         .post(`/users/authenticate`)
++         .send({
++           email: 'jhon@mail.com',
++           password: 'wrongpassword'
++         })
++         .end((err, res) => {
++           expect(res.status).to.eql(401);
++           done(err);
++         });
++     });
++   });
++ });
+```
+
+Adicionamos 2 testes de integração, um para o caso de sucesso, onde espera-se que o usuário seja autenticado, e um para o caso de falha, onde não foi possível autenticar o usuário.
+Vamos executar os testes de integração:
+
+```shell
+$ npm run test:integration
+```
+
+Ignore os outros testes nesse momento, vamos focar apenas nos novos testes:
+
+```shell
+9) Routes: Users POST /users/authenticate when authenticating a user should generate a valid token:
+
+      Uncaught AssertionError: expected {} to have key 'token'
+      + expected - actual
+
+      -[]
+      +[
+      +  "token"
+      +]
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:120:38)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+
+  10) Routes: Users POST /users/authenticate when authenticating an user should return unauthorized when the password does not match:
+
+      Uncaught AssertionError: expected 404 to deeply equal 401
+      + expected - actual
+
+      -404
+      +401
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:135:35)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+```
+
+Estamos recebendo 404 por que a rota não existe, vamos criá-la em *src/users/routes/users.js* adicionando o seguinte código:
+
+```diff
+import express from 'express';
+import UsersController from '../controllers/users';
+import User from '../models/user';
+
+const router = express.Router();
+const usersController = new UsersController(User);
+
+router.get('/', (req, res) => usersController.get(req, res));
+router.get('/:id', (req, res) => usersController.getById(req, res));
+router.post('/', (req, res) => usersController.create(req, res));
+router.put('/:id', (req, res) => usersController.update(req, res));
+router.delete('/:id', (req, res) => usersController.remove(req, res));
++router.post('/authenticate', (req, res) => usersController.authenticate(req, res));
+
+export default router;
+```
+
+Se executarmos os testes novamente a saída será:
+
+
+```shell
+9) Routes: Users POST /users/authenticate when authenticating an user should generate a valid token:
+
+      Uncaught AssertionError: expected {} to have key 'token'
+      + expected - actual
+
+      -[]
+      +[
+      +  "token"
+      +]
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:120:38)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+
+  10) Routes: Users POST /users/authenticate when authenticating a user should return unauthorized when the password does not match:
+
+      Uncaught AssertionError: expected 500 to deeply equal 401
+      + expected - actual
+
+      -500
+      +401
+
+      at Test.request.post.send.end (test/integration/routes/users_spec.js:135:35)
+      at Test.assert (node_modules/supertest/lib/test.js:179:6)
+      at Server.assert (node_modules/supertest/lib/test.js:131:12)
+      at emitCloseNT (net.js:1656:8)
+      at process._tickCallback (internal/process/next_tick.js:178:19)
+```
+
+Executando os testes de integração novamente a saída será um erro 500, pois não temos o método authenticate no controller de users, vamos criá-lo começando com um teste unitário em *test/unit/controllers/users_spec.js*.
+O método authenticate recebe os parâmetros req e res. Esperamos que método chame o objeto res do express passando o token como resposta. Abaixo vamos ver como testar esse cenário:
+
+```javascript
+  describe('authenticate', () => {
+       it('should authenticate a user', done => {
+      const fakeReq = {
+        body: {}
+      };
+      const fakeRes = {
+        send: token => {
+          expect(token).to.eql({ token: 'fake-token' });
+          done();
+        }
+      };
+      const usersController = new UsersController({});
+      usersController
+        .authenticate(fakeReq, fakeRes);
+    });
+  });
+```
+
+O teste é conciso pois neste momento não sabemos como nosso futuro código será, apenas sabemos que a saída deve ser um token. Aqui seguiremos o TDD de forma evolutiva para entender como o design do código muda durante o desenvolvimento.
+É importante atentar no código acima para o fakeRes ele possui um método send que imita o objeto real do express e dentro desse método adicionamos o expect do teste. Esse método é um callback então quando ele for chamado no final do fluxo o expect será executado e saberemos se o teste passou.
+
+Agora vamos implementar o metodo authenticate em *src/controllers/users*
+
+```javascript
+  authenticate(req, res) {
+    return res.send({ token: 'fake-token' });
+  }
+```
+
+Aqui estamos no passo GREEN do TDD: o suficiente para o teste passar. Nosso código ainda não está gerando o token, vamos para o REFACTOR para aplicar a lógica necessária.
+Nesse caso eu já fiz alguns testes e imagino como a implementação vai ser, por isso posso escrever o teste:
+
+I> É importante notar que em um cenário real vamos testar várias implementações antes de pensar em como escrever o teste. Quando falamos sobre TDD falamos sobre escrever o teste antes e isso causa confusão. Antes de escrever o teste é necessário experimentar com o código, uma vez que tivermos uma ideia de como será o código podemos começar o teste.
+
+
+Primeiramente vamos adicionar os seguintes imports:
+
+```diff
+import UsersController from '../../../src/controllers/users';
+import sinon from 'sinon';
++import jwt from 'jsonwebtoken';
++import config from 'config';
+import User from '../../../src/models/user';
+
+
+
+it('should authenticate a user', done => {
+      const fakeUserModel = {
+        findOne: sinon.stub()
+      };
+      const user = {
+        name: 'Jhon Doe',
+        email: 'jhondoe@mail.com',
+        password: '12345',
+        role: 'admin'
+      };
+      fakeUserModel.findOne.withArgs({ email: user.email }).resolves({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        toJSON: () => ({ email: user.email })
+      });
+
+      const jwtToken = jwt.sign(user, config.get('auth.key'), {
+        expiresIn: config.get('auth.tokenExpiresIn')
+      });
+      const fakeReq = {
+        body: user
+      };
+      const fakeRes = {
+        send: token => {
+          expect(token).to.eql({ token: jwtToken });
+          done();
+        }
+      };
+      const usersController = new UsersController(fakeUserModel);
+      usersController.authenticate(fakeReq, fakeRes);
+    });
+```
+
+Quando enviados usuário e senha um json web token é gerado, este é o cenário que o teste acima representa. Se o teste não estiver fazendo sentido, não se preocupe, essa parte será mais fácil de entender quando chegarmos na implementação. 
+Dois pontos são importantes no teste acima:
+
+```javascript
+fakeUserModel.findOne.withArgs({ email: user.email }).resolves({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        toJSON: () => ({ email: user.email })
+      });
+```
+
+Aqui geramos um hash da senha para poder simular um usuário no banco de dados, e na sequência,  usando o stub no método findOne do fakeUserModel o usuário é retornado com o password. O método toJSON é usado para simular o método existente no Mongoose.
+
+O próximo é:
+
+```javascript
+      const jwtToken = jwt.sign(user, config.get('auth.key'), {
+        expiresIn: config.get('auth.tokenExpiresIn')
+      });
+```
+
+Aqui é gerado um JWT baseado nos dados falsos de usuário e com a senha encriptada, assim devemos ter o mesmo JWT que o código vai gerar e será possível comparar o token no teste.
+A comparação é feita no callback a seguir:
+
+```javascript
+      const fakeRes = {
+        send: token => {
+          expect(token).to.eql({ token: jwtToken });
+          done();
+        }
+      };
+```
+
+Agora vamos fazer a implementação do código no usersController, começando pela importação das bibliotecas:
+
+```diff
++ import jwt from 'jsonwebtoken';
++ import config from 'config';
+```
+
+Agora, vamos reescrever o método authenticate:
+
+```javascript
+  authenticate(req, res) {
+    const { email, password } = req.body;
+    return this.User.findOne({ email })
+      .then(user => {
+        const token = jwt.sign({
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          role: user.role
+        }, config.get('auth.key'), {
+            expiresIn: config.get('auth.tokenExpiresIn')
+          });
+        return res.send({ token });
+      });
+  }
+```
+O código a seguir busca um usuário no banco de dados baseado no email provido, em seguida compara as senhas e caso sejam iguais será gerado um token para o usuário, caso contrário retornará um erro.
+Agora os testes de unidade devem estar passando.
+
+```shell
+$ npm run test:unit
+
+  Controller: Users
+    authenticate
+      ✓ should authenticate a user
+```
+
+Agora vamos aos testes de integração:
+
+```shell
+$ npm run test:integration
+```
+
+A saida sera:
+
+```shell
+3 passing (689ms)
+9 failing
+```
+
+Os testes devem estar falhando pois as rotas esperam receber um token. Vamos deixar os testes de integração de lado nesse momento e seguir nossa implementação interna. Os testes de integração servem para garantir que a integração entre os componentes esta funcionando,  vamos voltar a eles quando terminarmos a implementação interna dos testes de unidade.
+
+Voltando aos testes unitários, o próximo passo é testar um caminho de erro. Um caminho de erro pode ser quando o usuário não for encontrado ou quando a senha não bater.
+Vamos adicionar um novo caso de teste:
+
+```javascript
+    it('should return 401 when theres no user', () => {
+      const fakeUserModel = {
+        findOne: sinon.stub()
+      };
+      fakeUserModel.findOne.resolves(null);
+      const fakeReq = {
+        body: {}
+      };
+      const fakeRes = {
+        sendStatus: sinon.spy()
+      };
+      const usersController = new UsersController(fakeUserModel);
+      return usersController
+        .authenticate(fakeReq, fakeRes)
+        .then(() => sinon.assert.calledWith(fakeRes.sendStatus, 401));
+
+    });
+```
+
+A única parte diferente nesse bloco de código é a seguinte:
+
+```javascript
+      fakeUserModel.findOne.resolves(null);
+      const fakeReq = {
+        body: {}
+      };
+```
+
+Aqui simulamos um cenário onde o Moogoose não retorna nada na busca. Quando isso acontece devemos retornar um erro 401 para o usuário informando que ele não pôde ser autenticado.
+Executando o teste teremos o seguinte erro:
+
+```sh
+ 25 passing (264ms)
+  1 failing
+
+  1) Controller: Users authenticate should return 401 when theres no user:
+     TypeError: Cannot read property 'toJSON' of null
+      at User.findOne.then.user (src/controllers/users.js:62:37)
+```
+
+Vamos à implementação:
+
+```diff
+  authenticate(req, res) {
+    const { email, password } = req.body;
+    return this.User.findOne({ email })
+      .then(user => {
++        if (!user) {
++          return res.sendStatus(401);
++        }
+        const token = jwt.sign({
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          role: user.role
+        }, config.get('auth.key'), {
+            expiresIn: config.get('auth.tokenExpiresIn')
+          });
+        return res.send({ token });
+      });
+  }
+```
+
+Não estamos passando pelo passo GREEN do TDD, estamos fazendo a implementação direta pois, neste caso, é bem simples.
+Aqui verificamos se o usuário existe, se não existir retornamos um erro 401.
+
+Os testes devem estar passando agora, podemos seguir em frente e testar o comportamento da senha:
+
+```javascript
+ it('should return 401 when the password does not match', () => {
+      const user = {
+        email: 'jhondoe@mail.com',
+        password: '12345'
+      };
+      const fakeUserModel = {
+        findOne: sinon.stub()
+      };
+      fakeUserModel.findOne.resolves({email: user.email, password: 'aFakeHashedPassword'});
+      const fakeReq = {
+        body: user
+      };
+      const fakeRes = {
+        sendStatus: sinon.spy()
+      };
+      const usersController = new UsersController(fakeUserModel);
+      return usersController
+        .authenticate(fakeReq, fakeRes)
+        .then(() => sinon.assert.calledWith(fakeRes.sendStatus, 401));
+    });
+```
+
+Ao executar o teste ele deve quebrar:
+
+```sh
+26 passing (255ms)
+  1 failing
+
+  1) Controller: Users authenticate should return 401 when the password does not match:
+     TypeError: user.toJSON is not a function
+      at User.findOne.then.user (src/controllers/users.js:62:37)
+```
+
+Agora vamos à implementação:
+Começando pela importação do bcrypt no início do arquivo
+
+```diff
++import bcrypt from 'bcrypt';
+
+
+
+  authenticate(req, res) {
+    const { email, password } = req.body;
+    return this.User.findOne({ email })
+      .then(user => {
+-         if (!user) {
++        if (!user || !bcrypt.compareSync(password, user.password)) {
+          return res.sendStatus(401);
+        }
+        const token = jwt.sign({
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          role: user.role
+        }, config.get('auth.key'), {
+            expiresIn: config.get('auth.tokenExpiresIn')
+          });
+        return res.send({ token });
+      });
+  }
+```
+
+Ao executar os testes, a parte “should return 401 when the password does not match” deve estar passando, porém a alteração causou um efeito inesperado quebrando o teste "should authenticate a user". Vamos alterar o caso de teste para fixar esse problema:
+Começando pela importação do bcrypt:
+
+```diff
+import sinon from 'sinon';
+import jwt from 'jsonwebtoken';
+import config from 'config';
++ import bcrypt from 'bcrypt';
+
+
+
+   it('should authenticate a user', done => {
+      const fakeUserModel = {
+        findOne: sinon.stub()
+      };
+      const user = {
+        name: 'Jhon Doe',
+        email: 'jhondoe@mail.com',
+        password: '12345',
+        role: 'admin'
+      };
++      const hashedPassword = bcrypt.hashSync(user.password, 10);
+      fakeUserModel.findOne.withArgs({ email: user.email }).resolves({
+        name: user.name,
+        email: user.email,
+-        password: user.password,
++        password: hashedPassword,
+        role: user.role,
+        toJSON: () => ({ email: user.email })
+      });
+
+-      const jwtToken = jwt.sign(user, config.get('auth.key'), {
+-        expiresIn: config.get('auth.tokenExpiresIn')
+-      });
++  const jwtToken = jwt.sign(
++    Object.assign({}, user, { password: hashedPassword }),
++    config.get('auth.key'),{
++     expiresIn: config.get('auth.tokenExpiresIn')
++    });
+
+```
+
+Agora utilizamos o bcrypt no teste para gerar um hash de verdade e fazer o teste do “caminho feliz” passar.
+
+Neste momento os testes devem estar passando.
+
+O próximo passo será extrair a lógica de autenticação para um serviço separado, para isso vamos começar pelo teste unitário em *test/unit/services/auth_spec.js*:
+
+```javascript
+import AuthService from '../../../src/services/auth';
+
+
+describe('Service: Auth', () => {
+  context('authenticate', () => {
+    it('should authenticate an user', () => {
+    });
+  });
+});
+```
+
+No primeiro passo criamos o arquivo do teste com apenas o mínimo e por isso teremos o seguinte erro:
+
+```sh
+Error: Cannot find module '../../../src/services/auth'
+```
+
+Vamos criar o AuthService em *src/services/auth.js*, e então vamos melhorar nosso teste adicionando o comportamento que esperamos:
+
+```javascript
+import AuthService from '../../../src/services/auth';
+import bcrypt from 'bcrypt';
+import Util from 'util';
+import sinon from 'sinon';
+
+const hashAsync = Util.promisify(bcrypt.hash);
+
+describe('Service: Auth', () => {
+  context('authenticate', () => {
+    it('should authenticate an user', () => {
+      const fakeUserModel = {
+        findOne: sinon.stub()
+      };
+      const user = {
+        name: 'John',
+        email: 'jhondoe@mail.com',
+        password: '12345'
+      };
+      const userFromDatabase = {
+        name: user.name,
+        email: user.email,
+        password: 'will_be_replaced'
+      };
+
+      const authService = new AuthService(fakeUserModel);
+      return hashAsync('12345', 10)
+        .then(hashedPassword => {
+          userFromDatabase.password = hashedPassword;
+          fakeUserModel.findOne.withArgs({ email: 'jhondoe@mail.com' }).resolves(userFromDatabase);
+          return authService.authenticate(user);
+        })
+        .then(user => {
+          expect(user).to.eql(userFromDatabase);
+        });
+    });
+  });
+});
+```
+
+Não há nada de novo nesse cenário, é o mesmo teste feito no users controller authenticate, então vamos copiar a lógica do users_controller no método authenticate. O código deve ficar assim no AuthService:
+
+```javascript
+import bcrypt from 'bcrypt';
+
+class Auth {
+  constructor(User) {
+    this.User = User;
+  }
+
+  authenticate(data) {
+    return this.User.findOne({email: data.email})
+      .then(user => {
+        if(!user || !bcrypt.compareSync(data.password, user.password)) {
+          return false;
+        }
+        return user;
+      });
+  }
+}
+
+export default Auth;
+```
+
+Os testes de unidade agora devem estar passando:
+
+```sh
+Service: Auth
+    authenticate
+      ✓ should authenticate an user
+```
+
+Com o teste de unidade pronto o próximo passo será atualizar o código no método authenticate do users controller, para utilizar o AuthService. Para isso serão necessárias algumas alterações, pois precisamos passar o AuthService para o UsersController como dependência. Vamos começar alterando o arquivo de rota onda o UsersController é construído adicionando a dependência ao construtor.
+
+```diff
+import express from 'express';
+import UsersController from '../controllers/users';
+import User from '../models/user';
++import AuthService from '../services/auth';
+
+const router = express.Router();
+- const usersController = new UsersController(User);
++ const usersController = new UsersController(User, AuthService);
+```
+
+Próximo é passo  alterar o Users Controller:
+
+```diff
+class UsersController {
+- constructor(User) {
++  constructor(User, AuthService) {
+    this.User = User;
++    this.AuthService = AuthService;
+  };
+```
+
+Agora vamos alterar o metodo authenticate para utilizar o AuthService, o método deve ficar assim:
+
+```javascript
+authenticate(req, res) {
+    const authService = new this.AuthService(this.User);
+    return authService.authenticate(req.body)
+      .then(user => {
+        if(!user) {
+          return res.sendStatus(401);
+        }
+        const token = jwt.sign({
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          role: user.role
+        }, config.get('auth.key'), {
+            expiresIn: config.get('auth.tokenExpiresIn')
+          });
+        return res.send({ token });
+      });
+  }
+```
+
+Se executarmos os testes de unidade os testes do método authenticate do users controller estarão quebrando, pois mudamos o código, antes de qualquer alteração nesse teste vamos executar os testes de integração para garantir que a resposta final ainda é a mesma.
+Se executarmos o teste de integração agora vamos receber um erro do nacl dizendo que não temos permissão para fazer a request, nesse momento entramos em um dilema clássico no mundo dos testes onde é necessário fazer mais de uma alteração para conseguir seguir em frente.
+Para que os nossos testes de integração passem precisamos gerar um JWT e adicionar na request, já possuímos um AuthService então vamos adicionar essa lógica lá para que seja reutilizável no futuro.
+Sempre começando pelo teste, vamos adicionar o seguinte no teste de unidade do AuthService:
+
+```diff
+import AuthService from '../../../src/services/auth';
+import bcrypt from 'bcrypt';
+import Util from 'util';
+import sinon from 'sinon';
++ import jwt from 'jsonwebtoken';
++ import config from 'config';
+```
+
+Abaixo do contexto do authenticate adicione o seguinte caso de teste:
+
+```javascript
+  context('generateToken', () => {
+    it('should generate a JWT token from a payload', () => {
+      const payload = {
+        name: 'John',
+        email: 'jhondoe@mail.com',
+        password: '12345'
+      };
+      const expectedToken =  jwt.sign(payload, config.get('auth.key'), {
+        expiresIn: config.get('auth.tokenExpiresIn')
+      });
+      const generatedToken = AuthService.generateToken(payload);
+      expect(generatedToken).to.eql(expectedToken);
+    });
+  });
+```
+
+Nada de novo aqui, essa á a mesma lógica utilizada para gerar o token no authenticate do UsersController, no futuro vamos refatorar este método para usar o generateToken do AuthService também. Executando os testes de unidade agora eles estão quebrando,  afinal  esse método ainda não existe no AuthService, vamos criá-lo agora:
+
+```diff
+import bcrypt from 'bcrypt';
++ import jwt from 'jsonwebtoken';
++ import config from 'config';
+```
+
+Adicione o seguinte método, logo abaixo do método authenticate.
+
+
+```javascript
+  static generateToken(payload) {
+    return jwt.sign(payload, config.get('auth.key'), {
+      expiresIn: config.get('auth.tokenExpiresIn')
+    });
+  }
+```
+
+Agora os testes de unidade para o AuthService devem estar passando (os testes do UsersController vão estar falhando e isso é esperado):
+
+```sh
+  Service: Auth
+    generateToken
+      ✓ should generate a JWT token from a payload
+```
+
+Agora vamos adicionar a lógica de gerar token aos testes de integração de user:
+
+```diff
+import User from '../../../src/models/user';
++ import AuthService from '../../../src/services/auth';
+```
+
+Adicione a seguinte linha às definições de constants:
+
+```diff
+ const expectedAdminUser = {
+    _id: defaultId,
+    name: 'Jhon Doe',
+    email: 'jhon@mail.com',
+    role: 'admin'
+  };
+ + const authToken = AuthService.generateToken(expectedAdminUser);
+```
+
+Aqui estamos gerando um JWT manualmente, ele está sendo adicionado às requisições logo abaixo.
+
+```diff
+ request
+        .get('/users')
++        .set({'x-access-token': authToken})
+
+        request
+          .get(`/users/${defaultId}`)
++          .set({'x-access-token': authToken})
+
+        request
+          .post('/users')
++          .set({'x-access-token': authToken})
+
+        request
+          .put(`/users/${defaultId}`)
++          .set({'x-access-token': authToken})
+
+
+        request
+          .delete(`/users/${defaultId}`)
++          .set({'x-access-token': authToken})
+```
+
+Depois dessa alteração os testes de integração de users devem estar passando:
+
+```sh
+ Routes: Products
+    GET /products
+      1) should return a list of products
+      when an id is specified
+        2) should return 200 with one product
+    POST /products
+      when posting a product
+        3) should return a new product with status code 201
+    PUT /products/:id
+      when editing a product
+        ✓ should update the product and return 200 as status code
+    DELETE /products/:id
+      when deleting a product
+        4) should delete a product and return 204 as status code
+
+  Routes: Users
+    GET /users
+      ✓ should return a list of users
+      when an id is specified
+        ✓ should return 200 with one user
+    POST /users
+      when posting an user
+        ✓ should return a new user with status code 201
+    PUT /users/:id
+      when editing an user
+        ✓ should update the user and return 200 as status code
+    DELETE /users/:id
+      when deleting an user
+        ✓ should delete an user and return 204 as status code
+    when authenticating an user
+      ✓ should generate a valid token
+      ✓ should return unauthorized when the password does not match
+
+
+  8 passing (994ms)
+  4 failing
+```
+
+Não vamos nos preocupar com products agora, o que queremos ver conseguimos, o teste end 2 end está funcionando e isso significa que o users controller está com a lógica certa, podemos alterar o teste de unidade do método authenticate agora para que volte a passar, os testes devem ficar assim:
+
+```javascript
+describe('authenticate', () => {
+    it('should authenticate a user', done => {
+      const fakeUserModel = {};
+      const user = {
+        name: 'Jhon Doe',
+        email: 'jhondoe@mail.com',
+        password: '12345',
+        role: 'admin'
+      };
+      const hashedPassword = bcrypt.hashSync(user.password, 10);
+      class FakeAuthService {
+        authenticate() {
+          return Promise.resolve({
+            name: user.name,
+            email: user.email,
+            password: hashedPassword,
+            role: user.role,
+            toJSON: () => ({ email: user.email })
+          })
+        }
+      };
+
+      const jwtToken = jwt.sign(
+        Object.assign({}, user, { password: hashedPassword }),
+        config.get('auth.key'),{
+          expiresIn: config.get('auth.tokenExpiresIn')
+        });
+
+      const fakeReq = {
+        body: user
+      };
+      const fakeRes = {
+        send: token => {
+          expect(token).to.eql({ token: jwtToken });
+          done();
+        }
+      };
+      const usersController = new UsersController(fakeUserModel, FakeAuthService);
+      usersController.authenticate(fakeReq, fakeRes);
+    });
+
+    it('should return 401 when theres no user', () => {
+      const fakeUserModel = {};
+      const fakeReq = {
+        body: {}
+      };
+      const fakeRes = {
+        sendStatus: sinon.spy()
+      };
+      class FakeAuthService {
+        authenticate() {
+          return Promise.resolve(false)
+        }
+      };
+      const usersController = new UsersController(fakeUserModel, FakeAuthService);
+      return usersController
+        .authenticate(fakeReq, fakeRes)
+        .then(() => sinon.assert.calledWith(fakeRes.sendStatus, 401));
+    });
+```
+
+O caso de teste "should return 401 when the password does not match" precisa ser removido pois ele nao está ciente da adição do AuthService, no mundo do TDD para fazer esse tipo de alteração precisamos estar seguros. Em nosso caso a maneira mais simples de ficarmos seguros é testar a lógica que compara as senhas no AuthService. Vamos adicionar o seguinte caso de teste logo abaixo do should authenticate a user
+
+```javascript
+    it('should return false when the password does not match', () => {
+      const user = {
+        email: 'jhondoe@mail.com',
+        password: '12345'
+      };
+      const fakeUserModel = {
+        findOne: sinon.stub()
+      };
+      fakeUserModel.findOne.resolves({ email: user.email, password: 'aFakeHashedPassword' });
+      const authService = new AuthService(fakeUserModel);
+      return authService.authenticate(user)
+        .then(response => expect(response).to.be.false);
+    });
+```
+Os testes de unidade devem estar passando, isso que significa que o AuthService está tratando esse caso, agora estamos seguros para remover o caso de teste do users controller.
+
+```diff
+-    it('should return 401 when the password does not match', () => {
+-      const user = {
+-        email: 'jhondoe@mail.com',
+-        password: '12345'
+-      };
+-      const fakeUserModel = {
+-        findOne: sinon.stub()
+-      };
+-      fakeUserModel.findOne.resolves({email: user.email, password: 'aFakeHashedPassword'});
+-      const fakeReq = {
+-        body: user
+-      };
+-      const fakeRes = {
+-        sendStatus: sinon.spy()
+-      };
+-      const usersController = new UsersController(fakeUserModel);
+-      return usersController
+-        .authenticate(fakeReq, fakeRes)
+-        .then(() => sinon.assert.calledWith(fakeRes.sendStatus, 401));
+-   });
+```
+
+Precisamos alterar o método authenticate que vai utilizar o AuthService. Vamos começar alterando o teste should authenticate a user:
+
+```diff
+  const hashedPassword = bcrypt.hashSync(user.password, 10);
++      const jwtToken = jwt.sign(
++        Object.assign({}, user, { password: hashedPassword }),
++        config.get('auth.key'),{
++          expiresIn: config.get('auth.tokenExpiresIn')
++       });
+      class FakeAuthService {
+        authenticate() {
+          return Promise.resolve({
+            name: user.name,
+            email: user.email,
+            password: hashedPassword,
+            role: user.role,
+            toJSON: () => ({ email: user.email })
+          })
+        }
+
++        static generateToken() {
++          return jwtToken;
++        }
+      };
+
+-      const jwtToken = jwt.sign(
+-        Object.assign({}, user, { password: hashedPassword }),
+-        config.get('auth.key'),{
+-          expiresIn: config.get('auth.tokenExpiresIn')
+-        });
+-
+```
+
+No código acima adicionamos um método fake para simular o generateToken do AuthService que retorna um token manualmente gerado. Se executarmos os testes de unidade agora eles vão estar quebrando, precisamos alterar o método authenticate para usar o generateToken no UsersController:
+
+```diff
+-        const token = jwt.sign({
++        const token = this.AuthService.generateToken({
+           name: user.name,
+           email: user.email,
+           password: user.password,
+           role: user.role
+-        }, config.get('auth.key'), {
+-            expiresIn: config.get('auth.tokenExpiresIn')
+-          });
++        });
+```
+
+Vamos remover também as dependências que não serão mais necessárias:
+
+```diff
+-import jwt from 'jsonwebtoken';
+-import config from 'config';
+-import bcrypt from 'bcrypt';
+```
+
+Os testes de unidade devem estar passando.
+
+Último passo é fixar os testes end 2 end da rota de products, vamos alterar o products_spec.js:
+
+```diff
+import Product from '../../../src/models/product';
++ import AuthService from '../../../src/services/auth';
+```
+
+Agora vamos adicionar o expectedAdminUser para poder gerar o token, e a seguir o código para gerar o token
+
+```diff
+ const expectedProduct = {
+    __v: 0,
+    _id: defaultId,
+    name: 'Default product',
+    description: 'product description',
+    price: 100
+  };
+  +const expectedAdminUser = {
++   _id: defaultId,
++  	 name: 'Jhon Doe',
++   email: 'jhon@mail.com',
++   role: 'admin'
++  };
++  const authToken = AuthService.generateToken(expectedAdminUser);
+```
+
+O próximo passo será adicionar o authToken nas requests:
+
+```diff
+request
+        .get('/products')
++        .set({'x-access-token': authToken})
+        .end((err, res) => {
+          expect(res.body).to.eql([expectedProduct]);
+          done(err);
+
+
+       request
+          .get(`/products/${defaultId}`)
+ +         .set({'x-access-token': authToken})
+          .end((err, res) => {
+            expect(res.statusCode).to.eql(200);
+            expect(res.body).to.eql([expectedProduct]);
+        request
+          .post('/products')
+   +       .set({'x-access-token': authToken})
+          .send(newProduct)
+          .end((err, res) => {
+            expect(res.statusCode).to.eql(201);
+
+
+        request
+          .put(`/products/${defaultId}`)
+ +         .set({'x-access-token': authToken})
+          .send(updatedProduct)
+          .end((err, res) => {
+            expect(res.status).to.eql(200);
+
+        request
+          .delete(`/products/${defaultId}`)
++          .set({'x-access-token': authToken})
+          .end((err, res) => {
+            expect(res.status).to.eql(204);
+            done(err);
+```
+
+Pronto! Todos os testes devem estar passando
+
+
+```sh
+$ npm test
+
+ Controller: Products
+    get() products
+      ✓ should call send with a list of products
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one product
+    create() product
+      ✓ should call send with a new product
+      when an error occurs
+        ✓ should return 422
+    update() product
+      ✓ should respond with 200 when the product has been updated
+      when an error occurs
+        ✓ should return 422
+    delete() product
+      ✓ should respond with 204 when the product has been deleted
+      when an error occurs
+        ✓ should return 400
+
+  Controller: Users
+    get() users
+      ✓ should call send with a list of users
+      ✓ should return 400 when an error occurs
+    getById()
+      ✓ should call send with one user
+    create() user
+      ✓ should call send with a new user
+      when an error occurs
+        ✓ should return 422
+    update() user
+      ✓ should respond with 200 when the user has been updated
+      when an error occurs
+        ✓ should return 422
+    delete() user
+      ✓ should respond with 204 when the user has been deleted
+      when an error occurs
+        ✓ should return 400
+    authenticate
+      ✓ should authenticate a user
+      ✓ should return 401 when theres no user
+
+  AuthMiddleware
+    ✓ should verify a JWT token and call the next middleware
+    ✓ should call the next middleware passing an error when the token validation fails
+    ✓ should call next middleware if theres no token
+
+  Service: Auth
+    authenticate
+      ✓ should authenticate a user
+      ✓ should return false when the password does not match
+    generateToken
+      ✓ should generate a JWT token from a payload
+
+
+  26 passing (259ms)
+
+
+> node-book@1.0.0 test:integration /Users/wneto/Dev/building-testable-apis-with-nodejs-code
+> NODE_ENV=test mocha --opts test/integration/mocha.opts test/integration/**/*_spec.js
+
+
+
+  Routes: Products
+    GET /products
+      ✓ should return a list of products
+      when an id is specified
+        ✓ should return 200 with one product
+    POST /products
+      when posting a product
+        ✓ should return a new product with status code 201
+    PUT /products/:id
+      when editing a product
+        ✓ should update the product and return 200 as status code
+    DELETE /products/:id
+      when deleting a product
+        ✓ should delete a product and return 204 as status code
+
+  Routes: Users
+    GET /users
+      ✓ should return a list of users
+      when an id is specified
+        ✓ should return 200 with one user
+    POST /users
+      when posting an user
+        ✓ should return a new user with status code 201
+    PUT /users/:id
+      when editing an user
+        ✓ should update the user and return 200 as status code
+    DELETE /users/:id
+      when deleting an user
+        ✓ should delete an user and return 204 as status code
+    when authenticating an user
+      ✓ should generate a valid token
+      ✓ should return unauthorized when the password does not match
+
+
+  12 passing (1s)
+```
+
+Código deste capitulo está [aqui no github](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step11)

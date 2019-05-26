@@ -1,8 +1,8 @@
 ## Deletando um recurso
 
-Já temos o *C.R.U* do *CRUD*, o último passo é o *DELETE* que vai permitir a remoção de recursos da *API*.
+Já temos o C.R.U do CRUD, o último passo é o DELETE que vai permitir a remoção de recursos da API.
 
-Como sempre, começamos pelo teste de integração *end 2 end* em **test/integration/routes/products_spec.js**
+Como sempre, começamos pelo teste de integração end 2 end em *test/integration/routes/products_spec.js*
 
 ```javascript
   describe('DELETE /products/:id', () => {
@@ -20,14 +20,14 @@ Como sempre, começamos pelo teste de integração *end 2 end* em **test/integra
   });
 ```
 
-Dessa vez enviamos uma requisição do tipo *DELETE*:
+Dessa vez enviamos uma requisição do tipo DELETE:
 
 ```javascript
       .delete(`/products/${defaultId}`)
 ```
 
-Passando um *id* de produto. Segundo a especificação do [*HTTP/1.1*](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html) o método *delete* serve para deletar um recurso do servidor com base na *url* enviada. A documentação também diz que as respostas podem ser: 200 - a resposta contém um corpo, 202 se a ação não vai ser realizada  agora (vai ocorrer em *background*) ou 204 quando não há retorno, somente a notificação de sucesso.
-Na maioria das *APIs Rest* é comum o uso do código 204. Ele é um código de sucesso utilizado para momentos onde é necessário notificar o sucesso, mas a resposta não vai ter dados.
+Passando um id de produto. Segundo a especificação do [HTTP/1.1](https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html) o método `delete` serve para deletar um recurso do servidor com base na url enviada. A documentação também diz que as respostas podem ser: 200 - a resposta contém um corpo, 202 se a ação não vai ser realizada  agora (vai ocorrer em background) ou 204 quando não há retorno, somente a notificação de sucesso.
+Na maioria das APIs Rest é comum o uso do código 204. Ele é um código de sucesso utilizado para momentos onde é necessário notificar o sucesso, mas a resposta não vai ter dados.
 
 Após adicionar o teste, vamos executar os testes:
 
@@ -66,7 +66,7 @@ A saída deve ser a seguinte:
       +204
 ```
 
-Como esperado, temos como retorno o código 404 (*Not Found*). Vamos adicionar a rota no arquivo **src/routes/products.js**.
+Como esperado, temos como retorno o código 404 (Not Found). Vamos adicionar a rota no arquivo *src/routes/products.js*.
 
 ```diff
 + router.delete('/:id', (req, res) => productsController.remove(req, res));
@@ -83,7 +83,7 @@ Executando os testes novamente o retorno deve ser:
       +204
 ```
 
-Agora é hora de adicionar os testes de unidade para o *controller*. No arquivo **test/unit/controllers/products_spec.js** adicione o seguinte cenário de teste com o caso de teste a seguir:
+Agora é hora de adicionar os testes de unidade para o controller. No arquivo *test/unit/controllers/products_spec.js* adicione o seguinte cenário de teste com o caso de teste a seguir:
 
 ```javascript
    describe('delete() product', () => {
@@ -116,14 +116,14 @@ Agora é hora de adicionar os testes de unidade para o *controller*. No arquivo 
   });
 ```
 
-O método utilizado para remover um produto é o *remove*, segundo a [documentação do *Mongoose*](http://mongoosejs.com/docs/api.html#schema_Schema-remove) ele recebe uma ou mais condições para serem removidas e retorna um número inteiro referente a quantos itens foram deletados do banco de dados.
-Para simular esse cenário vamos criar o seguinte *stub* no código acima:
+O método utilizado para remover um produto é o `remove`, segundo a [documentação do Mongoose](http://mongoosejs.com/docs/api.html#schema_Schema-remove) ele recebe uma ou mais condições para serem removidas e retorna um número inteiro referente a quantos itens foram deletados do banco de dados.
+Para simular esse cenário vamos criar o seguinte stub no código acima:
 
 ```javascript
       removeStub.withArgs({ _id: fakeId }).resolves([1]);
 ```
 
-Aqui informamos que quando o método *remove* for chamado com um *_id* igual ao *fakeId* deve resolver uma *Promise* devolvendo um *array* com 1 elemento.
+Aqui informamos que quando o método `remove` for chamado com um `_id` igual ao `fakeId` deve resolver uma Promise devolvendo um array com 1 elemento.
 
 Executando os testes de unidade devemos ter a seguinte saída:
 
@@ -154,7 +154,7 @@ Executando os testes de unidade devemos ter a seguinte saída:
       at Context.it (test/unit/controllers/products_spec.js:220:33)
 ```
 
-O método *remove* não foi encontrado, então vamos criá-lo no *ProductsController*, o código deve ficar assim:
+O método `remove` não foi encontrado, então vamos criá-lo no ProductsController, o código deve ficar assim:
 
 ```javascript
 	remove(req, res) {
@@ -199,7 +199,7 @@ Agora no passo de refatoração adicionaremos a lógica real do método:
 Ambos os testes devem seguir passando com sucesso.
 
 O último passo é o tratamento dos possíveis erros.
-Nos testes de unidade vamos adicionar o seguinte teste dentro do cenário do método *remove*:
+Nos testes de unidade vamos adicionar o seguinte teste dentro do cenário do método `remove`:
 
 ```javascript
        context('when an error occurs', () => {
@@ -275,7 +275,7 @@ A implementação ficará da seguinte maneira:
 	}
 ```
 
-Note que agora retornamos 400 e não mais 422, 400 significa *Bad Request* e é um erro genérico, como o *delete* não recebe e nem valida dados não caberia utilizar o código 422.
+Note que agora retornamos 400 e não mais 422, 400 significa Bad Request e é um erro genérico, como o delete não recebe e nem valida dados não caberia utilizar o código 422.
 
 Executando os testes de unidade agora a saída deve ser:
 
@@ -303,4 +303,4 @@ Executando os testes de unidade agora a saída deve ser:
   9 passing (50ms)
 ```
 
-Pronto! As operações de *CRUD* para o recurso de produtos estão prontas. O código dessa parte pode ser encontrado [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step8).
+Pronto! As operações de CRUD para o recurso de produtos estão prontas. O código dessa parte pode ser encontrado [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step8).
