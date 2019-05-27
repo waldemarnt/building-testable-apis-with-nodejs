@@ -897,13 +897,14 @@ class Auth {
   }
 
   authenticate(data) {
-    return this.User.findOne({email: data.email})
-      .then(user => {
-        if(!user || !bcrypt.compareSync(data.password, user.password)) {
-          return false;
-        }
-        return user;
-      });
+    return this.User.findOne({ email: data.email }).then(user => {
+      if (!user) {
+        return false;
+      }
+      return bcrypt
+        .compare(data.password, user.password)
+        .then(res => (res ? user : false));
+    });
   }
 }
 
@@ -917,6 +918,8 @@ Service: Auth
     authenticate
       ✓ should authenticate an user
 ```
+
+>I Note que mudamos o `bcrypt.compareSync` para `bcrypt.compare` que é assincrono, dessa maneira não bloqueamos o Event Loop. Note também que os testes não devem quebrar com essa alteração.
 
 Com o teste de unidade pronto o próximo passo será atualizar o código no método authenticate do users controller, para utilizar o AuthService. Para isso serão necessárias algumas alterações, pois precisamos passar o AuthService para o UsersController como dependência. Vamos começar alterando o arquivo de rota onda o UsersController é construído adicionando a dependência ao construtor.
 
