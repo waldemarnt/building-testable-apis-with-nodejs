@@ -45,13 +45,13 @@ Como vimos anteriormente o Babel sera responsável por nos permitir usar as func
 O primeiro passo é instalar os pacotes do Babel:
 
 ```sh
-$ npm install --save-dev babel-cli
+$ npm install --save-dev @babel/cli@^7.7.4 @babel/core@^7.7.4 @babel/node@^7.7.4
 ```
 
 Após instalar o Babel é necessário instalar o preset que será usado, no nosso caso será o ES6:
 
 ```sh
-$ npm install --save-dev babel-preset-node6
+$ npm install --save-dev @babel/preset-env@^7.7.4
 ```
 
 Note que sempre usamos `--save-dev` para instalar dependências referentes ao Babel pois ele não deve ser usado diretamente em produção, para produção vamos compilar o código, veremos isso mais adiante.
@@ -60,11 +60,11 @@ O último passo é informar para o Babel qual preset iremos usar, para isso bast
 
 ```json
 {
-  "presets": ["node6"]
+  "presets": ["@babel/preset-env"]
 }
 ```
 
-Feito isso a aplicação já estará suportando 100% o ES6 e será possível utilizar as funcionalidades da versão.
+Feito isso a aplicação já estará suportando 100% o ES6 e será possível utilizar as funcionalidades da versão. O *env* informa ao Babel pela ler o ambiente de desenvolvimento e adicionar as funcionalidades que estão faltando para a versão do Node.js que esta sendo utilizada.
 O código dessa etapa está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step1).
 
 ## Configurando o servidor web
@@ -76,7 +76,7 @@ O Express é um framework para desenvolvimento web para Node.js inspirado no Sin
 Para começar será necessário instalar dois modulos: o express e o body-parser. Conforme o exemplo a seguir:
 
 ```sh
-$ npm install --save express body-parser
+$ npm install express@^4.14.0 body-parser@^1.15.2
 ```
 
 Quando uma requisição do tipo POST ou PUT é realizada, o corpo da requisição é transportado como texto. Para que seja possível transportar dados como JSON (JavaScript Object Notation) por exemplo existe o modulo [body-parser](https://github.com/expressjs/body-parser) que é um conjunto de middlewares para o express que analisa o corpo de uma requisição e transforma em algo definido, no nosso caso, em JSON.
@@ -105,11 +105,22 @@ Para finalizar, a função `listen` é chamada recebendo um número referente a 
 O último passo é configurar o *package.json* para iniciar nossa aplicação, para isso vamos adicionar um script de start dentro do objeto scripts:
 
 ```json
-"scripts": {
-  "start": "babel-node ./server.js",
-  "test": "echo \"Error: no test specified\" && exit 1"
-},
+  "scripts": {
+    "build": "babel src --out-dir dist",
+    "start": "npm run build && node dist/server.js",
+    "start:dev": "babel-node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
 ```
+### Build
+O Comando build utiliza o Babel para transpilar o código que foi escrito em Javascript suportado pelo ambiente, por exemplo se voce está utilizando Node na versão 12 e utilizando imports (ES6 Modules) o Babel vai transformar essa funcionalidade em algo suportado pela versão 12.
+Note que o código depois de transpilado será salvo no diretório *dist*. Esse código que deve ser utilizado em produção.
+
+### Start
+O start é indicado para utilizar em produção, ele vai executar o comando build antes e depois iniciar a aplicação a partir do código transpilado.
+
+### Start dev
+A diferença do start e do start:dev e que o start:dev utilizada o babel-node que transpila e inicia a aplicação ao mesmo tempo, vamo adicinar mais coisas a esse comando logo.
 
 Alterado o *package.json* basta executar o comando: 
 
@@ -121,6 +132,8 @@ Agora a aplicação estará disponível em http://localhost:3000/.
 O código dessa etapa está disponivel [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step2).
 
 ## Entendendo o Middleware pattern
+
+> Note esta etapa não faz parte do código da API que estamos construindo, o código é somente exmeplo de implementação.
 
 O padrão de Middleware implementado pelo express já é bem conhecido e tem sido usado por desenvolvedores em outras linguagens há muitos anos. Podemos dizer que se trata de uma implementação do padrão [intercepting filter pattern](http://www.oracle.com/technetwork/java/interceptingfilter-142169.html) do [chain of responsibility](http://java.dzone.com/articles/design-patterns-uncovered-chain-of-responsibility).
 
