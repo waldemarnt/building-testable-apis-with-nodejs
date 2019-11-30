@@ -7,7 +7,7 @@ Iremos testar de fora para dentro, ou seja, começaremos pelos testes de integra
 Para começar vamos instalar as ferramentas de testes com o comando abaixo:
 
 ```sh
-$ npm install --save-dev mocha chai supertest
+$ npm install --save-dev mocha@^6.2.2 chai@^4.2.0 supertest@^4.0.2
 ```
 
 Vamos instalar três módulos:
@@ -36,7 +36,7 @@ Aqui copiamos o código do *server.js* e removemos a parte do `app.listen`, a qu
 Agora precisamos alterar o *server.js* no diretório raiz para que ele utilize o *app.js*:
 
 ```javascript
-import app from './src/app';
+import app from './app';
 const port = 3000;
 
 app.listen(port, () => {
@@ -53,9 +53,9 @@ A estrutura de diretórios ficará assim:
 
 ```sh
 ├── package.json
-├── server.js
 ├── src
 │   └── app.js
+│   └── server.js
 └── test
 │   └── integration
 ```
@@ -63,14 +63,14 @@ A estrutura de diretórios ficará assim:
 Dentro de *integration* vamos criar os arquivos de configuração para os testes de integração. O primeiro será referente as configurações do Mocha, vamos criar um arquivo chamado *mocha.opts* dentro do diretório *integration* com o seguinte código:
 
 ```
+--require @babel/register
 --require test/integration/helpers.js
 --reporter spec
---compilers js:babel-core/register
 --slow 5000
 ```
 
-O primeiro `require` será o arquivo referente as configurações de suporte para os testes, o qual criaremos a seguir. Na linha seguinte definimos qual será o reporter, nesse caso, o [spec](https://mochajs.org/#spec). Reporters definem o estilo da saída do teste no terminal.  
-Na terceira linha definimos os compilers, como iremos usar ES6, também nos testes usaremos o compiler do babel no Mocha. E na última linha o slow referente a demora máxima que um caso de teste pode levar, como testes de integração tendem a depender de agentes externos como banco de dados e etc, é necessário ter um tempo maior de slow para eles.
+No primeiro require configuramos o Mocha com Babel, ja o segundo será o arquivo referente as configurações de suporte para os testes, o qual criaremos a seguir. Na linha seguinte definimos qual será o reporter, nesse caso, o [spec](https://mochajs.org/#spec). Reporters definem o estilo da saída do teste no terminal.  
+E na última linha o slow referente a demora máxima que um caso de teste pode levar, como testes de integração tendem a depender de agentes externos como banco de dados e etc, é necessário ter um tempo maior de slow para eles.
 
 O próximo arquivo que iremos criar nesse mesmo diretório é o *helpers.js*. Ele terá o seguinte código:
 
@@ -99,9 +99,9 @@ A estrutura de diretórios deve estar assim:
 
 ```sh
 ├── package.json
-├── server.js
 ├── src
 │   └── app.js
+│   └── server.js
 └── test
 │  └── integration
 │    ├── helpers.js
@@ -270,8 +270,8 @@ GET /products
 
 
 1 passing (164ms)
-  ```
+```
 
-  Nosso teste está passando, e estamos no estado GREEN do TDD, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o REFACTOR onde iremos configurar as rotas.
+Nosso teste está passando, e estamos no estado GREEN do TDD, ou seja, temos o teste e a implementação suficiente para ele passar. O próximo passo será o REFACTOR onde iremos configurar as rotas.
 
   O código dessa etapa está disponível [neste link](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step3).
