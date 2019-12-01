@@ -97,7 +97,7 @@ Vamos adicionar o seguinte cenário de teste unitário em *test/unit/controllers
 
 ```javascript
   describe('update() product', () => {
-    it('should respond with 200 when the product is updated', () => {
+    it('should respond with 200 when the product has been updated', async () => {
       const fakeId = 'a-fake-id';
       const updatedProduct = {
         _id: fakeId,
@@ -116,18 +116,18 @@ Vamos adicionar o seguinte cenário de teste unitário em *test/unit/controllers
       };
 
       class fakeProduct {
-        static findOneAndUpdate() {}
+        static updateOne() {}
       }
 
-      const findOneAndUpdateStub = sinon.stub(fakeProduct, 'findOneAndUpdate');
-      findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).resolves(updatedProduct);
+      const updateOneStub = sinon.stub(fakeProduct, 'updateOne');
+      updateOneStub
+        .withArgs({ _id: fakeId }, updatedProduct)
+        .resolves(updatedProduct);
 
       const productsController = new ProductsController(fakeProduct);
 
-      return productsController.update(request, response)
-        .then(() => {
-          sinon.assert.calledWith(response.sendStatus, 200);
-        });
+      await productsController.update(request, response);
+      sinon.assert.calledWith(response.sendStatus, 200);
     });
   });
 ```
@@ -145,28 +145,28 @@ Para simular a requisição que será feita pelo express criamos um objeto com a
       };
 ```
 
-O método do Mongoose que utilizaremos para atualizar o recurso é o [findOneAndUpdate](http://mongoosejs.com/docs/api.html#query_Query-findOneAndUpdate), segundo a documentação é necessário passar o `_id` e o objeto que queremos atualizar.
+O método do Mongoose que utilizaremos para atualizar o recurso é o [updateOne](http://mongoosejs.com/docs/api.html#query_Query-updateOne), segundo a documentação é necessário passar o `_id` e o objeto que queremos atualizar.
 Para testar isoladamente criamos um model fake, o `fakeProduct`, que possui o método a seguir:
 
 ```javascript
       class fakeProduct {
-        static findOneAndUpdate() {}
+        static updateOne() {}
       }
 ```
 
-Para adicionar o comportamento esperado no método `findOneAndUpdate` vamos transformá-lo em um stub:
+Para adicionar o comportamento esperado no método `updateOne` vamos transformá-lo em um stub:
 
 ```javascript
-      const findOneAndUpdateStub = sinon.stub(fakeProduct, 'findOneAndUpdate');
+      const updateOneStub = sinon.stub(fakeProduct, 'updateOne');
 ```
 
 Depois, definimos que quando o stub for chamado com um objeto que contenha uma chave `_id` e um objeto igual ao `updatedProduct`, ele deve resolver uma Promise:
 
 ```javascript
-findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).resolves(updatedProduct);
+updateOneStub.withArgs({ _id: fakeId }, updatedProduct).resolves(updatedProduct);
 ```
 
-Segundo a documentação do Mongoose, o método `findOneAndUpdate` não retorna valor, por isso a Promise não irá retornar nada, somente será resolvida para dar sucesso.
+Segundo a documentação do Mongoose, o método `updateOne` não retorna valor, por isso a Promise não irá retornar nada, somente será resolvida para dar sucesso.
 
 Executando os testes de unidade:
 
@@ -179,12 +179,12 @@ Vamos ter a seguinte saída:
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -202,9 +202,9 @@ Vamos ter a seguinte saída:
 O teste retorna que o método `update` não existe, então vamos adicioná-lo com lógica suficiente apenas para que ele passe:
 
 ```javascript
-	update(req, res) {
+	async update(req, res) {
 		res.sendStatus(200);
-		return Promise.resolve();
+		return await Promise.resolve();
 	}
 ```
 
@@ -221,12 +221,12 @@ Devemos ter a seguinte saída:
 ```shell
  Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -239,9 +239,9 @@ Devemos ter a seguinte saída:
 Vamos à refatoração, o código do método `update` deve ficar assim:
 
 ```javascript
- update(req, res) {
-    return this.Product.findOneAndUpdate({ _id: req.params.id}, req.body)
-      .then(() => res.sendStatus(200));
+  async update(req, res) {
+    await this.Product.updateOne({ _id: req.params.id}, req.body);
+    res.sendStatus(200);
   }
 ```
 
@@ -256,12 +256,12 @@ A saida deve ser:
 ```shell
    Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -303,7 +303,7 @@ Vamos atualizar o teste *test/unit/controllers/products_spec.js* adicionando o s
 
 ```javascript
     context('when an error occurs', () => {
-      it('should return 422', () => {
+      it('should return 422', async() => {
         const fakeId = 'a-fake-id';
         const updatedProduct = {
           _id: fakeId,
@@ -323,28 +323,31 @@ Vamos atualizar o teste *test/unit/controllers/products_spec.js* adicionando o s
         };
 
         class fakeProduct {
-          static findOneAndUpdate() {}
+          static updateOne() {}
         }
 
-        const findOneAndUpdateStub = sinon.stub(fakeProduct, 'findOneAndUpdate');
-        findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).rejects({ message: 'Error' });
+        const updateOneStub = sinon.stub(
+          fakeProduct,
+          'updateOne'
+        );
+        updateOneStub
+          .withArgs({ _id: fakeId }, updatedProduct)
+          .rejects({ message: 'Error' });
         response.status.withArgs(422).returns(response);
 
         const productsController = new ProductsController(fakeProduct);
 
-        return productsController.update(request, response)
-          .then(() => {
-            sinon.assert.calledWith(response.send, 'Error');
-          });
-      });
+        await productsController.update(request, response);
+        sinon.assert.calledWith(response.send, 'Error');
 
-    });
+        });
+      });
 ```
 
 Não há nada de novo comparado a o que foi feito no `create`,  foi utilizada a mesma técnica de stub como podemos ver aqui:
 
 ```javascript
-findOneAndUpdateStub.withArgs({ _id: fakeId }, updatedProduct).rejects({ message: 'Error' });
+updateOneStub.withArgs({ _id: fakeId }, updatedProduct).rejects({ message: 'Error' });
 ```
 
 Ao executar os testes de unidade:
@@ -358,12 +361,12 @@ Devemos ter a seguinte saída:
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -382,11 +385,14 @@ Devemos ter a seguinte saída:
 Como já esperávamos, o teste está falhando. Vamos atualizar método `update` do productsController adicionando o método método `catch`:
 
 ```diff
-	update(req, res) {
-		return this.Product.findOneAndUpdate({ _id: req.params.id}, req.body)
-+			.then(() => res.sendStatus(200))
-+			.catch(err => res.status(422).send(err.message));
-	}
+  async update(req, res) {
++    try {
+      await this.Product.updateOne({ _id: req.params.id }, req.body);
+      res.sendStatus(200);
++    } catch (err) {
++      res.status(422).send(err.message);
++    }
+  }
 ```
 
 Executando os testes novamente, a saída deve ser:
@@ -394,12 +400,12 @@ Executando os testes novamente, a saída deve ser:
 ```shell
    Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -411,4 +417,4 @@ Executando os testes novamente, a saída deve ser:
   7 passing (46ms)
 ```
 
-Note que não fizemos o processo Green, isso porque a implementação era clara e simples. Não é necessário escrever código por obrigação, o estágio de Green serve para ajudar e validar o teste.
+Note que não fizemos o processo GREEN, isso porque a implementação era clara e simples. Não é necessário escrever código por obrigação, o estágio de Green serve para ajudar e validar o teste.

@@ -86,8 +86,8 @@ Executando os testes novamente o retorno deve ser:
 Agora é hora de adicionar os testes de unidade para o controller. No arquivo *test/unit/controllers/products_spec.js* adicione o seguinte cenário de teste com o caso de teste a seguir:
 
 ```javascript
-   describe('delete() product', () => {
-    it('should respond with 204 when the product is deleted', () => {
+  describe('delete() product', async() => {
+    it('should respond with 204 when the product has been deleted', () => {
       const fakeId = 'a-fake-id';
       const request = {
         params: {
@@ -99,43 +99,41 @@ Agora é hora de adicionar os testes de unidade para o controller. No arquivo *t
       };
 
       class fakeProduct {
-        static remove() {}
+        static deleteOne() {}
       }
 
-      const removeStub = sinon.stub(fakeProduct, 'remove');
+      const deleteOneStub = sinon.stub(fakeProduct, 'deleteOne');
 
-      removeStub.withArgs({ _id: fakeId }).resolves([1]);
+      deleteOneStub.withArgs({ _id: fakeId }).resolves();
 
       const productsController = new ProductsController(fakeProduct);
 
-      return productsController.remove(request, response)
-        .then(() => {
-          sinon.assert.calledWith(response.sendStatus, 204);
-        });
-    });
+      await productsController.remove(request, response);
+      sinon.assert.calledWith(response.sendStatus, 204);
+      });
   });
 ```
 
-O método utilizado para remover um produto é o `remove`, segundo a [documentação do Mongoose](http://mongoosejs.com/docs/api.html#schema_Schema-remove) ele recebe uma ou mais condições para serem removidas e retorna um número inteiro referente a quantos itens foram deletados do banco de dados.
+O método utilizado para remover um produto é o `deleteOne`, segundo a [documentação do Mongoose](https://mongoosejs.com/docs/api.html#model_Model.deleteOne) ele recebe por parametro as condições para deletar o item, no nosso caso o id.
 Para simular esse cenário vamos criar o seguinte stub no código acima:
 
 ```javascript
-      removeStub.withArgs({ _id: fakeId }).resolves([1]);
+      deleteOneStub.withArgs({ _id: fakeId }).resolves([1]);
 ```
 
-Aqui informamos que quando o método `remove` for chamado com um `_id` igual ao `fakeId` deve resolver uma Promise devolvendo um array com 1 elemento.
+Aqui informamos que quando o método `deleteOne` for chamado com um `_id` igual ao `fakeId` deve resolver uma Promise devolvendo um array com 1 elemento.
 
 Executando os testes de unidade devemos ter a seguinte saída:
 
 ```shell
    Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -157,9 +155,9 @@ Executando os testes de unidade devemos ter a seguinte saída:
 O método `remove` não foi encontrado, então vamos criá-lo no ProductsController, o código deve ficar assim:
 
 ```javascript
-	remove(req, res) {
+	async remove(req, res) {
 		res.sendStatus(204);
-		return Promise.resolve();
+		return await Promise.resolve();
 	}
 ```
 
@@ -168,12 +166,12 @@ Executando os testes de unidade, devemos ter a seguinte saída:
 ```shell
     Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -190,9 +188,9 @@ Executando os testes de unidade, devemos ter a seguinte saída:
 Agora no passo de refatoração adicionaremos a lógica real do método:
 
 ```javascript
-  remove(req, res) {
-    return this.Product.remove({ _id: req.params.id})
-      .then(() => res.sendStatus(204));
+  async remove(req, res) {
+    await this.Product.deleteOne({ _id: req.params.id });
+    res.sendStatus(204);
   }
 ```
 
@@ -202,8 +200,8 @@ O último passo é o tratamento dos possíveis erros.
 Nos testes de unidade vamos adicionar o seguinte teste dentro do cenário do método `remove`:
 
 ```javascript
-       context('when an error occurs', () => {
-      it('should return 400', () => {
+    context('when an error occurs', () => {
+      it('should return 400', async() => {
         const fakeId = 'a-fake-id';
         const request = {
           params: {
@@ -216,22 +214,19 @@ Nos testes de unidade vamos adicionar o seguinte teste dentro do cenário do mé
         };
 
         class fakeProduct {
-          static remove() {}
+          static deleteOne() {}
         }
 
-        const removeStub = sinon.stub(fakeProduct, 'remove');
+        const deleteOneStub = sinon.stub(fakeProduct, 'deleteOne');
 
-        removeStub.withArgs({ _id: fakeId }).rejects({message: 'Error'});
+        deleteOneStub.withArgs({ _id: fakeId }).rejects({ message: 'Error' });
         response.status.withArgs(400).returns(response);
 
         const productsController = new ProductsController(fakeProduct);
 
-        return productsController.remove(request, response)
-          .then(() => {
-            sinon.assert.calledWith(response.send, 'Error');
-          });
+        await productsController.remove(request, response);
+        sinon.assert.calledWith(response.send, 'Error');
       });
-
     });
 ```
 
@@ -240,12 +235,12 @@ Executando os testes de unidade devemos ter a seguinte saída:
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product
@@ -268,11 +263,14 @@ Executando os testes de unidade devemos ter a seguinte saída:
 A implementação ficará da seguinte maneira:
 
 ```javascript
-	remove(req, res) {
-		return this.Product.remove({ _id: req.params.id})
-			.then(() => res.sendStatus(204))
-			.catch(err => res.status(400).send(err.message));
-	}
+  async remove(req, res) {
+    try {
+      await this.Product.deleteOne({ _id: req.params.id });
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(422).send(err.message);
+    }
+  }
 ```
 
 Note que agora retornamos 400 e não mais 422, 400 significa Bad Request e é um erro genérico, como o delete não recebe e nem valida dados não caberia utilizar o código 422.
@@ -282,12 +280,12 @@ Executando os testes de unidade agora a saída deve ser:
 ```shell
    Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
     update() product

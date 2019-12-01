@@ -106,8 +106,12 @@ Abra o teste de unidade em *test/unit/controllers/products_spec.js* e adicione o
 
 ```javascript
   describe('create() product', () => {
-    it('should call send with a new product', () => {
-      const requestWithBody = Object.assign({}, { body: defaultProduct[0] }, defaultRequest);
+    it('should save a new product successfully', async () => {
+      const requestWithBody = Object.assign(
+        {},
+        { body: defaultProduct[0] },
+        defaultRequest
+      );
       const response = {
         send: sinon.spy(),
         status: sinon.stub()
@@ -117,14 +121,15 @@ Abra o teste de unidade em *test/unit/controllers/products_spec.js* e adicione o
       }
 
       response.status.withArgs(201).returns(response);
-      sinon.stub(fakeProduct.prototype, 'save').withArgs().resolves();
+      sinon
+        .stub(fakeProduct.prototype, 'save')
+        .withArgs()
+        .resolves();
 
       const productsController = new ProductsController(fakeProduct);
 
-      return productsController.create(requestWithBody, response)
-        .then(() => {
-          sinon.assert.calledWith(response.send);
-        });
+      await productsController.create(requestWithBody, response);
+      sinon.assert.calledWith(response.send);
     });
   });
 ```
@@ -134,7 +139,7 @@ Dessa maneira possuímos uma requisição de post idêntica a enviada pelo expre
 
 Os objetos response e `fakeProduct` seguem o mesmo padrão dos outros casos de teste. A única mudança é:
 
-```javascript
+```javascriptshould save a new product successfully
 response.status.withArgs(201).returns(response);
 ```
 
@@ -158,18 +163,18 @@ A saída será:
 ```shell
     Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      1) should call send with a new product
+      1) should save a new product successfully
 
 
   3 passing (22ms)
   1 failing
 
-  1) Controller: Products create() product should call send with a new product:
+  1) Controller: Products create() product should save a new product successfully:
      TypeError: productsController.create is not a function
 ```
 
@@ -177,11 +182,9 @@ Ainda não criamos o método `create` no controller, esse será o nosso próximo
 Vamos criar um método `create` no productsController:
 
 ```javascript
-  create(req, res) {
+  async create(req, res) {
 
-    res.send(req.body);
-    return Promise.resolve();
-
+    return await Promise.resolve(res.send(req.body));
   }
 ```
 
@@ -190,12 +193,12 @@ No teste verificamos se o `response.send` está sendo chamado com um produto cri
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
 
 
   4 passing (26ms)
@@ -204,11 +207,11 @@ No teste verificamos se o `response.send` está sendo chamado com um produto cri
 Estamos no estado GREEN dos testes de unidade. Vamos partir para o REFACTOR alterando o productsController, adicionando o seguinte:
 
 ```javascript
-  create(req, res) {
+  async create(req, res) {
     const product = new this.Product(req.body);
 
-    return product.save()
-      .then(() => res.status(201).send(product));
+    await product.save();
+    res.status(201).send(product);
   }
 ```
 
@@ -221,8 +224,8 @@ Nos próximos capítulos vamos ver algumas maneiras de trabalhar com erros em te
 Adicione o seguinte teste no arquivo *test/unit/controllers/products_spec.js*:
 
 ```javascript
-	context('when an error occurs', () => {
-      it('should return 422', () => {
+    context('when an error occurs', () => {
+      it('should return 422', async () => {
         const response = {
           send: sinon.spy(),
           status: sinon.stub()
@@ -233,14 +236,15 @@ Adicione o seguinte teste no arquivo *test/unit/controllers/products_spec.js*:
         }
 
         response.status.withArgs(422).returns(response);
-        sinon.stub(fakeProduct.prototype, 'save').withArgs().rejects({ message: 'Error' });
+        sinon
+          .stub(fakeProduct.prototype, 'save')
+          .withArgs()
+          .rejects({ message: 'Error' });
 
         const productsController = new ProductsController(fakeProduct);
 
-        return productsController.create(defaultRequest, response)
-          .then(() => {
-            sinon.assert.calledWith(response.status, 422);
-          });
+        await productsController.create(defaultRequest, response);
+        sinon.assert.calledWith(response.status, 422);
       });
     });
 ```
@@ -267,12 +271,12 @@ A saida será:
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         1) should return 422
 
@@ -289,12 +293,14 @@ Como já era esperado recebemos um erro, pois ainda não implementamos essa lóg
 Vamos atualizar o método create no ProductsController e adicionar um catch para pegar o erro quando caso ele ocorra:
 
 ```diff
-  create(req, res) {
+  async create(req, res) {
     const product = new this.Product(req.body);
-
-		return product.save()
-			.then(() => res.status(201).send(product))
-+			.catch(err => res.status(412).send(err.message));
++    try {
+      await product.save();
+      res.status(201).send(product);
++    } catch (err) {
++      res.status(422).send(err.message);
++    }
   }
 ```
 
@@ -303,12 +309,12 @@ Executando os testes novamente, a saída deve ser:
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
-      ✓ should call send with one product
+      ✓ should return one product
     create() product
-      ✓ should call send with a new product
+      ✓ should save a new product successfully
       when an error occurs
         ✓ should return 422
 

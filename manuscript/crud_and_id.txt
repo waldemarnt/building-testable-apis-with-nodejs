@@ -1,11 +1,11 @@
-#CRUD operations
+# Operações de CRUD
 
 Neste capítulo serão adicionadas as operações de CRUD (Create, Read, Update, Delete) possibilitando a alteração do recurso product.
 Serão aplicadas as técnicas de BDD que foram vistas anteriormente, aqui chamaremos os testes de alto nível de teste de integração end 2 end (de ponta a ponta) ou teste de aceitação. Estes testes irão validar se a funcionalidade foi implementada como esperado.
 
 ## Busca por id
 
-Um padrão bastante comum em APIs REST é a busca de um recurso pelo identificador (id), por exemplo "http://minha_api/products/56cb91bdc3464f14678934ca" deve retornar  o produto correspondente ao id informado na rota.
+Um padrão bastante comum em APIs REST é a busca de um recurso pelo identificador (id), por exemplo *http://minha_api/products/56cb91bdc3464f14678934ca* deve retornar  o produto correspondente ao id informado na rota.
 Nossa API ainda não suporta essa funcionalidade, então vamos implementá-la.
 Como esse será um novo endpoint precisamos começar pelo teste de integração end 2 end que fica no arquivo: *test/integration/routes/products_spec.js*
 
@@ -114,7 +114,7 @@ Vamos começar melhorando o reaproveitamento de código alterando o teste de uni
 +  };
   
    describe('get() products', () => {
-     it('should call send with a list of products', () => {
+     it('should return a list of products', async () => {
 -      const request = {};
        const response = {
          send: sinon.spy()
@@ -126,18 +126,19 @@ O objeto `request` foi movido para fora do teste e foi renomeado para `defaultRe
 A próxima alteração a ser feita é a requisição para o controller, como alteramos o nome de `request` para `defaultRequest` será necessário alterar a seguinte linha:
 
 ```diff
-+      return productsController.get(defaultRequest, response)
+-      await productsController.get(request, response);
++      await productsController.get(defaultRequest, response);
 ```
 
 Pronto, o teste deve estar assim:
 
 ```javascript
- const defaultRequest = {
+  const defaultRequest = {
     params: {}
   };
 
   describe('get() products', () => {
-    it('should call send with a list of products', () => {
+    it('should return a list of products', async () => {
       const response = {
         send: sinon.spy()
       };
@@ -147,10 +148,10 @@ Pronto, o teste deve estar assim:
 
       const productsController = new ProductsController(Product);
 
-      return productsController.get(defaultRequest, response)
-        .then(() => {
-          sinon.assert.calledWith(response.send, defaultProduct);
-        });
+      await productsController.get(defaultRequest, response);
+
+      sinon.assert.calledWith(response.send, defaultProduct);
+    }););
     });
 ```
 
@@ -162,7 +163,7 @@ $ npm run test:unit
 
   Controllers: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
 
 
@@ -172,8 +173,8 @@ $ npm run test:unit
 Testes verdes! Vamos criar o caso de teste para a busca por id, o teste ficará assim:
 
 ```javascript
-describe('getById()', () => {
-    it('should call send with one product', () => {
+  describe('getById()', () => {
+    it('should return one product', async () => {
       const fakeId = 'a-fake-id';
       const request = {
         params: {
@@ -188,11 +189,9 @@ describe('getById()', () => {
       Product.find.withArgs({ _id: fakeId }).resolves(defaultProduct);
 
       const productsController = new ProductsController(Product);
+      await productsController.getById(request, response);
 
-      return productsController.getById(request, response)
-        .then(() => {
-          sinon.assert.calledWith(response.send, defaultProduct);
-        });
+      sinon.assert.calledWith(response.send, defaultProduct);
     });
   });
 ```
@@ -211,7 +210,7 @@ O método `withArgs` do stub do Sinon serve para adicionar um comportamento base
 O método que será chamado é o `getById`, como no trecho abaixo:
 
 ```javascript
-return productsController.getById(request, response)
+await productsController.getById(request, response);
 ```
 
 Vamos executar os testes de unidade:
@@ -225,7 +224,7 @@ Devemos receber o seguinte erro:
 ```shell
 Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
       1) should call send with one product
@@ -239,21 +238,24 @@ Controller: Products
 ```
 
 O erro diz que o método `getById` não é uma , isso porque ainda não foi implementada a lógica, o stub que criamos não foi chamado e não retornou uma Promise. 
-Vamos mudar o teste de unidade para o passo GREEB implementando o necessário para que o mesmo passe.
+Vamos mudar o teste de unidade para o passo GREEN implementando o necessário para que o mesmo passe.
 
 Devemos criar o método `getById` no controller de products que fica em: *src/controllers/products.js*.
 O código suficiente para o teste passar contém:
 
 ```javascript
-    getById(req, res) {
+  async getById(req, res) {
+    const response = await Promise.resolve([
+      {
+        __v: 0,
+        _id: '56cb91bdc3464f14678934ca',
+        name: 'Default product',
+        description: 'product description',
+        price: 100
+      }
+    ]);
 
-    return Promise.resolve([{
-      __v: 0,
-      _id: '56cb91bdc3464f14678934ca',
-      name: 'Default product',
-      description: 'product description',
-      price: 100
-    }])      .then(products => res.send(products))
+    res.send(response);
   }
 ```
 
@@ -270,7 +272,7 @@ A resposta deve ser:
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
       ✓ should call send with one product
@@ -284,11 +286,17 @@ Teste unitário passando! Agora ele está no passo GREEN do TDD. Podemos partir 
 Vamos alterar o método `getById` em *src/controllers/products.js* para ficar similar a este:
 
 ```javascript
-  getById(req, res) {
-    const { params: { id } } = req;
+  async getById(req, res) {
+    const {
+      params: { id }
+    } = req;
 
-    return this.Product.find({ _id:id })      .then(products => res.send(products))
-      .catch(err => res.status(400).send(err.message));
+    try {
+      const product = await this.Product.find({ _id: id });
+      res.send(product);
+    } catch (err) {
+      res.status(400).send(err.message);
+    }
   }
 ```
 
@@ -304,7 +312,7 @@ A saida deve ser:
 ```shell
   Controller: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
     getById()
       ✓ should call send with one product
