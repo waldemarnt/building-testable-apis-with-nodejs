@@ -8,15 +8,17 @@ Essas modificações tornam necessário mover o nosso diretório de *config* par
 
 ## Alterando a arquitetura
 
-Vamos começar movendo a pasta *src/config* para fora do diretório *src*, a estrutura deve ficar como a seguir:
+Vamos começar movendo o arquivo *database.js* para o raiz do diretório *src* e a pasta *src/config* para fora do diretório *src*, a estrutura deve ficar como a seguir:
 
 ```shell
-├── README.md
 ├── config
-│   └── database.js
-├── package.json
-├── server.js
 ├── src
+│   ├── app.js
+│   ├── controllers
+│   ├── database.js
+│   ├── models
+│   ├── routes
+│   └── server.js
 └── test
 ```
 
@@ -38,7 +40,7 @@ Vamos alterar o arquivo *src/app.js* da seguinte maneira:
 
 ```diff
 -import database from './config/database'
-+import database from '../config/database';
++import database from './database';
 ```
 
 Ao executar os testes de integração novamente eles devem passar.
@@ -123,4 +125,4 @@ $ npm test
 Os testes de unidade e em seguida os testes de integração serão executados.
 
 O código deste capitulo esta disponível em:
-[passo 9](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step-9)
+[passo 9](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step9)
