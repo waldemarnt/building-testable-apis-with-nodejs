@@ -19,9 +19,9 @@ global.expect = chai.expect;
 Em seguida, vamos criar o arquivo *mocha.opts* para as configurações do Mocha. Ele deve possuir o seguinte código:
 
 ```
+--require @babel/register
 --require test/unit/helpers.js
 --reporter spec
---compilers js:babel-core/register
 --slow 5000
 ```
 
@@ -150,7 +150,7 @@ Antes de começar esse passo precisamos instalar o Sinon, uma biblioteca que ir�
 Para instalar o Sinon basta executar o seguinte comando:
 
 ```sh
-$ npm install --save-dev sinon
+$ npm install --save-dev sinon@^7.5.0
 ```
 
 Após a instalação ele já estará disponível para ser utilizado em nossos testes.

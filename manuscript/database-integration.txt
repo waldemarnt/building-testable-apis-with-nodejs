@@ -13,7 +13,7 @@ Para integrar nossa aplicação com o MongoDB vamos utilizar o [Mongoose](http:/
 Para instalar o Mongoose basta executar o seguinte comando npm:
 
 ```sh
-$ npm install mongoose --save
+$ npm install mongoose@^5.7.13
 ```
 
 Após a instalação o Mongoose estará disponível para ser utilizado. O próximo passo será configurar a aplicação para conectar com o banco de dados. Para isso vamos criar um diretório chamado *config* dentro de *src* e dentro dele um arquivo chamado *database.js* que será responsável por toda configuração do banco de dados.
@@ -23,6 +23,7 @@ A estrutura de diretórios deve estar assim:
 ```
 ├── src
 │   ├── app.js
+│   ├── server.js
 │   ├── config
 │   │   └── database.js
 │   ├── controllers
@@ -37,14 +38,6 @@ A primeira coisa que deve ser feita no *database.js* é importar o módulo do Mo
 ```javascript
 import mongoose from 'mongoose';
 ```
-
-O próximo passo será informar qual biblioteca de Promises será utilizada. Essa é uma necessidade da versão 4 do Mongoose, como estamos utilizando o Node.js na versão 6 que já conta com Promises por padrão, será necessário fazer somente o seguinte:
-
-```javascript
-mongoose.Promise = Promise;
-```
-
-Aqui estamos dizendo para o Mongoose utilizar a Promise oficial do Node.js. 
 
 Seguindo a configuração do banco de dados é necessário informar  a url onde está o MongoDB. No meu caso está no meu computador então a url será "localhost" seguido do nome que daremos ao banco de dados:
 
@@ -62,28 +55,38 @@ const connect = () => mongoose.connect(mongodbUrl);
 
 Acima, criamos uma função que retorna uma conexão com o MongoDB, esse retorno é uma Promise, ou seja, somente quando a conexão for estabelecida a Promise será resolvida. Isso é importante pois precisamos garantir que nossa aplicação só vai estar disponível depois que o banco de dados estiver conectado e acessível.
 
+Logo abaixo vamos adicionar um método para fechar a conexão com o banco de dados, essa é uma boa prática que facilita muito nos casos de teste, depois de executar os testes fechamos o banco de dados e garantimos que nada esta executando em nossa aplicação.
+
+```javascript
+const close = () => mongoose.connection.close();
+```
+
 O último passo é exportar o módulo de configuração do banco de dados:
 
 ```javascript
 export default {
-  connect
+  connect,
+  connection: mongoose.connection
 }
 ```
 
 O código do *database.js* deve estar similar ao que segue:
 
 ```javascript
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-mongoose.Promise = Promise;
+const mongodbUrl = process.env.MONGODB_URL || "mongodb://localhost/test";
 
-const mongodbUrl = process.env.MONGODB_URL || 'mongodb://localhost/test';
-
-const connect = () => mongoose.connect(mongodbUrl);
+const connect = () =>
+  mongoose.connect(mongodbUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
 
 export default {
-  connect
-}
+  connect,
+  close
+};
 ```
 
 Pronto, o banco de dados está configurado. Nosso próximo passo será integrar o banco de dados com a aplicação, para que ela inicialize o banco sempre que for iniciada. 
@@ -129,41 +132,52 @@ Os trechos em vermelho serão movidos para dentro de uma nova função, como no 
 + const configureExpress = () => {
 +  app.use(bodyParser.json());
 +  app.use('/', routes);
++  app.database = database;
 +
 +  return app;
 +};
 ```
 
-Acima criamos uma função nomeada `configureExpress` que terá a tarefa de configurar o express e retornar uma nova instância de aplicação configurada.
+Acima criamos uma função nomeada `configureExpress` que terá a tarefa de configurar o express e retornar uma nova instância de aplicação configurada. Também adicionamos a instância do banco de dados, database, para ser parte da aplicação express dessa maneira e possivel abrir e fechar o banco de dados utilizando a app do express.
 
-A última etapa da nossa alteração é inicializar o banco antes da aplicação. Como o moongose retorna uma Promise, vamos esperar ela ser resolvida para então chamar a função que criamos anteriormente e que configura o express:
+A última etapa da nossa alteração é inicializar o banco antes da aplicação. Como o moongose retorna uma Promise, vamos esperar ela ser resolvida para então retornar a aplicação configurada para ser utilizada.
+
 
 ```diff
-+ export default () => database.connect().then(configureExpress);
++ export default async() => {
++  const app = configureExpress();
++  await app.database.connect();
++
++  return app;
++};
 ```
 
-No bloco acima exportamos uma função que retorna uma Promise. A primeira chamada é a função `connect` do database, que criamos na etapa anterior, assim que essa Promise for resolvida, significa que o banco de dados estará disponível, então é chamada a função `configureExpress` que irá configurar o express e retornar uma nova instância da aplicação. Esse pattern é conhecido como chained promises.
-
-Note que a função `configureExpress` não precisaria existir, poderíamos ter uma função diretamente dentro do `then` do `connect` e nela configurar o express, porém criar uma função que descreva o que está sendo feito torna o código mais claro e desacoplado. Pode se ler mais sobre o assunto [nesta issue do airbnb](https://github.com/airbnb/javascript/issues/216).
+No bloco acima exportamos uma função que retorna uma Promise esse passo é necesario pois a função `connect` do database, que criamos na etapa anterior, assim que essa Promise for resolvida, significa que o banco de dados estará disponível, então retornamos a instância da aplicação.
 
 O *app.js* depois de alterado deve estar assim:
 
 ```javascript
-import express from 'express';
-import bodyParser from 'body-parser';
-import routes from './routes';
-import database from './config/database'
+import express from "express";
+import bodyParser from "body-parser";
+import routes from "./routes";
+import database from "./config/database";
 
 const app = express();
 
 const configureExpress = () => {
   app.use(bodyParser.json());
-  app.use('/', routes);
+  app.use("/", routes);
+  app.database = database;
 
   return app;
 };
 
-export default () => database.connect().then(configureExpress);
+export default async () => {
+  const app = configureExpress();
+  await app.database.connect();
+
+  return app;
+};
 ```
 
 Como alteramos o app para retornar uma função, que por sua vez retorna uma Promise, será necessário alterar o *server.js* para fazer a inicialização de maneira correta.
@@ -175,8 +189,8 @@ O *server.js* é o arquivo responsável por inicializar a aplicação, chamando 
 Vamos começar alterando o nome do módulo na importação:
 
 ```diff
-- import app from './src/app';
-+ import setupApp from './src/app';
+- import app from './app';
++ import setupApp from './app';
 ```
 
 O módulo foi alterado de `app` para `setupApp`, por quê? Porque agora ele é uma função e esse nome reflete mais a sua responsabilidade.
@@ -187,19 +201,48 @@ O próximo passo é alterar a maneira como o `app` é chamado:
 -app.listen(port, () => {
 -  console.log(`app running on port ${port}`);
 -});
-+setupApp()
-+ .then(app => app.listen(port, () => console.log(`app running on port ${port}`)))
-+ .catch(error => {
-+   console.error(error);
-+   process.exit(1);
-+ });
++(async () => {
++  try {
++    const app = await setupApp();
++    const server = app.listen(port, () =>
++      console.info(`app running on port ${port}`)
++    );
++
++    const exitSignals = ["SIGINT", "SIGTERM", "SIGQUIT"];
++    exitSignals.map(sig =>
++      process.on(sig, () =>
++        server.close(err => {
++          if (err) {
++            console.error(err);
++            process.exit(1);
++          }
++          app.database.connection.close(function() {
++            console.info("Database connection closed!");
++            process.exit(0);
++          });
++        })
++      )
++    );
++  } catch (error) {
++    console.error(error);
++    process.exit(1);
++  }
++})();
 ```
 
-Como o código anterior devolvia uma instância da aplicação diretamente, era apenas necessário chamar o método `listen` do express para inicializar a aplicação. Agora temos uma função que retorna uma promise devemos chamá-la e ela vai inicializar o app, inicializando o banco, configurando o express e retornando uma nova instância da aplicação, só então será possível inicializar a aplicação chamando o `listen`.
+Como o código anterior devolvia uma instância da aplicação diretamente, era apenas necessário chamar o método *listen* do express para inicializar a aplicação. Agora temos uma função que retorna uma promise devemos chamá-la e ela vai inicializar o app, inicializando o banco, configurando o express e retornando uma nova instância da aplicação, só então será possível inicializar a aplicação chamando o *listen*.
 
-Até esse momento espero que vocês já tenham lido a especificação de Promises mais de 10 vezes e já sejam mestres na implementação. Quando um problema ocorre a Promise é rejeitada. Esse erro pode ser tratado usando um `catch` como no código acima.
-Acima, recebemos o erro e o mostramos no `console.log`, em seguida encerramos o processo do Node.js com o código 1.
+Até esse momento espero que vocês já tenham lido a especificação de Promises mais de 10 vezes e já sejam mestres na implementação. Quando um problema ocorre a Promise é rejeitada. Esse erro pode ser tratado usando um *catch* como no código acima.
+Acima, recebemos o erro e o mostramos no *console.error*, em seguida encerramos o processo do Node.js com o código 1.
 Dessa maneira o processo é finalizado informando que houve um erro em sua inicialização. Informar o código de saída, é uma boa prática finalizar o processo com código de erro e conhecido como "graceful shutdowns" e faz parte da lista do [12 factor app](https://12factor.net/) de boas práticas para desenvolvimento de software moderno.
+
+### Graceful shutdown
+
+O graceful shutdown é muito importante principalmente no momento em que a aplicação precisa escalar e rodar na nuvem onde normalmente ela sera executada dentro de um container. Orquestradores de containers como Kubernetes mandam comandos para a aplicação. A aplicação é responsavel por receber esse comando e administrar sua finalização antes de desligar, isso siginifica que a aplicação deve finalizar as conexões abertas, fechar a conexão com o banco de dados e então desligar.
+No código acima isso é feito utilizando adicionando event listeners a os sinais *SIGINT*, *SIGTERM*, *SIGQUIT* utilizando o *process.on(sig)*. Dessa maneira se a aplicação receber um dos sinais listados ela vai primeiro fechar o servidor express chamando o método close, *server.close()*, nesse momento o express vai fechar as conexões abertas e logo após fechar a conxão com o banco de dados, *connection.close()* e finalizar a aplicação com sucesso.
+Caso um erro ocorra para fechar a conexão do express o processo vai finalizar com 1, ou seja, falha.
+Desta maneira quem está finalizando o processo vai poder checar a saida (0) para sucesso ou (1) para falha para saber se a aplicação foi desligada com sucesso sem impactar nenhum cliente ou o banco de dados.
+
 
 As alterações necessárias para integrar com o banco de dados estão finalizadas, vamos executar os testes de integração para garantir:
 
@@ -245,17 +288,15 @@ Agora é necessário alterar o *products_spec.js* para inicializar a aplicação
 ```diff
 describe('Routes: Products', () => {
 +  let request;
++  let app;
 +
-+  before(()=> {
-+    return setupApp()
-+      .then(app => {
-+        request = supertest(app)
-+      })
++  before(async () => {
++    app = await setupApp();
++    request = supertest(app);
 +  });
-+
 ```
 
-No bloco acima, criamos um let para o `request` do *supertest* e no `before` a aplicação é inicializada. Assim que o `setupApp` retornar uma instância da aplicação é possível inicializar o supertest e atribuir a `let request` que definimos anteriormente.
+No bloco acima, criamos um let para o `request` do *supertest* e no `before` a aplicação é inicializada. Assim que o `setupApp` retornar uma instância da aplicação é possível inicializar o supertest e atribuir a `let request` que definimos anteriormente. E também definimos o `let app` para armazenar a instancia da app do express, isso sera necessario apos executar todos os testes para fechar o banco de dados.
 
 T> ## let no lugar de const
 T> 
@@ -294,5 +335,12 @@ Caso ocorra um erro como: "MongoError: failed to connect to server [localhost:27
 ```
 
 A mensagem de erro explica que o MongoDB não está executando em localhost na porta 7000, verifique e tente novamente.
+
+O ultimo passo é adicionar o metódo `after` do Mocha que é chamado após todos os testes:
+
+```javascript
+  after(async () => await app.database.connection.close());
+```
+Aqui garantimos que estamos fechando a conexão com o banco de dados após todos os testes, dessa maneira o Mocha vai executar os testes e logo após a execução vai fechar o banco e fechar o processo no terminal.
 
 O código desta etapa esta disponível [aqui](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step6).

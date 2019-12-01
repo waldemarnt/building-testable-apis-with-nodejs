@@ -158,7 +158,7 @@ Agora vamos mudar o caso de teste incluindo o comportamento que esperamos quando
 
   describe('get() products', () => {
 -   it('should return a list of products', () => {
-+   it('should call send with a list of products', () => {
++   it('should return a list of products', async() => {
       const request = {};
       const response = {
         send: sinon.spy()
@@ -185,10 +185,10 @@ Agora precisamos mudar o comportamento esperado:
 -      expect(response.send.called).to.be.true;
 -      expect(response.send.calledWith(defaultProduct)).to.be.true;
 +      const productsController = new ProductsController(Product);
-+      return productsController.get(request, response)
-+        .then(() => {
-+          sinon.assert.calledWith(response.send, defaultProduct);
-+        });
++
++      await productsController.get(request, response);
++
++      sinon.assert.calledWith(response.send, defaultProduct)
 +    });
 ```
 
@@ -206,31 +206,31 @@ import ProductsController from '../../../src/controllers/products';
 import sinon from 'sinon';
 import Product from '../../../src/models/product';
 
-describe('Constrollers: Products', () => {
-  const defaultProduct = [{
-    name: 'Default product',
-    description: 'product description',
-    price: 100
-  }];
+describe('Controllers: Products', () => {
+  const defaultProduct = [
+    {
+      name: 'Default product',
+      description: 'product description',
+      price: 100
+    }
+  ];
 
   describe('get() products', () => {
-    it('should call send with a list of products', () => {
+    it('should return a list of products', async () => {
       const request = {};
       const response = {
         send: sinon.spy()
       };
-      Product.find = sinon.stub();
 
+      Product.find = sinon.stub();
       Product.find.withArgs({}).resolves(defaultProduct);
 
       const productsController = new ProductsController(Product);
-      return productsController.get(request, response)
-        .then(() => {
-          sinon.assert.calledWith(response.send, defaultProduct);
-        });
-    });
 
-  });
+      await productsController.get(request, response);
+
+      sinon.assert.calledWith(response.send, defaultProduct);
+    });
 });
 ```
 
@@ -258,8 +258,8 @@ Seguindo a atualização do controller agora devemos atualizar o método que est
 -      description: 'product description',
 -      price: 100
 -    }])
-+    return this.Product.find({})
-+      .then(products => res.send(products));
++     const products = await this.Product.find({});
++     res.send(products);
     }
   }
 ```
@@ -277,7 +277,7 @@ A resposta deve ser:
 ```sh
   Controllers: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
 
 
   1 passing (217ms)
@@ -290,7 +290,7 @@ Até agora apenas testamos o [happy path](https://en.wikipedia.org/wiki/Happy_pa
 Vamos escrever um caso de teste unitário para esse comportamento, o caso de teste deve ser como o seguinte:
 
 ```javascript
-    it('should return 400 when an error occurs', () => {
+    it('should return 400 when an error occurs', async () => {
       const request = {};
       const response = {
         send: sinon.spy(),
@@ -303,10 +303,9 @@ Vamos escrever um caso de teste unitário para esse comportamento, o caso de tes
 
       const productsController = new ProductsController(Product);
 
-      return productsController.get(request, response)
-        .then(() => {
-          sinon.assert.calledWith(response.send, 'Error');
-        });
+      await productsController.get(request, response);
+
+      sinon.assert.calledWith(response.send, 'Error');
     });
 ```
 
@@ -327,10 +326,13 @@ Se executarmos os testes agora receberemos um erro, pois não implementamos aind
 Atualize a função `get` do controller de products adicionando um catch na busca, ele deve ficar assim:
 
 ```javascript
-  get(req, res) {
-    return this.Product.find({})
-      .then(products => res.send(products))
-      .catch(err => res.status(400).send(err.message));
+  async get(req, res) {
+    try {
+      const products = await this.Product.find({});
+      res.send(products);
+    } catch (err) {
+      res.status(400).send(err.message);
+    }
   }
 ```
 
@@ -345,13 +347,13 @@ $ npm run test:unit
 A resposta deve ser:
 
 ```sh
-  Constrollers: Products
+  Controllers: Products
     get() products
-      ✓ should call send with a list of products
+      ✓ should return a list of products
       ✓ should return 400 when an error occurs
 
 
-  2 passing (223ms)
+  2 passing (13ms)
 ```
 
 Nossa unidade está pronta para ser integrada com o resto da aplicação, faremos isso no próximo passo.
@@ -434,12 +436,13 @@ Como estamos testando a rota products que retorna todos os produtos, precisamos 
 Logo abaixo do código anterior adicione o seguinte código:
 
 ```diff
-+ beforeEach(() => {
-+   const product = new Product(defaultProduct);
-+   product._id = '56cb91bdc3464f14678934ca';
-+   return Product.remove({})
-+     .then(() => product.save());
-+ });
++  beforeEach(async() => {
++    await Product.deleteMany();
++
++    const product = new Product(defaultProduct);
++    product._id = '56cb91bdc3464f14678934ca';
++    return await product.save();
++  });
 +
 ```
 
@@ -453,7 +456,7 @@ O próximo passo é garantir que iremos deixar o terreno limpo após executar o 
 Para isso vamos adicionar também o callback afterEach que significa: Depois de cada, para garantir que o MongoDB ficará limpo, ou seja, sem dados. Para isso adicione o seguinte código logo abaixo do anterior:
 
 ```diff
-+  afterEach(() => Product.remove({}));
++  afterEach(async() => await Product.deleteMany());
 ```
 
 O último passo é atualizar o caso de teste para que ele verifique o `expectedProduct` no lugar do `defaultProduct`:
@@ -479,13 +482,14 @@ import Product from '../../../src/models/product';
 
 describe('Routes: Products', () => {
   let request;
+  let app;
 
-  before(()=> {
-    return setupApp()
-      .then(app => {
-        request = supertest(app)
-      });
+  before(async () => {
+    app = await setupApp();
+    request = supertest(app);
   });
+
+  after(async () => await app.database.connection.close());
 
   const defaultProduct = {
     name: 'Default product',
@@ -500,24 +504,22 @@ describe('Routes: Products', () => {
     price: 100
   };
 
-  beforeEach(() => {
+  beforeEach(async() => {
+    await Product.deleteMany();
+
     const product = new Product(defaultProduct);
     product._id = '56cb91bdc3464f14678934ca';
-    return Product.remove({})
-      .then(() => product.save());
+    return await product.save();
   });
 
-  afterEach(() => Product.remove({}));
+  afterEach(async() => await Product.deleteMany());
 
   describe('GET /products', () => {
     it('should return a list of products', done => {
-
-      request
-        .get('/products')
-        .end((err, res) => {
-          expect(res.body).to.eql([expectedProduct]);
-          done(err);
-        });
+      request.get('/products').end((err, res) => {
+        expect(res.body).to.eql([expectedProduct]);
+        done(err);
+      });
     });
   });
 });

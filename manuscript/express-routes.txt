@@ -8,9 +8,9 @@ Vamos alterar nossa aplicação para separar as rotas do app. Para isso devemos 
 
 ```shell
 ├── package.json
-├── server.js
 ├── src
 │   ├── app.js
+│   ├── server.js
 │   └── routes
 ```
 

@@ -23,12 +23,12 @@ Essa estrutura é legível e organizada, mas com o crescimento da aplicação po
 
 ```sh
 ├── package.json
-├── server.js
 ├── src
 │   ├── controllers
 │   ├── middlewares
 │   └── models
 │   └── app.js
+│   └── server.js
 └── tests
 ```
 
@@ -51,8 +51,8 @@ Outros diretórios comumente localizados na raiz são *scripts* de suporte ou *b
 │   └── js
 ├── scripts
 │   └── deploy.sh
-├── server.js
 ├── src
+│   ├── server.js
 │   ├── app.js
 │   ├── controllers
 │   ├── middlewares
@@ -63,10 +63,6 @@ Outros diretórios comumente localizados na raiz são *scripts* de suporte ou *b
 
 O diretório *public* é responsável por guardar tudo aquilo que vai ser entregue para o usuário. Mantê-lo na raiz facilita a criação de rotas de acesso e a movimentação dos assets, caso necessário. Os diretórios *scripts* e *env* são relacionados a execução da aplicação e serão chamados por alguma linha de comando ou ferramenta externa, colocá-los em um diretório acessível promove a usabilidade.
 
-## Separação da execução e aplicação
-
-No segundo passo, quando movemos o código para o diretório *src*, criamos um arquivo chamado *app.js* e mantemos o *server.js* no diretório raiz, dessa maneira deixamos o *server.js* com a responsabilidade de chamar o *app.js* e inicializar a aplicação. Assim isolamos a aplicação da execução e deixamos que ela seja executada por quem chamar, nesse caso o *server.js*, mas também poderia ser um módulo, como o supertest, que vai fazer uma abstração HTTP para executar os testes e acessar as rotas.
-
 ## Dentro do diretório source
 
 Agora que já entendemos o que fica fora do diretório *src* vamos ver como organizá-lo baseado nas nossas necessidades.
@@ -74,6 +70,7 @@ Agora que já entendemos o que fica fora do diretório *src* vamos ver como orga
 ```sh
 ├── src
 │   ├── app.js
+│   ├── server.js
 │   ├── controllers
 │   ├── middlewares
 │   ├── models
@@ -88,6 +85,7 @@ Essa estrutura é bastante utilizada, ela é clara e separa as responsabilidades
 ```sh
 └── src
     ├── app.js
+    ├── server.js
     ├── mobile
     │   ├── controllers
     │   ├── index.js
@@ -119,7 +117,6 @@ Muitas vezes temos o backend e o front-end separados mas versionados juntos, no 
 │   ├── controllers
 │   ├── models
 │   └── routes
-├── server.js
 └── tests
 ```
 
@@ -131,6 +128,7 @@ Um padrão bem frequente é o que promove a separação por funcionalidade. Nele
 ```sh
 └── src
     ├── app.js
+    ├── server.js
     ├── orders
     │   ├── orders.controller.js
     │   └── orders.routes.js

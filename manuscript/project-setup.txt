@@ -60,7 +60,16 @@ O último passo é informar para o Babel qual preset iremos usar, para isso bast
 
 ```json
 {
-  "presets": ["@babel/preset-env"]
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": true
+        }
+      }
+    ]
+  ]
 }
 ```
 
