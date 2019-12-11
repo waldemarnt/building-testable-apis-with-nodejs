@@ -1,0 +1,59 @@
+# Estilo de código e formatação
+
+Até o momento viemos desenvolvendo sem prestar muita atenção no estilo do código. Agora que estamos na reta final é hora de adicionar algumas ferramentas para garantir que o nosso código vai ter o mesmo estilo e formatação independente da pessoa ou da IDE que está sendo utilizada.
+Existem várias ferramentas na comunidade para fazer esse serviço, aqui vamos utilizar eslint e prettier.
+
+## Eslint
+O [eslint](https://eslint.org/) é uma ferramenta utilizada para identificar e reportar erros de padrões de código como sintaxe e estilo em Javascript e é apoiada por grandes empresas como Airbnb e Facebook. 
+
+## Prettier
+O [prettier](https://prettier.io/) é um formatador de código que já vem praticamente configurado, basta instalar e começar a utilizar, ele segue os padrões mais comuns de formatação de código Javascript da comunidade.
+
+Com a combinação de eslint e prettier é póssivel automatizar o trabalho de análise estática de código acelerando assim processos como o de revisão de pull requests.
+
+## Configuração
+
+```sh
+$ npm install --save-dev eslint@^6.7.2 babel-eslint@^10.0.3 eslint-plugin-node@^10.0.0 prettier@^1.19.1 
+```
+
+Adicione os seguintes comandos ao package.json
+
+```json
+    "lint": "eslint src --ext .js",
+    "lint:fix": "eslint src --fix --ext .js",
+    "prettier:list": "prettier --check 'src/**/*.js'",
+    "prettier:fix": "prettier --write 'src/**/*.js'",
+    "style:fix": "npm run lint:fix & npm run prettier:fix"
+```
+
+Aqui descrevemos comandos para analisar e fixar os problemas, é importante ter comandos separados pois quando executamos a análise em uma ferramenta de CI queremos que o build apenas quebre, se o comando tentar fixar os arquivos ele vai ficar somente no CI mas não na branch. O correto é quebrar o build e o desenvolvedor arrumar e pushar o código arrumado novamente para a branch.
+
+No nosso ambiente de desenvolvimento podemos executar diretamente os comandos de fix, as ferramentas tentam arrumar o máximo possível automaticamente mas algumas coisas necessitam da revisão manual.
+
+Fixando os problemas de estilo e formatação
+
+Como falei, no ambiente de desenvolvimento podemos executar diretamente o comando de fix, vamos começar com o eslint:
+
+```sh
+$npm run lint:fix
+```
+
+Minha saída foi a seguinte
+
+```sh
+/Users/wneto/Dev/building-testable-apis-with-nodejs-code/src/controllers/users.js
+  1:8  error  'jwt' is defined but never used     no-unused-vars
+  2:8  error  'config' is defined but never used  no-unused-vars
+  3:8  error  'bcrypt' is defined but never used  no-unused-vars
+
+/Users/wneto/Dev/building-testable-apis-with-nodejs-code/src/models/user.js
+  21:10  error  'err' is not defined                 no-undef
+  26:25  error  'options' is defined but never used  no-unused-vars
+```
+
+Estes são os arquivos que não puderam ser corrigidos automaticamente, basta ir neles e corrigir manualmente.
+Por exemplo o arquivo *src/controllers/users.js* possui imports que não estão sendo utilizados e o *src/models/user.js* possui um erro de digitação que fazia o err ser undefined, agora percebemos o valor da ferramenta, não é? Provavelmente notaríamos isso somente em produção, quando um erro ocorresse.
+
+Todo o código atualizado por ser [encontrado aqui](https://github.com/waldemarnt/building-testable-apis-with-nodejs-code/tree/step12)
+
