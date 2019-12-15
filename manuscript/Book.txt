@@ -1,5 +1,3 @@
-preface.txt
-who-should-read.txt
 introduction.txt
 what-is-node.txt
 configuration.txt
