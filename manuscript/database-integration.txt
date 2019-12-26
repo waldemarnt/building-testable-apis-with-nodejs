@@ -1,10 +1,35 @@
 # Configurando o MongoDB como banco de dados
  
- /todo
+ Nesse livro o banco de dados escolhido foi o MongdoDB, principalmente pela simplicidade de ingração e vasto suporte opensource.
 
 ## Introdução ao MongoDB
 
-/todo
+Até o ano de 2009 o mundo dos banco de dados era dominado por bancos [RDMS](https://en.wikipedia.org/wiki/Relational_database) (Relational Database Management System) baseados em SQL (Structured Query Language). Esse tipo de banco de dados baseado em um modelo relacional foi introduzido em 1970 e é utilizado até hoje.
+Com o surgimento da Cloud e [Big Data](https://en.wikipedia.org/wiki/Big_data) os bancos relacionais começaram a enfrentar os desafios de escalar devido ao design relacional. Há 50 anos, quando os bancos de dados relacionais foram criados, o desafio que era armazenar dados, armazenamento era caro e lento.
+
+Nos dias de hoje o armazenamento de dados é extremamente barato e não é mais visto como um problema, o desafio agora é está no processamento de dados. Empresas como a NASA com o projeto de monitoramento climático e de  aquecimento global precisam processar e armazenar petabytes de dados. Pela natureza relacional, bancos RDMS não suportam bem esses casos, é difícil escalá-los horizontalmente já que os dados ficam em tabelas diferentes e são ligados por chaves.
+
+Em 2009 o MongoDB surgiu, trazendo um design não relacional focado em prover escala e performance. O MongoDB armazena os dados de forma isolada possibilitando  escalar horizontalmente de forma simples e com alta performance.
+
+O [MongoDB](https://www.mongodb.com/) segue um padrão chamado NoSQL. NoSQL não utilizada linguagem SQL e é livre de dados relacionais.
+Não existe um padrão fixo de NoSQL mas a maioria dos bancos de dados possui características similares como:
+
+- Não possuem um schema fixo
+- Tendem a serem escaláveis e distribuídos por padrão
+- Utilizam diferentes estratégias para armazenar os dados de forma otimizada para escala e performance diferente da conhecida tabela, colunas e linhas dos bancos de dados RDMS.
+
+Alguns paradigmas NoSQL são:
+
+- Bancos em gráfico (Graph Databases)
+- Armazenamento chave/valor (Key/Value store)
+- Armazenamento por documentos (Document store)
+
+O MongoDB segue o paradigma de armazenamento de documentos e conta com três itens chave: Document, Field e Collection
+
+- Document: Similar a linha (row) de um banco de dados relacional
+- Field: Similar a coluna (column) de um banco de dados relacional
+- Collection: Similar a tabela (table) de um banco de dados relacional
+
 
 ## Configurando o banco de dados com Mongoose
 
