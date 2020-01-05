@@ -1251,7 +1251,7 @@ Agora vamos adicionar o expectedAdminUser para poder gerar o token, e a seguir o
     description: 'product description',
     price: 100
   };
-  +const expectedAdminUser = {
++	const expectedAdminUser = {
 +   _id: defaultId,
 +  	 name: 'Jhon Doe',
 +   email: 'jhon@mail.com',
@@ -1273,13 +1273,13 @@ request
 
        request
           .get(`/products/${defaultId}`)
- +         .set({'x-access-token': authToken})
++         .set({'x-access-token': authToken})
           .end((err, res) => {
             expect(res.statusCode).to.eql(200);
             expect(res.body).to.eql([expectedProduct]);
         request
           .post('/products')
-   +       .set({'x-access-token': authToken})
++	       .set({'x-access-token': authToken})
           .send(newProduct)
           .end((err, res) => {
             expect(res.statusCode).to.eql(201);
@@ -1287,7 +1287,7 @@ request
 
         request
           .put(`/products/${defaultId}`)
- +         .set({'x-access-token': authToken})
++         .set({'x-access-token': authToken})
           .send(updatedProduct)
           .end((err, res) => {
             expect(res.status).to.eql(200);
