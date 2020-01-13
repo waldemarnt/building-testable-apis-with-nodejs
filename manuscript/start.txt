@@ -1,0 +1,16 @@
+# Sobre o autor
+
+Waldemar Neto é engenheiro de software, contribuidor open-source, palestrante e criador de conteúdo. Começou sua carreira desenvolvendo servidores open source de MMRPGs em meados de 2004 e hoje possui mais de 15 anos de experiência na área de desenvolvimento.
+Passou por outras grandes empresas como Thoughtworks e POSSIBLE e atualmente é engenheiro de software na Atlassian (Sydney/Austrália). 
+
+Waldemar é apaixonado por  metodologias ágeis e em seu tempo livre  busca contribuir para a comunidade, principalmente criando conteúdo relacionado a microsserviços, apis e qualidade de software.
+
+
+# Agradecimentos
+
+Quando comecei esse livro em 2017 minha ideia era criar um conteúdo único que trouxesse de forma simples e contínua conhecimento sobre Node.js, APIs e qualidade de software, algo que eu mesmo sentia muita falta na comunidade.
+
+Logo nos primeiros capítulos publicados comecei a receber um ótimo feedback dos leitores, fiquei muito grato em saber que estava focando na coisa certa. Durante os 3 anos que o livro estava em desenvolvimento eu venho recebendo contribuições e feedback constante o que me ajudou a finalizar esse projeto.
+
+Sou muito grato a comunidade brasileira do NodeBR e a os amigos e parentes que me ajudaram nessa trajetória. Um agradecimento especial aos meus ex colegas de Thoughtworks Rafael Gomes (Gomex), Glauco Vinicius, Lucas Lago, Juraci Vieira, William Calderipe, Mateus Tait e principalmente a minha namorada Andressa Costa pelas constantes revisões.
+

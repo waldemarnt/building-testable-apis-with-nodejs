@@ -1,0 +1,6 @@
+# Final
+
+Este capítulo encerra o livro. Agora você deve possuir o conhecimento e as ferramentas necessárias para começar a construir suas próprias APIs escaláveis com Node.js seguindo os melhores padrões de qualidade.
+Vamos continuar essa conversa no [youtube](https://www.youtube.com/user/waldemaneto), onde vou seguir publicando conteúdo atualizado.
+
+Obrigado pela jornada!
