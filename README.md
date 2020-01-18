@@ -3,9 +3,9 @@
 
 Esse é o repositório oficial do livro: ***Construindo APIs testáveis com Node.js***, o qual está sendo escrito.
 
-O é gratis e em ativo desenvolvimento, publicado no [***Leanpub***](https://leanpub.com/construindo-apis-testaveis-com-nodejs). Update* 2019
+O livro é gratis e em ativo desenvolvimento, publicado no [***Leanpub***](https://leanpub.com/construindo-apis-testaveis-com-nodejs). Update* 2020
 
-<img src="https://github.com/waldemarnt/building-testable-apis-with-nodejs/blob/master/manuscript/images/cover01.jpg" width="400">
+<img src="https://raw.githubusercontent.com/waldemarnt/building-testable-apis-with-nodejs/master/title_page.jpg" width="400">
 
 # Sobre o Livro
 
