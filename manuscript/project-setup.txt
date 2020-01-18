@@ -142,7 +142,7 @@ O código dessa etapa está disponivel [neste link](https://github.com/waldemarn
 
 ## Entendendo o Middleware pattern
 
-> Note esta etapa não faz parte do código da API que estamos construindo, o código é somente exmeplo de implementação.
+> Note esta etapa não faz parte do código da API que estamos construindo, o código é somente exemplo de implementação.
 
 O padrão de Middleware implementado pelo express já é bem conhecido e tem sido usado por desenvolvedores em outras linguagens há muitos anos. Podemos dizer que se trata de uma implementação do padrão [intercepting filter pattern](http://www.oracle.com/technetwork/java/interceptingfilter-142169.html) do [chain of responsibility](http://java.dzone.com/articles/design-patterns-uncovered-chain-of-responsibility).
 
